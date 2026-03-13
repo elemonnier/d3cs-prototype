@@ -4,10 +4,10 @@ Rust prototype of a dynamic and decentralized data-centric security (D3CS) demon
 
 ## Docs
 
-Ciphertext-policy attribute-based encryption (CP-ABE) cryptography from: Porwal, S., Mittal, S. A fully flexible key delegation mechanism with efficient fine-grained access control in CP-ABE. J Ambient Intell Human Comput 14, 12837–12856 (2023). https://doi.org/10.1007/s12652-022-04196-y
-Attribute-based signatures (ABS) cryptography from: Li, J., Kim, K. Hidden attribute-based signatures without anonymity revocation. Information Sciences 180(9), 1681–1689 (2010). https://doi.org/10.1016/j.ins.2010.01.008
-DoDWAN: https://casa-irisa.univ-ubs.fr/dodwan/
-Find workflow functionnalities in diagrams/.
+- Ciphertext-policy attribute-based encryption (CP-ABE) cryptography from: Porwal, S., Mittal, S. A fully flexible key delegation mechanism with efficient fine-grained access control in CP-ABE. J Ambient Intell Human Comput 14, 12837–12856 (2023). https://doi.org/10.1007/s12652-022-04196-y
+- Attribute-based signatures (ABS) cryptography from: Li, J., Kim, K. Hidden attribute-based signatures without anonymity revocation. Information Sciences 180(9), 1681–1689 (2010). https://doi.org/10.1016/j.ins.2010.01.008
+- DoDWAN: https://casa-irisa.univ-ubs.fr/dodwan/
+- Find workflow functionnalities in diagrams/.
 
 ## Goal
 
@@ -137,3 +137,7 @@ cargo check
 
 - Demonstration project: do not use in production. Hybrid encryption is missing for demonstration purpose.
 - Avoid versioning real secrets in `.env`, `authority/`, `users/`.
+
+## Demo and paper
+
+Work in progress!
