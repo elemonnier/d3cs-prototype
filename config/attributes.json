@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "classification": [
+    { "name": "FR-DR", "closure": ["FR-DR"], "level": 0 },
+    { "name": "FR-S", "closure": ["FR-S", "FR-DR"], "level": 1 }
+  ],
+  "missions": ["M1", "M2"]
+}
