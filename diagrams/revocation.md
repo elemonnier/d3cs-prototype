@@ -8,7 +8,7 @@ sequenceDiagram
     actor U1
 
     Authority->>NM0: join()
-    NM0->>NM0: subscribe(D3CS.TM0)
+    NM0->>NM0: subscribe(D3CS.Authority)
     U1->>NM1: join()
     NM1->>NM1: subscribe(D3CS.TM)
 
