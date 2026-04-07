@@ -39,7 +39,7 @@ Default admin credentials at startup:
 Or as user:
 - login: `u1` / password: `u1`
 - login: `u2` / password: `u2`
-- etc. until "u9"
+- etc. until `u9`
 
 ## Execution Modes
 
