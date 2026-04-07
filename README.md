@@ -9,15 +9,6 @@ Rust prototype of a dynamic and decentralized data-centric security (D3CS) demon
 - DoDWAN: https://casa-irisa.univ-ubs.fr/dodwan/
 - Find workflow functionnalities in diagrams/.
 
-## Goal
-
-This project provides a sandbox to:
-- manage clearances (`classification`, `mission`)
-- handle delegation of accesses
-- encrypt/decrypt labeled documents
-- handle attribute revocation
-- test local and multi-node execution
-
 ## Prerequisites
 
 - Rust toolchain installed (`cargo`, `rustc`)
@@ -35,6 +26,7 @@ rustc --version
 From the project root:
 
 ```bash
+cargo build
 cargo run
 ```
 
@@ -42,8 +34,12 @@ Then open:
 - `http://127.0.0.1:18080` (port currently set in `.env`)
 
 Default admin credentials at startup:
-- login: `admin`
-- password: `minad`
+- login: `admin` / password: `minad`
+
+Or as user:
+- login: `u1` / password: `u1`
+- login: `u2` / password: `u2`
+- etc. until "u9"
 
 ## Execution Modes
 
@@ -54,33 +50,16 @@ cargo run
 ```
 
 - single process
-- web UI + API on the configured port
+- web UI + API on the configured port (default 127.0.0.1:18080)
 
-### 2) Network on a Specific Node
-
-```bash
-cargo run -- network U1
-```
-
-Common port mapping examples:
-- `Authority` -> `18080`
-- `U1` -> `18081`
-- ...
-- `U9` -> `18089`
-
-To force a port:
-
-```bash
-D3CS_PORT=18081 cargo run -- network U1
-```
-
-### 3) Local Network Cluster (multiple processes)
+### 2) Network (multiple processes/ports)
 
 ```bash
 cargo run -- network-all
 ```
 
 Starts `Authority` + `U1..U9` and waits for child processes to exit.
+Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089 for u9
 
 ## Environment Variables
 
@@ -95,7 +74,7 @@ Loaded via `.env` if present:
 - `D3CS_IHM_DIR` (default `gui` if present, otherwise `ihm`)
 - `D3CS_NETWORK_DIR` (default `network/dodwan/runtime`)
 
-## Recommended Demo Flow
+## Demo Example
 
 1. Sign in as admin (`admin` / `minad`)
 2. Create a user via `Sign up` (clearance JSON)
@@ -103,41 +82,24 @@ Loaded via `.env` if present:
 4. Browse/decrypt documents from the list
 5. Test revocation/presets as admin
 
-Example clearance JSON:
-
-```json
-{
-  "classification": "FR-S",
-  "mission": "M1"
-}
-```
-
-## Useful Structure
+## Structure
 
 - `src/`: main server + API routes + orchestration
-- `src/crypto/`: CP-ABE / ABS / policy logic
+- `src/crypto/`: CP-ABE / ABS
 - `network/`: network runtime and local DoDWAN adapter
 - `gui/`: main web interface
 - `config/`: attributes + BLP/Biba presets
 - `tm/`: technical artifacts (CT, signatures, ARL, params)
 - `users/`: user data and derived keys
 - `authority/`: authority secrets
-- `specs/`: functional demonstrator specifications (in French)
+- `specs/`: demonstrator specifications (in French)
 - `diagrams/`: operation flow diagrams
-
-## Verification
-
-Check that the code compiles:
-
-```bash
-cargo check
-```
 
 ## Important Notes
 
 - Demonstration project: do not use in production. Hybrid encryption is missing for demonstration purpose.
 - Avoid versioning real secrets in `.env`, `authority/`, `users/`.
 
-## Demo and paper
+## Paper
 
 Work in progress!
