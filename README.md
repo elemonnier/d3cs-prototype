@@ -76,8 +76,8 @@ Loaded via `.env` if present:
 
 ## Demo Example
 
-1. Sign in as admin (`admin` / `minad`)
-2. Create a user via `Sign up` (clearance JSON)
+1. Run local execution (cargo run)
+2. Sign in as admin (`admin` / `minad`)
 3. Encrypt a document (`classification` + `mission`)
 4. Browse/decrypt documents from the list
 5. Test revocation/presets as admin
