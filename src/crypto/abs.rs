@@ -1,3 +1,5 @@
+// ce fichier répertorie les fonctions crypto ABS provenant de la spécification docs/LK10
+
 use anyhow::{anyhow, Result};
 use base64::Engine;
 use serde::{Deserialize, Serialize};
@@ -49,6 +51,8 @@ pub struct AbsSignatureV1 {
     pub r2: String,
     pub r3: String,
 }
+
+// commentaires sur les outils de sérialisation dans cpabe.rs
 
 fn b64_encode(data: &[u8]) -> String {
     base64::engine::general_purpose::STANDARD_NO_PAD.encode(data)
@@ -121,16 +125,24 @@ fn pairing_gt(a: G1Affine, b: G2Affine) -> Fq12 {
 
 fn hash_to_g1(dst: &'static [u8], msg: &[u8]) -> Result<G1Projective> {
     type Curve = ark_bls12_381::g1::Config;
-    type Hasher = MapToCurveBasedHasher<G1Projective, DefaultFieldHasher<Sha256, 128>, WBMap<Curve>>;
+    type Hasher =
+        MapToCurveBasedHasher<G1Projective, DefaultFieldHasher<Sha256, 128>, WBMap<Curve>>;
 
     let hasher = Hasher::new(dst).map_err(|_| anyhow!("Hasher init failed"))?;
-    let p = hasher.hash(msg).map_err(|_| anyhow!("Hash-to-curve failed"))?;
+    let p = hasher
+        .hash(msg)
+        .map_err(|_| anyhow!("Hash-to-curve failed"))?;
     Ok(p.into())
 }
+
+// selon le papier Li-Kim, l'implémentation correspond à la construction de la section 3.3 (et non pas 4.0)
+// d=1 a été choisi, vu que seul l'attribut de classification est dans la signature
+// lors de l'interpolation de Lagrange, un polynôme de degré 0 sera utilisé (d-1)
 
 pub fn setup() -> Result<(AbsParamsV1, AbsMasterKeyV1)> {
     let mut rng = rand_core::OsRng;
 
+    // utilisation d'un pairing moderne G1xG2 asymétrique, plus sécurisé (type-3) que le symétrique du papier
     let g = G2Projective::generator();
     let x = Fr::rand(&mut rng);
     let g1 = g.mul_bigint(x.into_bigint());
@@ -138,6 +150,7 @@ pub fn setup() -> Result<(AbsParamsV1, AbsMasterKeyV1)> {
     let g2 = G1Projective::rand(&mut rng);
     let z = pairing_gt(g2.into_affine(), g1.into_affine());
 
+    // les hashs (H1/H2) ne sont pas stockés ici mais utilisés plus tard (extract/sign/verify)
     let params = AbsParamsV1 {
         version: 1,
         d: 1,
@@ -166,6 +179,7 @@ pub fn extract(params: &AbsParamsV1, msk: &AbsMasterKeyV1, attr: &str) -> Result
     let g = de_g2(&b64_decode(&params.g)?)?;
     let g2 = de_g1(&b64_decode(&params.g2)?)?;
 
+    // vu que l'on n'a qu'un seul attribut, on ne tire qu'un seul aléa
     let r = Fr::rand(&mut rng);
 
     let h1 = hash_to_g1(b"D3CS-ABS-H1", attr.as_bytes())?;
@@ -185,6 +199,8 @@ pub fn sign(params: &AbsParamsV1, skw: &AbsUserKeyV1, message: &[u8]) -> Result<
         return Err(anyhow!("This demo only supports d=1"));
     }
 
+    // pas de choix de subset d'attribut, car d-k = 1-1 = 0
+
     let mut rng = rand_core::OsRng;
 
     let g = de_g2(&b64_decode(&params.g)?)?;
@@ -197,6 +213,7 @@ pub fn sign(params: &AbsParamsV1, skw: &AbsUserKeyV1, message: &[u8]) -> Result<
     let h1 = hash_to_g1(b"D3CS-ABS-H1", skw.attr.as_bytes())?;
     let h2 = hash_to_g1(b"D3CS-ABS-H2", message)?;
 
+    // les indices i sont nuls, donc q'(i)=q'(0)=0 (précisé dans le papier), ce qui annule le terme g2^q' dans r1
     let r1 = d0 + h1.mul_bigint(r_prime.into_bigint()) + h2.mul_bigint(s.into_bigint());
     let r2 = d1 + g.mul_bigint(r_prime.into_bigint());
     let r3 = g.mul_bigint(s.into_bigint());
@@ -209,7 +226,12 @@ pub fn sign(params: &AbsParamsV1, skw: &AbsUserKeyV1, message: &[u8]) -> Result<
     })
 }
 
-pub fn verify_with_attr(params: &AbsParamsV1, sig: &AbsSignatureV1, message: &[u8], attr: &str) -> Result<bool> {
+pub fn verify_with_attr(
+    params: &AbsParamsV1,
+    sig: &AbsSignatureV1,
+    message: &[u8],
+    attr: &str,
+) -> Result<bool> {
     if params.d != 1 {
         return Err(anyhow!("This demo only supports d=1"));
     }
@@ -224,6 +246,7 @@ pub fn verify_with_attr(params: &AbsParamsV1, sig: &AbsSignatureV1, message: &[u
     let h1 = hash_to_g1(b"D3CS-ABS-H1", attr.as_bytes())?;
     let h2 = hash_to_g1(b"D3CS-ABS-H2", message)?;
 
+    // vu que l'on utilise un pairing e(G1,G2), on met r1 à gauche et g à droite (définition plus haut)
     let num = pairing_gt(r1.into_affine(), g.into_affine());
     let den1 = pairing_gt(h1.into_affine(), r2.into_affine());
     let den2 = pairing_gt(h2.into_affine(), r3.into_affine());

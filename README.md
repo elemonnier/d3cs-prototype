@@ -61,18 +61,20 @@ cargo run -- network-all
 Starts `Authority` + `U1..U9` and waits for child processes to exit.
 Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089 for u9
 
+Network is managed via GET/POST requests (defined in src/api.rs) from GUI to local server. Cookies are used to let the users be connected through HTTP pages. Polling is performed every 500ms to receive server state (instead of Websocket that uses interrupt). A simulation publish/subscribe (to simulate DoDWAN) is performed between nodes.
+
 ## Environment Variables
 
 Loaded via `.env` if present:
 
 - `D3CS_HOST` (default `127.0.0.1`)
 - `D3CS_PORT` (local default `8080`, overridden by `.env` in this repo)
-- `D3CS_CONFIG_DIR` (default `config`)
-- `D3CS_USERS_DIR` (default `users`)
-- `D3CS_TM_DIR` (default `tm`)
-- `D3CS_AUTHORITY_DIR` (default `authority`)
-- `D3CS_IHM_DIR` (default `gui` if present, otherwise `ihm`)
-- `D3CS_NETWORK_DIR` (default `network/dodwan/runtime`)
+- `D3CS_CONFIG_DIR` (default `src/config`)
+- `D3CS_USERS_DIR` (default `runtime/users`)
+- `D3CS_TM_DIR` (default `runtime/tm`)
+- `D3CS_AUTHORITY_DIR` (default `runtime/authority`)
+- `D3CS_IHM_DIR` (default `src/gui` if present, otherwise `src/ihm`)
+- `D3CS_NETWORK_DIR` (default `src/network/dodwan/runtime`)
 
 ## Demo Example
 
@@ -86,19 +88,20 @@ Loaded via `.env` if present:
 
 - `src/`: main server + API routes + orchestration
 - `src/crypto/`: CP-ABE / ABS
-- `network/`: network runtime and local DoDWAN adapter
-- `gui/`: main web interface
-- `config/`: attributes + BLP/Biba presets
-- `tm/`: technical artifacts (CT, signatures, ARL, params)
-- `users/`: user data and derived keys
-- `authority/`: authority secrets
+- `src/network/`: network runtime and local DoDWAN adapter
+- `src/gui/`: main web interface
+- `src/config/`: attributes + BLP/Biba presets
+- `runtime/tm/`: technical artifacts (CT, signatures, ARL, params)
+- `runtime/users/`: user data and derived keys
+- `runtime/authority/`: authority secrets
 - `specs/`: demonstrator specifications (in French)
 - `diagrams/`: operation flow diagrams
 
 ## Important Notes
 
 - Demonstration project: do not use in production. Hybrid encryption is missing for demonstration purpose.
-- Avoid versioning real secrets in `.env`, `authority/`, `users/`.
+- Avoid versioning real secrets in `.env`, `runtime/authority/`, `runtime/users/`.
+- GPT-5.3-Codex was used in this project to generate code according to the specs.
 
 ## Paper
 

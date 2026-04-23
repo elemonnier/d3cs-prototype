@@ -4,6 +4,8 @@ use std::sync::Arc;
 
 use crate::AppState;
 
+// s'assure que les répertoires sont bien créés
+
 pub fn ensure_directories(state: &Arc<AppState>) -> Result<()> {
     fs::create_dir_all(&state.config_dir)?;
     fs::create_dir_all(&state.users_dir)?;

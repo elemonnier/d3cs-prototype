@@ -1,3 +1,7 @@
+// ce fichier utilise la crypto de cpabe.rs et abs.rs afin d'exécuter des fonctions plus haut niveau,
+// comme encrypt_document, utilisant Encrypt de CP-ABE et Sign/Verify de ABS
+
+use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -44,6 +48,8 @@ pub struct DocumentDescriptor {
     pub label: DocumentLabel,
 }
 
+// récupération des presets Bell-La Padula et Biba dans le fichier de config
+
 fn read_blpbiba(state: &Arc<AppState>) -> Result<BlpBibaConfig> {
     let p = format!("{}/blpbiba.toml", state.config_dir);
     let content = fs::read_to_string(&p)?;
@@ -51,11 +57,15 @@ fn read_blpbiba(state: &Arc<AppState>) -> Result<BlpBibaConfig> {
     Ok(cfg)
 }
 
+// modification des presets BLP/Biba
+
 fn write_blpbiba(state: &Arc<AppState>, cfg: &BlpBibaConfig) -> Result<()> {
     let p = format!("{}/blpbiba.toml", state.config_dir);
     let s = toml::to_string(cfg)?;
     write_atomic(&p, s.as_bytes())
 }
+
+// lecture de la liste de révocation de missions
 
 fn read_arl(state: &Arc<AppState>) -> Result<RevocationList> {
     let p = format!("{}/arl.json", state.tm_dir);
@@ -64,17 +74,23 @@ fn read_arl(state: &Arc<AppState>) -> Result<RevocationList> {
     Ok(arl)
 }
 
+// écriture sur la liste de révocation de missions
+
 fn write_arl(state: &Arc<AppState>, arl: &RevocationList) -> Result<()> {
     let p = format!("{}/arl.json", state.tm_dir);
     let s = serde_json::to_string(arl)?;
     write_atomic(&p, s.as_bytes())
 }
 
+// lecture d'une mission particulière sur l'ARL
+
 fn is_mission_revoked(arl: &RevocationList, mission: &str) -> bool {
-    arl.items.iter().any(|e| {
-        e.attribute_type == "mission" && e.attribute_value.as_str() == mission
-    })
+    arl.items
+        .iter()
+        .any(|e| e.attribute_type == "mission" && e.attribute_value.as_str() == mission)
 }
+
+// initialisation des presets BLP/Biba par défaut si elle n'existe pas encore
 
 fn ensure_default_blpbiba(state: &Arc<AppState>) -> Result<()> {
     let p = format!("{}/blpbiba.toml", state.config_dir);
@@ -90,6 +106,8 @@ fn ensure_default_blpbiba(state: &Arc<AppState>) -> Result<()> {
     };
     write_blpbiba(state, &cfg)
 }
+
+// initialisation des attributs s'ils n'existent pas
 
 fn ensure_default_attributes(state: &Arc<AppState>) -> Result<()> {
     let p = format!("{}/attributes.json", state.config_dir);
@@ -112,6 +130,8 @@ fn ensure_default_attributes(state: &Arc<AppState>) -> Result<()> {
     write_atomic(&p, s.as_bytes())
 }
 
+// initialisation de l'ARL si elle n'existe pas
+
 fn ensure_default_arl(state: &Arc<AppState>) -> Result<()> {
     let p = format!("{}/arl.json", state.tm_dir);
     if Path::new(&p).exists() {
@@ -124,6 +144,8 @@ fn ensure_default_arl(state: &Arc<AppState>) -> Result<()> {
     write_arl(state, &arl)
 }
 
+// règle de comparaison des classifications : FR-DR < FR-S
+
 fn classification_level(classification: &str) -> Result<i32> {
     match classification {
         "FR-DR" => Ok(0),
@@ -131,6 +153,8 @@ fn classification_level(classification: &str) -> Result<i32> {
         _ => Err(anyhow!("Unknown classification")),
     }
 }
+
+// comparaison des droits en fonction des presets
 
 fn is_read_allowed(cfg: &BlpBibaConfig, user_level: i32, doc_level: i32) -> bool {
     if cfg.noreadup && doc_level > user_level {
@@ -152,6 +176,8 @@ fn is_write_allowed(cfg: &BlpBibaConfig, user_level: i32, doc_level: i32) -> boo
     true
 }
 
+// gestion de l'écriture des fichiers via fichier temporaire pour gérer des erreurs
+
 fn write_atomic(path: &str, data: &[u8]) -> Result<()> {
     let tmp_path = format!("{}.tmp", path);
     {
@@ -165,8 +191,31 @@ fn write_atomic(path: &str, data: &[u8]) -> Result<()> {
 }
 
 fn file_has_non_empty_content(path: &str) -> bool {
-    fs::metadata(path).map(|m| m.is_file() && m.len() > 0).unwrap_or(false)
+    fs::metadata(path)
+        .map(|m| m.is_file() && m.len() > 0)
+        .unwrap_or(false)
 }
+
+fn key_material_matches(
+    pp: &cpabe::PublicParamsV1,
+    pska: &cpabe::PskaV1,
+    psks: &cpabe::PsksV1,
+    clearance: &Clearance,
+) -> bool {
+    let label = DocumentLabel {
+        classification: clearance.classification.clone(),
+        mission: clearance.mission.clone(),
+    };
+    let probe = "__d3cs_key_probe__";
+
+    let result = cpabe::encrypt(pp, &label, probe)
+        .and_then(|ct| cpabe::tm_decrypt(pp, &ct, pska))
+        .and_then(|cti| cpabe::decrypt(pp, &cti, psks));
+
+    matches!(result, Ok(msg) if msg == probe)
+}
+
+// représente le treillis d'attributs (e.g. FR-DR inclus dans FR-S)
 
 fn user_attribute_set(clearance: &Clearance) -> Vec<String> {
     let mut out = Vec::new();
@@ -186,6 +235,8 @@ fn user_attribute_set(clearance: &Clearance) -> Vec<String> {
     out
 }
 
+// indique le groupe réseau courant en mode réseau
+
 fn network_group(state: &Arc<AppState>) -> Option<String> {
     if state.mode != crate::RunMode::Network {
         return None;
@@ -194,13 +245,112 @@ fn network_group(state: &Arc<AppState>) -> Option<String> {
     Some(rt.status_for_login(state, "__guest__").group)
 }
 
+#[derive(Clone)]
+struct DocumentStorage {
+    ct_dir: String,
+    sig_dir: String,
+    cti_dir: String,
+}
+
+fn group_scoped_dir(state: &Arc<AppState>, group: &str, subdir: &str) -> String {
+    format!("{}/groups/{}/{}", state.tm_dir, group, subdir)
+}
+
+// renvoie le chemin d'écriture du groupe du TM (entre Net1 et Net2)
+
 fn tm_scoped_dir(state: &Arc<AppState>, subdir: &str) -> String {
     if let Some(group) = network_group(state) {
-        format!("{}/groups/{}/{}", state.tm_dir, group, subdir)
+        group_scoped_dir(state, &group, subdir)
     } else {
         format!("{}/{}", state.tm_dir, subdir)
     }
 }
+
+fn current_document_storage(state: &Arc<AppState>) -> DocumentStorage {
+    DocumentStorage {
+        ct_dir: tm_scoped_dir(state, "ct"),
+        sig_dir: tm_scoped_dir(state, "s"),
+        cti_dir: tm_scoped_dir(state, "ct_intermediate"),
+    }
+}
+
+fn all_document_storages(state: &Arc<AppState>) -> Vec<DocumentStorage> {
+    if state.mode != crate::RunMode::Network {
+        return vec![current_document_storage(state)];
+    }
+
+    let mut storages = Vec::new();
+    let groups_root = format!("{}/groups", state.tm_dir);
+    if let Ok(entries) = fs::read_dir(&groups_root) {
+        let mut groups = entries
+            .flatten()
+            .filter_map(|entry| {
+                let file_type = entry.file_type().ok()?;
+                if !file_type.is_dir() {
+                    return None;
+                }
+                Some(entry.file_name().to_string_lossy().to_string())
+            })
+            .collect::<Vec<_>>();
+        groups.sort();
+        groups.dedup();
+
+        for group in groups {
+            storages.push(DocumentStorage {
+                ct_dir: group_scoped_dir(state, &group, "ct"),
+                sig_dir: group_scoped_dir(state, &group, "s"),
+                cti_dir: group_scoped_dir(state, &group, "ct_intermediate"),
+            });
+        }
+    }
+
+    let current = current_document_storage(state);
+    if !storages
+        .iter()
+        .any(|storage| storage.ct_dir == current.ct_dir)
+    {
+        storages.push(current);
+    }
+
+    storages
+}
+
+fn next_document_id(state: &Arc<AppState>) -> Result<u64> {
+    let mut max_id = 0u64;
+
+    for storage in all_document_storages(state) {
+        if !Path::new(&storage.ct_dir).exists() {
+            continue;
+        }
+        for entry in fs::read_dir(&storage.ct_dir)? {
+            let entry = entry?;
+            let name = entry.file_name().to_string_lossy().to_string();
+            if !name.ends_with(".ct") {
+                continue;
+            }
+            if let Ok(id) = name.split('.').next().unwrap_or("").parse::<u64>() {
+                if id > max_id {
+                    max_id = id;
+                }
+            }
+        }
+    }
+
+    Ok(max_id + 1)
+}
+
+fn find_document_storage(state: &Arc<AppState>, id: u64) -> Option<DocumentStorage> {
+    for storage in all_document_storages(state) {
+        let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
+        let sig_path = format!("{}/{}.sign", storage.sig_dir, id);
+        if Path::new(&ct_path).exists() && Path::new(&sig_path).exists() {
+            return Some(storage);
+        }
+    }
+    None
+}
+
+// initialisation de la crypto (presets, attributs, ARL, ABE.Setup, ABS.Setup)
 
 pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
     ensure_default_blpbiba(state)?;
@@ -231,7 +381,15 @@ pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
     Ok(())
 }
 
-pub fn ensure_user_keys(state: &Arc<AppState>, login: &str, clearance: &Clearance, user_is_admin: bool) -> Result<()> {
+// génération de clés utilisateur en cas de besoin (si elles ne sont pas créées) :
+// main.rs lors du boot, création d'utilisateur hors réseau (api.rs), avant déchiffrement
+
+pub fn ensure_user_keys(
+    state: &Arc<AppState>,
+    login: &str,
+    clearance: &Clearance,
+    user_is_admin: bool,
+) -> Result<()> {
     let user_dir = format!("{}/{}", state.users_dir, login);
     fs::create_dir_all(&user_dir)?;
 
@@ -239,14 +397,26 @@ pub fn ensure_user_keys(state: &Arc<AppState>, login: &str, clearance: &Clearanc
     let skw_path = format!("{}/skw{}.bin", user_dir, login);
     let pska_path = format!("{}/pska{}.bin", format!("{}/pska", state.tm_dir), login);
 
-    let need = !file_has_non_empty_content(&psks_path)
+    let pp_path = format!("{}/pp.bin", state.tm_dir);
+
+    let mut need = !file_has_non_empty_content(&psks_path)
         || !file_has_non_empty_content(&skw_path)
         || !file_has_non_empty_content(&pska_path);
     if !need {
-        return Ok(());
+        let keys_match = (|| -> Result<bool> {
+            let pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(&pp_path)?)?;
+            let pska: cpabe::PskaV1 = serde_json::from_str(&fs::read_to_string(&pska_path)?)?;
+            let psks: cpabe::PsksV1 = serde_json::from_str(&fs::read_to_string(&psks_path)?)?;
+            Ok(key_material_matches(&pp, &pska, &psks, clearance))
+        })()
+        .unwrap_or(false);
+
+        need = !keys_match;
+        if !need {
+            return Ok(());
+        }
     }
 
-    let pp_path = format!("{}/pp.bin", state.tm_dir);
     let msk_path = format!("{}/msk.bin", state.authority_dir);
     let params_path = format!("{}/params.bin", state.tm_dir);
     let abs_sk_path = format!("{}/sk.bin", state.authority_dir);
@@ -307,10 +477,15 @@ pub fn clear_arl(state: &Arc<AppState>) -> Result<()> {
     };
     write_arl(state, &arl)
 }
+
 pub fn revoke_missions(state: &Arc<AppState>, missions: &[String]) -> Result<RevocationList> {
     let mut arl = read_arl(state)?;
     for m in missions {
-        if !arl.items.iter().any(|e| e.attribute_type == "mission" && e.attribute_value == *m) {
+        if !arl
+            .items
+            .iter()
+            .any(|e| e.attribute_type == "mission" && e.attribute_value == *m)
+        {
             arl.items.push(RevocationEntry {
                 attribute_type: "mission".to_string(),
                 attribute_value: m.clone(),
@@ -321,81 +496,98 @@ pub fn revoke_missions(state: &Arc<AppState>, missions: &[String]) -> Result<Rev
     Ok(arl)
 }
 
-pub fn list_documents(state: &Arc<AppState>, user_clearance: &Clearance, user_is_admin: bool) -> Result<Vec<DocumentDescriptor>> {
+// fonction permettant d'afficher les documents sur le panel "Documents" de l'IHM
+
+pub fn list_documents(
+    state: &Arc<AppState>,
+    user_clearance: &Clearance,
+    user_is_admin: bool,
+) -> Result<Vec<DocumentDescriptor>> {
     let cfg = read_blpbiba(state)?;
     let arl = read_arl(state)?;
 
     let user_level = classification_level(&user_clearance.classification)?;
-    let dir = tm_scoped_dir(state, "ct");
-    let mut out = Vec::new();
-    if !Path::new(&dir).exists() {
-        return Ok(out);
+    let mut out = BTreeMap::new();
+
+    for storage in all_document_storages(state) {
+        if !Path::new(&storage.ct_dir).exists() {
+            continue;
+        }
+
+        for entry in fs::read_dir(&storage.ct_dir)? {
+            let entry = entry?;
+            let ft = entry.file_type()?;
+            if !ft.is_file() {
+                continue;
+            }
+            let name = entry.file_name().to_string_lossy().to_string();
+            if !name.ends_with(".ct") {
+                continue;
+            }
+            let id: u64 = match name.split('.').next().unwrap_or("").parse() {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let ct_s = match fs::read_to_string(entry.path()) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+            let ct: cpabe::CiphertextV1 = match serde_json::from_str(&ct_s) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let sig_path = format!("{}/{}.sign", storage.sig_dir, id);
+            let sig_s = match fs::read_to_string(&sig_path) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+            if serde_json::from_str::<abs::AbsSignatureV1>(&sig_s).is_err() {
+                continue;
+            }
+
+            if is_mission_revoked(&arl, &ct.label.mission) {
+                continue;
+            }
+
+            let doc_level = match classification_level(&ct.label.classification) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+
+            let accessible = if user_is_admin {
+                is_read_allowed(&cfg, user_level, doc_level)
+            } else {
+                is_read_allowed(&cfg, user_level, doc_level)
+                    && ct.label.mission == user_clearance.mission
+            };
+
+            if !accessible {
+                continue;
+            }
+
+            out.entry(id).or_insert_with(|| DocumentDescriptor {
+                id,
+                label: DocumentLabel {
+                    classification: ct.label.classification,
+                    mission: ct.label.mission,
+                },
+            });
+        }
     }
 
-    for entry in fs::read_dir(&dir)? {
-        let entry = entry?;
-        let ft = entry.file_type()?;
-        if !ft.is_file() {
-            continue;
-        }
-        let name = entry.file_name().to_string_lossy().to_string();
-        if !name.ends_with(".ct") {
-            continue;
-        }
-        let id: u64 = match name.split('.').next().unwrap_or("").parse() {
-            Ok(v) => v,
-            Err(_) => continue,
-        };
-        let ct_s = match fs::read_to_string(entry.path()) {
-            Ok(s) => s,
-            Err(_) => continue,
-        };
-        let ct: cpabe::CiphertextV1 = match serde_json::from_str(&ct_s) {
-            Ok(v) => v,
-            Err(_) => continue,
-        };
-        let sig_path = format!("{}/{}.sign", tm_scoped_dir(state, "s"), id);
-        let sig_s = match fs::read_to_string(&sig_path) {
-            Ok(s) => s,
-            Err(_) => continue,
-        };
-        if serde_json::from_str::<abs::AbsSignatureV1>(&sig_s).is_err() {
-            continue;
-        }
-
-        if is_mission_revoked(&arl, &ct.label.mission) {
-            continue;
-        }
-
-        let doc_level = match classification_level(&ct.label.classification) {
-            Ok(v) => v,
-            Err(_) => continue,
-        };
-
-        let accessible = if user_is_admin {
-            is_read_allowed(&cfg, user_level, doc_level)
-        } else {
-            is_read_allowed(&cfg, user_level, doc_level) && ct.label.mission == user_clearance.mission
-        };
-
-        if !accessible {
-            continue;
-        }
-
-        out.push(DocumentDescriptor {
-            id,
-            label: DocumentLabel {
-                classification: ct.label.classification,
-                mission: ct.label.mission,
-            },
-        });
-    }
-
-    out.sort_by_key(|d| d.id);
-    Ok(out)
+    Ok(out.into_values().collect())
 }
 
-pub fn encrypt_document(state: &Arc<AppState>, login: &str, user_clearance: &Clearance, user_is_admin: bool, label: &DocumentLabel, message: &str) -> Result<u64> {
+// fonction permettant de chiffrer un document depuis le panel Labelling
+
+pub fn encrypt_document(
+    state: &Arc<AppState>,
+    login: &str,
+    user_clearance: &Clearance,
+    user_is_admin: bool,
+    label: &DocumentLabel,
+    message: &str,
+) -> Result<u64> {
     let cfg = read_blpbiba(state)?;
     let arl = read_arl(state)?;
 
@@ -431,24 +623,12 @@ pub fn encrypt_document(state: &Arc<AppState>, login: &str, user_clearance: &Cle
         return Err(anyhow!("ABS.Verify failed after signing"));
     }
 
-    let ct_dir = tm_scoped_dir(state, "ct");
-    let sig_dir = tm_scoped_dir(state, "s");
+    let storage = current_document_storage(state);
+    let ct_dir = storage.ct_dir;
+    let sig_dir = storage.sig_dir;
     fs::create_dir_all(&ct_dir)?;
     fs::create_dir_all(&sig_dir)?;
-    let mut max_id = 0u64;
-    for entry in fs::read_dir(&ct_dir)? {
-        let entry = entry?;
-        let name = entry.file_name().to_string_lossy().to_string();
-        if !name.ends_with(".ct") {
-            continue;
-        }
-        if let Ok(v) = name.split('.').next().unwrap_or("").parse::<u64>() {
-            if v > max_id {
-                max_id = v;
-            }
-        }
-    }
-    let next_id = max_id + 1;
+    let next_id = next_document_id(state)?;
 
     let ct_path = format!("{}/{}.ct", ct_dir, next_id);
     let sig_path = format!("{}/{}.sign", sig_dir, next_id);
@@ -469,16 +649,22 @@ pub fn encrypt_document(state: &Arc<AppState>, login: &str, user_clearance: &Cle
     Ok(next_id)
 }
 
+// fonction qui déchiffre un document depuis le panel Documents
+
 pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<String> {
     let (clearance, user_is_admin) = {
         let db = state.user_db.lock().map_err(|_| anyhow!("DB error"))?;
-        let record = db.users.get(login).ok_or_else(|| anyhow!("User not found"))?;
+        let record = db
+            .users
+            .get(login)
+            .ok_or_else(|| anyhow!("User not found"))?;
         (record.clearance.clone(), record.is_admin)
     };
     ensure_user_keys(state, login, &clearance, user_is_admin)?;
 
-    let ct_path = format!("{}/{}.ct", tm_scoped_dir(state, "ct"), id);
-    let sig_path = format!("{}/{}.sign", tm_scoped_dir(state, "s"), id);
+    let storage = find_document_storage(state, id).ok_or_else(|| anyhow!("Document not found"))?;
+    let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
+    let sig_path = format!("{}/{}.sign", storage.sig_dir, id);
     let ct_s = fs::read_to_string(&ct_path)?;
     let sig_s = fs::read_to_string(&sig_path)?;
 
@@ -501,22 +687,41 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
     let psks_path = format!("{}/psks{}.bin", user_dir, login);
     let pska_path = format!("{}/pska/pska{}.bin", state.tm_dir, login);
 
-    let pska_s = fs::read_to_string(&pska_path).map_err(|_| anyhow!("Missing PSKA file (tm/pska)"))?;
-    let psks_s = fs::read_to_string(&psks_path).map_err(|_| anyhow!("Missing PSKS file (users)"))?;
+    let pska_s = fs::read_to_string(&pska_path)
+        .map_err(|_| anyhow!("Missing PSKA file (runtime/tm/pska)"))?;
+    let psks_s =
+        fs::read_to_string(&psks_path).map_err(|_| anyhow!("Missing PSKS file (users)"))?;
     let pska: cpabe::PskaV1 = serde_json::from_str(&pska_s)?;
     let psks: cpabe::PsksV1 = serde_json::from_str(&psks_s)?;
 
     let cti = cpabe::tm_decrypt(&pp, &ct, &pska)?;
-    let cti_dir = tm_scoped_dir(state, "ct_intermediate");
+    let cti_dir = storage.cti_dir;
     fs::create_dir_all(&cti_dir).ok();
     let cti_path = format!("{}/{}.cti", cti_dir, id);
     let cti_s = serde_json::to_string(&cti)?;
     write_atomic(&cti_path, cti_s.as_bytes()).ok();
 
-    let msg = cpabe::decrypt(&pp, &cti, &psks)?;
+    cpabe::decrypt(&pp, &cti, &psks)
+}
 
-    let out_path = format!("{}/{}.txt", user_dir, id);
-    write_atomic(&out_path, msg.as_bytes()).ok();
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    Ok(msg)
+    #[test]
+    fn key_material_check_rejects_mismatched_pska_psks() -> Result<()> {
+        let (pp, msk) = cpabe::setup()?;
+        let attrs = vec!["FR-S".to_string(), "FR-DR".to_string(), "M1".to_string()];
+        let clearance = Clearance {
+            classification: "FR-S".to_string(),
+            mission: "M1".to_string(),
+        };
+        let (pska_a, psks_a) = cpabe::keygen(&pp, &msk, &attrs)?;
+        let (pska_b, _) = cpabe::keygen(&pp, &msk, &attrs)?;
+
+        assert!(key_material_matches(&pp, &pska_a, &psks_a, &clearance));
+        assert!(!key_material_matches(&pp, &pska_b, &psks_a, &clearance));
+
+        Ok(())
+    }
 }

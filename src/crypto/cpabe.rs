@@ -1,3 +1,5 @@
+// ce fichier répertorie les fonctions crypto ABE provenant de la spécification docs/PM23
+
 use anyhow::{anyhow, Result};
 use base64::Engine;
 use rand_core::RngCore;
@@ -108,6 +110,10 @@ pub struct IntermediateCiphertextV1 {
     pub sym: SymCiphertextV1,
 }
 
+// logique utilisée : la crypto que l'on manipule avec des opérations (multiplication, puissances) est
+// convertie/manipulée en bigint, avant d'être sérialisée puis encodée b64
+// les scalaires bruts sont transformés en octets big-endian avec padding, puis encodés b64
+
 fn b64_encode(data: &[u8]) -> String {
     base64::engine::general_purpose::STANDARD_NO_PAD.encode(data)
 }
@@ -119,6 +125,10 @@ fn b64_decode(s: &str) -> Result<Vec<u8>> {
     Ok(v)
 }
 
+// transformation d'un scalaire (nombre dans un corps fini) en octets big-endian pour le stockage/transport
+// big-endian = octet de poids fort en premier
+// ajout d'un padding de zéros à gauche pour les entiers inférieurs à 32 bits
+// renvoie un tableau de bytes avec padding sous la forme big endian
 fn scalar_to_bytes_be(s: &Fr) -> [u8; 32] {
     let bi = s.into_bigint();
     let mut v = bi.to_bytes_be();
@@ -134,6 +144,9 @@ fn scalar_to_bytes_be(s: &Fr) -> [u8; 32] {
 fn bytes_be_to_scalar(bytes: &[u8]) -> Fr {
     Fr::from_be_bytes_mod_order(bytes)
 }
+
+// la sérialisation (ser) permet de transformer un objet crypto en vecteur
+// la déserialisation permet de transformer un vecteur en objet crypto
 
 fn ser_g1(p: &G1Projective) -> Result<Vec<u8>> {
     let mut v = Vec::new();
@@ -173,10 +186,14 @@ fn de_gt(data: &[u8]) -> Result<Fq12> {
     Ok(x)
 }
 
+// hash_attr_scalar permet de prendre un attribut, le hacher et le transformer en opérateur crypto
+
 fn hash_attr_scalar(attr: &str) -> Fr {
     let digest = sha2::Sha256::digest(attr.as_bytes());
     Fr::from_be_bytes_mod_order(&digest)
 }
+
+// h_g1 = g ^ s avec s attribut haché
 
 fn h_g1(g: &G1Projective, attr: &str) -> G1Projective {
     let s = hash_attr_scalar(attr);
@@ -188,6 +205,8 @@ fn h_g2(g2: &G2Projective, attr: &str) -> G2Projective {
     g2.mul_bigint(s.into_bigint())
 }
 
+// pairing : e(a,b)
+
 fn pairing_gt(a: G1Affine, b: G2Affine) -> Fq12 {
     Bls12_381::pairing(a, b).0
 }
@@ -195,6 +214,8 @@ fn pairing_gt(a: G1Affine, b: G2Affine) -> Fq12 {
 fn gt_pow(base: &Fq12, exp: &Fr) -> Fq12 {
     base.pow(exp.into_bigint())
 }
+
+// production de clé AES selon pairing
 
 fn derive_sym_key(gt: &Fq12) -> Result<[u8; 32]> {
     let bytes = ser_gt(gt)?;
@@ -206,9 +227,12 @@ fn derive_sym_key(gt: &Fq12) -> Result<[u8; 32]> {
 
 pub fn setup() -> Result<(PublicParamsV1, MasterKeyV1)> {
     let mut rng = rand_core::OsRng;
+    // un générateur (g ou g2) est un point de G1/G2 qui permet de reconstruire tous les autres
+    // du corps via multiplication, sachant que les groupes sont définis dans la lib
     let g = G1Projective::generator();
     let g2 = G2Projective::generator();
 
+    // Fr signifie élément du corps fini (scalaire), et le modulo est très grand
     let alpha = Fr::rand(&mut rng);
     let mut beta = Fr::rand(&mut rng);
     while beta.is_zero() {
@@ -219,6 +243,7 @@ pub fn setup() -> Result<(PublicParamsV1, MasterKeyV1)> {
         .inverse()
         .ok_or_else(|| anyhow!("beta inverse missing"))?;
 
+    // dans PM23 g^beta (groupe cyclique) correspond à g*beta en scalaire
     let h = g.mul_bigint(beta.into_bigint());
     let f = g.mul_bigint(beta_inv.into_bigint());
     let f2 = g2.mul_bigint(beta_inv.into_bigint());
@@ -231,20 +256,31 @@ pub fn setup() -> Result<(PublicParamsV1, MasterKeyV1)> {
         g2: b64_encode(&ser_g2(&g2)?),
         h: b64_encode(&ser_g1(&h)?),
         f: b64_encode(&ser_g1(&f)?),
+        // f2 n'est pas décrit dans le papier car on utilise G1+G2 ici, et pas seulement G0 (sécurité)
         f2: b64_encode(&ser_g2(&f2)?),
         y: b64_encode(&ser_gt(&y)?),
+        // on n'utilise pas h1...hn car ils sont de toute manière dérivés dans keygen/delegate/encrypt
     };
 
     let msk = MasterKeyV1 {
         version: 1,
+        // on encode alpha et non g^alpha pour garder de la flexibilité pour keygen/delegate
         alpha: b64_encode(&scalar_to_bytes_be(&alpha)),
         beta: b64_encode(&scalar_to_bytes_be(&beta)),
+        // pas de stockage de r1...rn car non utilisés ici (mais dans keygen/delegate/encrypt -> pas de pré-listage d'attributs au Setup)
     };
 
+    // utilisation de Ok() pour correspondre au Result du prototype de la fonction
+    // Ok() permet de gérer plus proprement les erreurs
     Ok((pp, msk))
 }
 
-pub fn keygen(pp: &PublicParamsV1, msk: &MasterKeyV1, attrs: &[String]) -> Result<(PskaV1, PsksV1)> {
+pub fn keygen(
+    pp: &PublicParamsV1,
+    msk: &MasterKeyV1,
+    attrs: &[String],
+) -> Result<(PskaV1, PsksV1)> {
+    // génération de D (PSKA), D' et D'' (PSKS) : ces trois paramètres sont constitutifs de SK dans BSW07
     let mut rng = rand_core::OsRng;
     let g2 = de_g2(&b64_decode(&pp.g2)?)?;
 
@@ -256,6 +292,7 @@ pub fn keygen(pp: &PublicParamsV1, msk: &MasterKeyV1, attrs: &[String]) -> Resul
 
     let r = Fr::rand(&mut rng);
     let exp = (alpha + r) * beta_inv;
+    // génération de D, élément de la PSKA
     let d = g2.mul_bigint(exp.into_bigint());
 
     let mut entries = Vec::new();
@@ -265,6 +302,7 @@ pub fn keygen(pp: &PublicParamsV1, msk: &MasterKeyV1, attrs: &[String]) -> Resul
         let r_i = Fr::rand(&mut rng);
         let h = h_g2(&g2, attr);
         let h_ri = h.mul_bigint(r_i.into_bigint());
+        // une multiplication d'éléments du groupe (dans PM23) correspond à une somme
         let d_i = g2_r + h_ri;
         let d_i_prime = g2.mul_bigint(r_i.into_bigint());
 
@@ -275,6 +313,7 @@ pub fn keygen(pp: &PublicParamsV1, msk: &MasterKeyV1, attrs: &[String]) -> Resul
         });
     }
 
+    // tri des attributs par ordre alphabétique
     entries.sort_by(|a, b| a.attr.cmp(&b.attr));
 
     let pska = PskaV1 {
@@ -290,7 +329,11 @@ pub fn keygen(pp: &PublicParamsV1, msk: &MasterKeyV1, attrs: &[String]) -> Resul
     Ok((pska, psks))
 }
 
-pub fn delegate(pp: &PublicParamsV1, psks_in: &PsksV1, delegated_attrs: &[String]) -> Result<(PsksV1, TkV1)> {
+pub fn delegate(
+    pp: &PublicParamsV1,
+    psks_in: &PsksV1,
+    delegated_attrs: &[String],
+) -> Result<(PsksV1, TkV1)> {
     let mut rng = rand_core::OsRng;
     let g2 = de_g2(&b64_decode(&pp.g2)?)?;
     let f2 = de_g2(&b64_decode(&pp.f2)?)?;
@@ -301,6 +344,7 @@ pub fn delegate(pp: &PublicParamsV1, psks_in: &PsksV1, delegated_attrs: &[String
     let mut out_entries = Vec::new();
 
     for a in delegated_attrs.iter() {
+        // déconstruction de PSKS_in ici
         let entry = psks_in
             .attrs
             .iter()
@@ -320,6 +364,9 @@ pub fn delegate(pp: &PublicParamsV1, psks_in: &PsksV1, delegated_attrs: &[String
         out_entries.push(PsksAttrV1 {
             attr: entry.attr.clone(),
             d: b64_encode(&ser_g2(&new_d)?),
+            // oubli dans le schéma de PM23 : D seconde doit être intégré dans PSKS pour pouvoir déchiffrer
+            // BSW07 intègre Dj_seconde_hat de la sorte : Dj_seconde . g^rj_hat
+            // ce qui est intégré ici :
             d_prime: b64_encode(&ser_g2(&new_d_prime)?),
         });
     }
@@ -343,6 +390,9 @@ pub fn delegate(pp: &PublicParamsV1, psks_in: &PsksV1, delegated_attrs: &[String
 
 pub fn tm_delegate(pska_in: &PskaV1, tk: &TkV1) -> Result<PskaV1> {
     let d = de_g2(&b64_decode(&pska_in.d)?)?;
+
+    // analytiquement, on a : g^((alpha+r)/beta)*f_2^r_hat=g^((alpha+r)/beta)*g^r_hat/beta=g^((alpha+r+r_hat)/beta)
+    // ce qui nous permet de garder le nouveau random dans la nouvelle PSKA
     let t = de_g2(&b64_decode(&tk.t)?)?;
     let new_d = d + t;
 
@@ -397,6 +447,11 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
     let h2 = h_g1(&g, &leaf2_attr);
     let c2p = h2.mul_bigint(share2.into_bigint());
 
+    // ici, on a la structure d'accès "Classification AND Mission" : 2 feuilles
+    // racine = AND, possède l'équation de noeud q(z)=s+az (degré 1 car threshold-1 = 2-1 = 1)
+    // feuille 1 hérite de la racine mais au degré 0 -> q=s+a -> Ci=g^sa -> Ci'=h_1^sa
+    // feuille 2 hérite aussi de la racine mais avec "2a" -> q=s+a+a -> Ci=g^sa² -> Ci'=h_2^sa²
+    // pas de notation de la racine car les feuilles portent implicitement le AND
     let leafs = vec![
         AbeLeafV1 {
             index: 1,
@@ -412,6 +467,10 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
         },
     ];
 
+    // c_tilde vaut ici e(g,g)^(t+alpha*s), t représente un nouvel aléa utilisé dans Encrypt
+    // s représente le secret de session (spécifié dans PM23)
+    // pas d'instanciation de C(x,y)childj car on ne fonctionne qu'avec 2 feuilles
+    // sur un AND+OR on en aurait besoin (car noeuds intermédiaires)
     Ok(CiphertextV1 {
         version: 1,
         label: label.clone(),
@@ -427,12 +486,17 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
     })
 }
 
-pub fn tm_decrypt(_pp: &PublicParamsV1, ct: &CiphertextV1, pska: &PskaV1) -> Result<IntermediateCiphertextV1> {
+pub fn tm_decrypt(
+    _pp: &PublicParamsV1,
+    ct: &CiphertextV1,
+    pska: &PskaV1,
+) -> Result<IntermediateCiphertextV1> {
     let c = de_g1(&b64_decode(&ct.abe.c)?)?;
     let d = de_g2(&b64_decode(&pska.d)?)?;
 
     let f = pairing_gt(c.into_affine(), d.into_affine());
 
+    // TM_Decrypt : reprise de tous les éléments de CT sauf f (qui remplace c, qui a été pairé avec PSKA)
     Ok(IntermediateCiphertextV1 {
         version: 1,
         label: ct.label.clone(),
@@ -445,12 +509,17 @@ pub fn tm_decrypt(_pp: &PublicParamsV1, ct: &CiphertextV1, pska: &PskaV1) -> Res
     })
 }
 
-pub fn decrypt(pp: &PublicParamsV1, cti: &IntermediateCiphertextV1, psks: &PsksV1) -> Result<String> {
+pub fn decrypt(
+    _pp: &PublicParamsV1,
+    cti: &IntermediateCiphertextV1,
+    psks: &PsksV1,
+) -> Result<String> {
     let c_tilde = de_gt(&b64_decode(&cti.abe.c_tilde)?)?;
     let f = de_gt(&b64_decode(&cti.abe.f)?)?;
 
     let mut res_map: Vec<(u8, Fq12)> = Vec::new();
 
+    // application de la méthode "DecryptLeafNode" de PM23 sur les 2 feuilles
     for leaf in cti.abe.leafs.iter() {
         let sk = psks
             .attrs
@@ -465,7 +534,9 @@ pub fn decrypt(pp: &PublicParamsV1, cti: &IntermediateCiphertextV1, psks: &PsksV
 
         let num = pairing_gt(c_i.into_affine(), d_i.into_affine());
         let den = pairing_gt(c_i_prime.into_affine(), d_i_prime.into_affine());
-        let den_inv = den.inverse().ok_or_else(|| anyhow!("Invalid pairing result"))?;
+        let den_inv = den
+            .inverse()
+            .ok_or_else(|| anyhow!("Invalid pairing result"))?;
         let res = num * den_inv;
 
         res_map.push((leaf.index, res));
@@ -482,11 +553,21 @@ pub fn decrypt(pp: &PublicParamsV1, cti: &IntermediateCiphertextV1, psks: &PsksV
         .map(|(_, r)| r.clone())
         .ok_or_else(|| anyhow!("Missing leaf index 2"))?;
 
+    // calcul de F_root à l'aide de la formule de Lagrange avec delta(0)=(0-k)/(j-k)
+    // 1ere node (j=1, donc k=2 (car il n'y a que 2 nodes)) : delta1=(0-2)/(1-2)=2
+    // 2e node (j=2, donc k=1) : delta2=(0-1)/(2-1)=-1
+    // donc nous avons F_root=delta1*delta2=F1^2*F2^(-1), avec F1=r1 et F2=r2 dans le code (feuilles)
     let r1_sq = r1 * r1;
-    let r2_inv = r2.inverse().ok_or_else(|| anyhow!("Invalid pairing result"))?;
+    let r2_inv = r2
+        .inverse()
+        .ok_or_else(|| anyhow!("Invalid pairing result"))?;
     let f_root = r1_sq * r2_inv;
 
-    let f_root_inv = f_root.inverse().ok_or_else(|| anyhow!("Invalid GT element"))?;
+    // utilisation de la formule de BSW07 (ambiguïté dans PM23) : message = c_tilde / e(C,D) / A
+    // ce qui correspond dans notre cas à c_tilde / f / f_root
+    let f_root_inv = f_root
+        .inverse()
+        .ok_or_else(|| anyhow!("Invalid GT element"))?;
     let y_s = f * f_root_inv;
 
     let y_s_inv = y_s.inverse().ok_or_else(|| anyhow!("Invalid GT element"))?;
@@ -509,4 +590,27 @@ pub fn decrypt(pp: &PublicParamsV1, cti: &IntermediateCiphertextV1, psks: &PsksV
 
     let s = String::from_utf8(plaintext).map_err(|_| anyhow!("Invalid UTF-8 message"))?;
     Ok(s)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cpabe_hybrid_roundtrip_decrypts_aes_payload() -> Result<()> {
+        let (pp, msk) = setup()?;
+        let attrs = vec!["FR-S".to_string(), "FR-DR".to_string(), "M1".to_string()];
+        let (pska, psks) = keygen(&pp, &msk, &attrs)?;
+        let label = DocumentLabel {
+            classification: "FR-S".to_string(),
+            mission: "M1".to_string(),
+        };
+
+        let ct = encrypt(&pp, &label, "hello d3cs")?;
+        let cti = tm_decrypt(&pp, &ct, &pska)?;
+        let msg = decrypt(&pp, &cti, &psks)?;
+
+        assert_eq!(msg, "hello d3cs");
+        Ok(())
+    }
 }

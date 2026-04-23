@@ -1,14 +1,16 @@
-﻿use std::collections::HashSet;
+// ce document contient l'ensemble des requêtes API, qui sont appelées lorsque l'utilisateur manipule l'IHM
+
+use anyhow::{anyhow, Result};
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::fs;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use anyhow::{anyhow, Result};
-use serde::{Deserialize, Serialize};
 use tiny_http::{Header, Method, Response, StatusCode};
 
-use crate::{AppState, Clearance, PendingRevocation, RunMode};
 use crate::crypto::{BlpBibaConfig, DocumentLabel, RevocationList};
 use crate::network::NetworkStatus;
+use crate::{AppState, Clearance, PendingRevocation, RunMode};
 
 #[derive(Serialize)]
 struct ApiResponse<T: Serialize> {
@@ -17,12 +19,32 @@ struct ApiResponse<T: Serialize> {
     data: Option<T>,
 }
 
-fn json_response<T: Serialize>(code: u16, ok: bool, message: Option<String>, data: Option<T>) -> Response<std::io::Cursor<Vec<u8>>> {
-    let body = serde_json::to_vec(&ApiResponse { ok, message, data }).unwrap_or_else(|_| b"{\"ok\":false}".to_vec());
-    let ct = Header::from_bytes(&b"Content-Type"[..], &b"application/json; charset=utf-8"[..]).unwrap();
-    let status = if code == 200 { StatusCode(200) } else { StatusCode(code) };
-    Response::from_data(body).with_header(ct).with_status_code(status)
+// format uniforme de requête JSON (sérialisé)
+
+fn json_response<T: Serialize>(
+    code: u16,
+    ok: bool,
+    message: Option<String>,
+    data: Option<T>,
+) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = serde_json::to_vec(&ApiResponse { ok, message, data })
+        .unwrap_or_else(|_| b"{\"ok\":false}".to_vec());
+    let ct = Header::from_bytes(
+        &b"Content-Type"[..],
+        &b"application/json; charset=utf-8"[..],
+    )
+    .unwrap();
+    let status = if code == 200 {
+        StatusCode(200)
+    } else {
+        StatusCode(code)
+    };
+    Response::from_data(body)
+        .with_header(ct)
+        .with_status_code(status)
 }
+
+// fonction servant à récupérer le contenu d'une page et l'afficher
 
 fn serve_static(state: &Arc<AppState>, path: &str) -> Result<Response<fs::File>> {
     let clean = if path == "/" { "/index.html" } else { path };
@@ -43,11 +65,18 @@ fn serve_static(state: &Arc<AppState>, path: &str) -> Result<Response<fs::File>>
     Ok(Response::from_file(file).with_header(ct).with_header(cache))
 }
 
+// lecture de ce que l'utilisateur a envoyé dans la requête
+
 fn read_body(req: &mut tiny_http::Request) -> Result<Vec<u8>> {
     let mut buf = Vec::new();
     req.as_reader().read_to_end(&mut buf)?;
     Ok(buf)
 }
+
+// les cookies permettent à identifier un utilisateur sur les différentes pages, afin de ne pas
+// le déconnecter lorsqu'il navigue dans les menus (car HTTP est stateless)
+
+// récupération de la valeur d'un cookie
 
 fn get_cookie(req: &tiny_http::Request, name: &str) -> Option<String> {
     for h in req.headers().iter() {
@@ -67,9 +96,13 @@ fn get_cookie(req: &tiny_http::Request, name: &str) -> Option<String> {
     None
 }
 
+// fabrication du nom du cookie en fonction du port du serveur
+
 fn session_cookie_name(state: &Arc<AppState>) -> String {
     format!("session_{}", state.port)
 }
+
+// création du header complet du cookie
 
 fn set_cookie_header(state: &Arc<AppState>, token: &str) -> Header {
     let v = format!(
@@ -80,6 +113,8 @@ fn set_cookie_header(state: &Arc<AppState>, token: &str) -> Header {
     Header::from_bytes(&b"Set-Cookie"[..], v.as_bytes()).unwrap()
 }
 
+// permet de supprimer le cookie de session (utilisé au logout pour effacer la session côté utilisateur)
+
 fn clear_cookie_header(state: &Arc<AppState>) -> Header {
     let v = format!(
         "{}=; Max-Age=0; Path=/; SameSite=Lax",
@@ -87,6 +122,8 @@ fn clear_cookie_header(state: &Arc<AppState>) -> Header {
     );
     Header::from_bytes(&b"Set-Cookie"[..], v.as_bytes()).unwrap()
 }
+
+// récupère le token de l'utilisateur connecté (via son cookie)
 
 fn get_session_user(state: &Arc<AppState>, req: &tiny_http::Request) -> Option<String> {
     if let Some(tok) = get_cookie(req, &session_cookie_name(state)) {
@@ -102,9 +139,13 @@ fn get_session_user(state: &Arc<AppState>, req: &tiny_http::Request) -> Option<S
     None
 }
 
+// utilisé dans des pages où l'utilisateur doit être connecté
+
 fn require_auth(state: &Arc<AppState>, req: &tiny_http::Request) -> Result<String> {
     get_session_user(state, req).ok_or_else(|| anyhow!("Not authenticated"))
 }
+
+// retourne True si l'utilisateur courant est un admin
 
 fn is_admin(state: &Arc<AppState>, login: &str) -> bool {
     let db = match state.user_db.lock() {
@@ -114,31 +155,49 @@ fn is_admin(state: &Arc<AppState>, login: &str) -> bool {
     db.users.get(login).map(|u| u.is_admin).unwrap_or(false)
 }
 
+// récup les infos utiles de l'utilisateur en mémoire
+
 fn get_user_record(state: &Arc<AppState>, login: &str) -> Option<(Clearance, bool)> {
     let db = state.user_db.lock().ok()?;
     let u = db.users.get(login)?;
     Some((u.clearance.clone(), u.is_admin))
 }
 
+// vérification de clé ABS
+
 fn user_has_abs_key(state: &Arc<AppState>, login: &str) -> bool {
     let p = format!("{}/{}/skw{}.bin", state.users_dir, login, login);
     std::path::Path::new(&p).exists()
 }
 
+// codage en dur des classifications qui peuvent être déléguées
+
 fn is_delegable_classification(classification: &str) -> bool {
     matches!(classification, "FR-S" | "FR-DR")
 }
+
+// utilisé en mode réseau, permet de savoir si le gestionnaire réseau est déjà initialisé
 
 fn get_runtime(state: &Arc<AppState>) -> Option<Arc<crate::network::NetworkRuntime>> {
     let guard = state.network_runtime.lock().ok()?;
     guard.clone()
 }
 
+// permet de savoir si l'instance courante est le panel Authority (port 18080)
+
 fn is_authority_panel(state: &Arc<AppState>) -> bool {
     state.mode == RunMode::Network && state.port == 18080
 }
 
-fn me_data_for(state: &Arc<AppState>, login: String, clearance: Clearance, is_admin: bool) -> MeData {
+// permet de renvoyer qui est l'utilisateur dans le répertoire courant ainsi que ses informations
+// le tout à l'aide du cookie de session renvoyé par la requête
+
+fn me_data_for(
+    state: &Arc<AppState>,
+    login: String,
+    clearance: Clearance,
+    is_admin: bool,
+) -> MeData {
     let mut network_group = None;
     let mut pending_key_delivery = false;
     let mut has_abs_key = user_has_abs_key(state, &login);
@@ -157,14 +216,24 @@ fn me_data_for(state: &Arc<AppState>, login: String, clearance: Clearance, is_ad
         clearance,
         is_admin,
         is_authority: is_authority_panel(state),
-        mode: if state.mode == RunMode::Network { "network".to_string() } else { "local".to_string() },
+        mode: if state.mode == RunMode::Network {
+            "network".to_string()
+        } else {
+            "local".to_string()
+        },
         has_abs_key,
         network_group,
         pending_key_delivery,
     }
 }
 
-fn ensure_signup_user_files(state: &Arc<AppState>, login: &str, clearance: &Clearance) -> Result<()> {
+// création du dossier utilisateur qui est en train de s'inscrire (via sign up)
+
+fn ensure_signup_user_files(
+    state: &Arc<AppState>,
+    login: &str,
+    clearance: &Clearance,
+) -> Result<()> {
     let dir = format!("{}/{}", state.users_dir, login);
     fs::create_dir_all(&dir)?;
     let token = serde_json::json!({
@@ -172,13 +241,20 @@ fn ensure_signup_user_files(state: &Arc<AppState>, login: &str, clearance: &Clea
         "classification": clearance.classification,
         "mission": clearance.mission
     });
-    fs::write(format!("{}/token.json", dir), serde_json::to_string(&token)?)?;
+    fs::write(
+        format!("{}/token.json", dir),
+        serde_json::to_string(&token)?,
+    )?;
     Ok(())
 }
+
+// affichage du chemin vers le fichier des révocations en attente (en cas de déconnexion de l'autorité)
 
 fn pending_revocations_path(state: &Arc<AppState>) -> String {
     format!("{}/pending_revocations.json", state.tm_dir)
 }
+
+// liste les demandes de révocation stockées dans le fichier pending_revocations.json
 
 fn load_pending_revocations_shared(state: &Arc<AppState>) -> Vec<PendingRevocation> {
     let path = pending_revocations_path(state);
@@ -188,14 +264,24 @@ fn load_pending_revocations_shared(state: &Arc<AppState>) -> Vec<PendingRevocati
     serde_json::from_str::<Vec<PendingRevocation>>(&raw).unwrap_or_default()
 }
 
-fn save_pending_revocations_shared(state: &Arc<AppState>, queue: &[PendingRevocation]) -> Result<()> {
+// sert à ajouter une ligne dans la liste de demande de révocation en attente
+
+fn save_pending_revocations_shared(
+    state: &Arc<AppState>,
+    queue: &[PendingRevocation],
+) -> Result<()> {
     let path = pending_revocations_path(state);
     let raw = serde_json::to_string(queue)?;
     fs::write(path, raw)?;
     Ok(())
 }
 
-fn merge_pending_revocations(a: Vec<PendingRevocation>, b: Vec<PendingRevocation>) -> Vec<PendingRevocation> {
+// permet de fusionner les demandes de révocation dans la mémoire (non persistante) et dans le fichier
+
+fn merge_pending_revocations(
+    a: Vec<PendingRevocation>,
+    b: Vec<PendingRevocation>,
+) -> Vec<PendingRevocation> {
     let mut seen = HashSet::new();
     let mut out = Vec::new();
     let mut all = a;
@@ -212,8 +298,15 @@ fn merge_pending_revocations(a: Vec<PendingRevocation>, b: Vec<PendingRevocation
     out
 }
 
+// permet d'ajouter un id "serial" sur la liste de révocation
+
 fn next_revocation_id(queue: &[PendingRevocation]) -> u64 {
-    let from_queue = queue.iter().map(|x| x.id).max().unwrap_or(0).saturating_add(1);
+    let from_queue = queue
+        .iter()
+        .map(|x| x.id)
+        .max()
+        .unwrap_or(0)
+        .saturating_add(1);
     let now_ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .ok()
@@ -308,7 +401,33 @@ struct RevocationQueueData {
     requests: Vec<PendingRevocation>,
 }
 
-pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_gen: fn() -> String) -> Result<()> {
+// permet de traiter chaque requête HTTP entrant sur le serveur backend
+// GET -> récupérer une information / POST -> déclencher une action
+// GET  /api/me                 -> qui est l'utilisateur actuellement connecté sur la page
+// POST /api/signin             -> permet de connecter un utilisateur existant avec mot de passe fourni
+//                              -> attention, ici une comparaison simple est faite (il faudrait un hash)
+// POST /api/signup             -> crée un nouvel utilisateur, et le connecte directement, après vérification
+//                              -> de l'ARL et si l'utilisateur n'existe pas déjà
+// POST /api/logout             -> permet de déconnecter l'utilisateur courant (via suppression cookie)
+// GET  /api/network/status     -> affiche des informations sur le statut réseau, comme le mode (local/network),
+//                              -> des identifiants, dans quel groupe de connectivité le noeud se trouve, etc.
+// POST /api/network/group      -> permet de changer de groupe de connectivité réseau (Net1/Net2)
+// GET  /api/presets            -> permet de récupérer la configuration actuelle BLP/Biba
+// POST /api/presets            -> permet de modifier la config BLP/Biba
+// GET  /api/revocations        -> permet de récupérer la liste de révocation
+// GET  /api/revocation/requests-> permet de récupérer la liste des pending revocations
+// POST /api/revocation/request -> permet d'ajouter une demande dans la liste des pending revocation requests
+// POST /api/revocation/approve -> permet d'approuver une demande de révocation (acceptation ou rejet)
+// POST /api/revoke             -> permet de révoquer une ou plusieurs missions
+// GET  /api/documents          -> récupère les documents chiffrés accessibles par l'utilisateur connecté
+// POST /api/encrypt            -> permet de chiffrer un document via l'interface de labellisation
+// POST /api/decrypt            -> permet de déchiffrer/afficher un document via l'interface Documents
+
+pub fn handle_request(
+    mut req: tiny_http::Request,
+    state: Arc<AppState>,
+    token_gen: fn() -> String,
+) -> Result<()> {
     let url = req.url().to_string();
 
     if !url.starts_with("/api/") {
@@ -318,7 +437,10 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
             let _ = req.respond(
                 Response::from_string("Not found")
                     .with_status_code(StatusCode(404))
-                    .with_header(Header::from_bytes(&b"Content-Type"[..], &b"text/plain; charset=utf-8"[..]).unwrap()),
+                    .with_header(
+                        Header::from_bytes(&b"Content-Type"[..], &b"text/plain; charset=utf-8"[..])
+                            .unwrap(),
+                    ),
             );
         }
         return Ok(());
@@ -330,7 +452,12 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Get, "/api/me") => {
             if let Some(login) = get_session_user(&state, &req) {
                 if let Some((clearance, is_admin)) = get_user_record(&state, &login) {
-                    let resp = json_response(200, true, None, Some(me_data_for(&state, login, clearance, is_admin)));
+                    let resp = json_response(
+                        200,
+                        true,
+                        None,
+                        Some(me_data_for(&state, login, clearance, is_admin)),
+                    );
                     let _ = req.respond(resp);
                     return Ok(());
                 }
@@ -351,12 +478,16 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                     joined: false,
                     subscriptions: Vec::new(),
                     pending_key_delivery: false,
+                    has_public_params: false,
+                    has_user_secret_key: false,
+                    has_tm_delegate_key: false,
                     has_abs_key: login
                         .as_ref()
                         .map(|l| user_has_abs_key(&state, l))
                         .unwrap_or(false),
                     authority_reachable: false,
                     notifications: Vec::new(),
+                    connected_nodes: Vec::new(),
                 };
                 let _ = req.respond(json_response(200, true, None, Some(data)));
                 return Ok(());
@@ -365,7 +496,12 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                 let data = rt.status_for_login(&state, login.as_deref().unwrap_or("__guest__"));
                 let _ = req.respond(json_response(200, true, None, Some(data)));
             } else {
-                let _ = req.respond(json_response::<NetworkStatus>(500, false, Some("Network runtime unavailable".to_string()), None));
+                let _ = req.respond(json_response::<NetworkStatus>(
+                    500,
+                    false,
+                    Some("Network runtime unavailable".to_string()),
+                    None,
+                ));
             }
             Ok(())
         }
@@ -373,37 +509,56 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Post, "/api/network/group") => {
             let login = get_session_user(&state, &req);
             let body = read_body(&mut req)?;
-            let parsed: NetworkGroupRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: NetworkGroupRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
             if state.mode != RunMode::Network {
-                let _ = req.respond(json_response::<NetworkStatus>(400, false, Some("Only available in network mode".to_string()), None));
+                let _ = req.respond(json_response::<NetworkStatus>(
+                    400,
+                    false,
+                    Some("Only available in network mode".to_string()),
+                    None,
+                ));
                 return Ok(());
             }
             if let Some(rt) = get_runtime(&state) {
                 match rt.set_connectivity_group(&state, &parsed.group) {
                     Ok(_) => {
                         if let Some(login_ref) = login.as_ref() {
-                            if let Some((clearance, is_admin)) = get_user_record(&state, login_ref) {
+                            if let Some((clearance, is_admin)) = get_user_record(&state, login_ref)
+                            {
                                 if !is_admin && !user_has_abs_key(&state, login_ref) {
                                     let _ = rt.new_user(&state, login_ref, &clearance);
                                 }
                             }
                         }
-                        let data = rt.status_for_login(&state, login.as_deref().unwrap_or("__guest__"));
+                        let data =
+                            rt.status_for_login(&state, login.as_deref().unwrap_or("__guest__"));
                         let _ = req.respond(json_response(200, true, None, Some(data)));
                     }
                     Err(e) => {
-                        let _ = req.respond(json_response::<NetworkStatus>(400, false, Some(e.to_string()), None));
+                        let _ = req.respond(json_response::<NetworkStatus>(
+                            400,
+                            false,
+                            Some(e.to_string()),
+                            None,
+                        ));
                     }
                 }
             } else {
-                let _ = req.respond(json_response::<NetworkStatus>(500, false, Some("Network runtime unavailable".to_string()), None));
+                let _ = req.respond(json_response::<NetworkStatus>(
+                    500,
+                    false,
+                    Some("Network runtime unavailable".to_string()),
+                    None,
+                ));
             }
             Ok(())
         }
 
         (Method::Post, "/api/signin") => {
             let body = read_body(&mut req)?;
-            let parsed: SigninRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: SigninRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
             let db = state.user_db.lock().map_err(|_| anyhow!("DB error"))?;
             let record = db.users.get(&parsed.login).cloned();
@@ -413,17 +568,30 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                 Some(u) if u.password == parsed.password => {
                     let token = token_gen();
                     {
-                        let mut sessions = state.sessions.lock().map_err(|_| anyhow!("Session store error"))?;
+                        let mut sessions = state
+                            .sessions
+                            .lock()
+                            .map_err(|_| anyhow!("Session store error"))?;
                         sessions.insert(token.clone(), parsed.login.clone());
                     }
-                    let data = me_data_for(&state, parsed.login.clone(), u.clearance.clone(), u.is_admin);
+                    let data = me_data_for(
+                        &state,
+                        parsed.login.clone(),
+                        u.clearance.clone(),
+                        u.is_admin,
+                    );
                     let resp = json_response(200, true, None, Some(data))
                         .with_header(set_cookie_header(&state, &token));
                     let _ = req.respond(resp);
                     Ok(())
                 }
                 _ => {
-                    let resp = json_response::<MeData>(401, false, Some("Invalid login/password".to_string()), None);
+                    let resp = json_response::<MeData>(
+                        401,
+                        false,
+                        Some("Invalid login/password".to_string()),
+                        None,
+                    );
                     let _ = req.respond(resp);
                     Ok(())
                 }
@@ -432,16 +600,25 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
 
         (Method::Post, "/api/signup") => {
             let body = read_body(&mut req)?;
-            let parsed: SignupRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: SignupRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
             let clearance = match parsed.clearance {
-                serde_json::Value::String(s) => serde_json::from_str::<Clearance>(&s).map_err(|_| anyhow!("Invalid clearance JSON"))?,
-                serde_json::Value::Object(_) => serde_json::from_value::<Clearance>(parsed.clearance).map_err(|_| anyhow!("Invalid clearance object"))?,
+                serde_json::Value::String(s) => serde_json::from_str::<Clearance>(&s)
+                    .map_err(|_| anyhow!("Invalid clearance JSON"))?,
+                serde_json::Value::Object(_) => {
+                    serde_json::from_value::<Clearance>(parsed.clearance)
+                        .map_err(|_| anyhow!("Invalid clearance object"))?
+                }
                 _ => return Err(anyhow!("Invalid clearance format")),
             };
 
             let arl = crate::crypto::get_arl(&state).map_err(|e| anyhow!(e.to_string()))?;
-            if arl.items.iter().any(|e| e.attribute_type == "mission" && e.attribute_value == clearance.mission) {
+            if arl
+                .items
+                .iter()
+                .any(|e| e.attribute_type == "mission" && e.attribute_value == clearance.mission)
+            {
                 let resp = json_response::<MeData>(
                     400,
                     false,
@@ -452,7 +629,9 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                 return Ok(());
             }
 
-            if state.mode == RunMode::Network && !is_delegable_classification(&clearance.classification) {
+            if state.mode == RunMode::Network
+                && !is_delegable_classification(&clearance.classification)
+            {
                 let authority_reachable = get_runtime(&state)
                     .map(|rt| rt.status_for_login(&state, "__guest__").authority_reachable)
                     .unwrap_or(false);
@@ -460,7 +639,10 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                     let resp = json_response::<MeData>(
                         400,
                         false,
-                        Some(format!("Attribute {} cannot be delegated", clearance.classification)),
+                        Some(format!(
+                            "Attribute {} cannot be delegated",
+                            clearance.classification
+                        )),
                         None,
                     );
                     let _ = req.respond(resp);
@@ -470,7 +652,12 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
 
             let mut db = state.user_db.lock().map_err(|_| anyhow!("DB error"))?;
             if db.users.contains_key(&parsed.login) {
-                let resp = json_response::<MeData>(400, false, Some("User already exists".to_string()), None);
+                let resp = json_response::<MeData>(
+                    400,
+                    false,
+                    Some("User already exists".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
@@ -489,16 +676,22 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
             if state.mode == RunMode::Network {
                 ensure_signup_user_files(&state, &parsed.login, &clearance)?;
                 if let Some(rt) = get_runtime(&state) {
-                    rt.new_user(&state, &parsed.login, &clearance).map_err(|e| anyhow!(e.to_string()))?;
+                    rt.new_user(&state, &parsed.login, &clearance)
+                        .map_err(|e| anyhow!(e.to_string()))?;
                 }
-                signup_message = Some("waiting for key generation or delegation process".to_string());
+                signup_message =
+                    Some("waiting for key generation or delegation process".to_string());
             } else {
-                crate::crypto::ensure_user_keys(&state, &parsed.login, &clearance, false).map_err(|e| anyhow!(e.to_string()))?;
+                crate::crypto::ensure_user_keys(&state, &parsed.login, &clearance, false)
+                    .map_err(|e| anyhow!(e.to_string()))?;
             }
 
             let token = token_gen();
             {
-                let mut sessions = state.sessions.lock().map_err(|_| anyhow!("Session store error"))?;
+                let mut sessions = state
+                    .sessions
+                    .lock()
+                    .map_err(|_| anyhow!("Session store error"))?;
                 sessions.insert(token.clone(), parsed.login.clone());
             }
 
@@ -511,7 +704,10 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
 
         (Method::Post, "/api/logout") => {
             if let Some(tok) = get_cookie(&req, &session_cookie_name(&state)) {
-                let mut sessions = state.sessions.lock().map_err(|_| anyhow!("Session store error"))?;
+                let mut sessions = state
+                    .sessions
+                    .lock()
+                    .map_err(|_| anyhow!("Session store error"))?;
                 sessions.remove(&tok);
             }
             let resp = json_response::<serde_json::Value>(200, true, None, None)
@@ -531,12 +727,18 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Post, "/api/presets") => {
             let login = require_auth(&state, &req)?;
             if !is_admin(&state, &login) {
-                let resp = json_response::<BlpBibaConfig>(403, false, Some("Authority only".to_string()), None);
+                let resp = json_response::<BlpBibaConfig>(
+                    403,
+                    false,
+                    Some("Authority only".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
             let body = read_body(&mut req)?;
-            let parsed: PresetsUpdateRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: PresetsUpdateRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
             let cfg = BlpBibaConfig {
                 version: 1,
@@ -555,7 +757,12 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Get, "/api/revocations") => {
             let login = require_auth(&state, &req)?;
             if !is_admin(&state, &login) {
-                let resp = json_response::<RevocationList>(403, false, Some("Authority only".to_string()), None);
+                let resp = json_response::<RevocationList>(
+                    403,
+                    false,
+                    Some("Authority only".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
@@ -568,7 +775,12 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Get, "/api/revocation/requests") => {
             let login = require_auth(&state, &req)?;
             if !is_admin(&state, &login) {
-                let resp = json_response::<RevocationQueueData>(403, false, Some("Authority only".to_string()), None);
+                let resp = json_response::<RevocationQueueData>(
+                    403,
+                    false,
+                    Some("Authority only".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
@@ -587,21 +799,37 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                     .map_err(|_| anyhow!("Revocation queue error"))?
                     .clone()
             };
-            let _ = req.respond(json_response(200, true, None, Some(RevocationQueueData { requests })));
+            let _ = req.respond(json_response(
+                200,
+                true,
+                None,
+                Some(RevocationQueueData { requests }),
+            ));
             Ok(())
         }
 
         (Method::Post, "/api/revocation/request") => {
             let login = require_auth(&state, &req)?;
             if is_admin(&state, &login) {
-                let resp = json_response::<serde_json::Value>(400, false, Some("Authority cannot request revocation".to_string()), None);
+                let resp = json_response::<serde_json::Value>(
+                    400,
+                    false,
+                    Some("Authority cannot request revocation".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
             let body = read_body(&mut req)?;
-            let parsed: RevocationAskRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: RevocationAskRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
             if parsed.missions.is_empty() {
-                let resp = json_response::<serde_json::Value>(400, false, Some("Select at least one mission".to_string()), None);
+                let resp = json_response::<serde_json::Value>(
+                    400,
+                    false,
+                    Some("Select at least one mission".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
@@ -631,19 +859,30 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
             if let Ok(mut local_q) = state.pending_revocations.lock() {
                 *local_q = queue.clone();
             }
-            let _ = req.respond(json_response::<serde_json::Value>(200, true, Some("Revocation request sent to authority".to_string()), None));
+            let _ = req.respond(json_response::<serde_json::Value>(
+                200,
+                true,
+                Some("Revocation request sent to authority".to_string()),
+                None,
+            ));
             Ok(())
         }
 
         (Method::Post, "/api/revocation/approve") => {
             let login = require_auth(&state, &req)?;
             if !is_admin(&state, &login) {
-                let resp = json_response::<serde_json::Value>(403, false, Some("Authority only".to_string()), None);
+                let resp = json_response::<serde_json::Value>(
+                    403,
+                    false,
+                    Some("Authority only".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
             let body = read_body(&mut req)?;
-            let parsed: RevocationApproveRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: RevocationApproveRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
             let mut queue = if state.mode == RunMode::Network {
                 let shared = load_pending_revocations_shared(&state);
                 let local = state
@@ -661,7 +900,12 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
             };
             let idx = queue.iter().position(|r| r.id == parsed.id);
             let Some(idx) = idx else {
-                let resp = json_response::<serde_json::Value>(404, false, Some("Request not found".to_string()), None);
+                let resp = json_response::<serde_json::Value>(
+                    404,
+                    false,
+                    Some("Request not found".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             };
@@ -682,9 +926,19 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
                     }
                 }
                 let _ = crate::crypto::revoke_missions(&state, &req_item.missions)?;
-                let _ = req.respond(json_response::<serde_json::Value>(200, true, Some("Revocation approved".to_string()), None));
+                let _ = req.respond(json_response::<serde_json::Value>(
+                    200,
+                    true,
+                    Some("Revocation approved".to_string()),
+                    None,
+                ));
             } else {
-                let _ = req.respond(json_response::<serde_json::Value>(200, true, Some("Revocation rejected".to_string()), None));
+                let _ = req.respond(json_response::<serde_json::Value>(
+                    200,
+                    true,
+                    Some("Revocation rejected".to_string()),
+                    None,
+                ));
             }
             Ok(())
         }
@@ -692,12 +946,18 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Post, "/api/revoke") => {
             let login = require_auth(&state, &req)?;
             if !is_admin(&state, &login) || is_authority_panel(&state) {
-                let resp = json_response::<RevocationList>(403, false, Some("Authority only".to_string()), None);
+                let resp = json_response::<RevocationList>(
+                    403,
+                    false,
+                    Some("Authority only".to_string()),
+                    None,
+                );
                 let _ = req.respond(resp);
                 return Ok(());
             }
             let body = read_body(&mut req)?;
-            let parsed: RevokeRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: RevokeRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
             if state.mode == RunMode::Network {
                 if let Some(rt) = get_runtime(&state) {
@@ -715,7 +975,8 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
 
         (Method::Get, "/api/documents") => {
             let login = require_auth(&state, &req)?;
-            let (clearance, is_admin) = get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
+            let (clearance, is_admin) =
+                get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
             let docs = crate::crypto::list_documents(&state, &clearance, is_admin)?;
             let resp = json_response(200, true, None, Some(DocumentsData { documents: docs }));
             let _ = req.respond(resp);
@@ -724,16 +985,25 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
 
         (Method::Post, "/api/encrypt") => {
             let login = require_auth(&state, &req)?;
-            let (clearance, is_admin_flag) = get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
+            let (clearance, is_admin_flag) =
+                get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
             let body = read_body(&mut req)?;
-            let parsed: EncryptRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: EncryptRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
             let label = DocumentLabel {
                 classification: parsed.classification,
                 mission: parsed.mission,
             };
 
-            match crate::crypto::encrypt_document(&state, &login, &clearance, is_admin_flag, &label, &parsed.message) {
+            match crate::crypto::encrypt_document(
+                &state,
+                &login,
+                &clearance,
+                is_admin_flag,
+                &label,
+                &parsed.message,
+            ) {
                 Ok(id) => {
                     if state.mode == RunMode::Network {
                         if let Some(rt) = get_runtime(&state) {
@@ -755,7 +1025,8 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         (Method::Post, "/api/decrypt") => {
             let login = require_auth(&state, &req)?;
             let body = read_body(&mut req)?;
-            let parsed: DecryptRequest = serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let parsed: DecryptRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
             match crate::crypto::decrypt_document(&state, &login, parsed.id) {
                 Ok(msg) => {
@@ -772,11 +1043,10 @@ pub fn handle_request(mut req: tiny_http::Request, state: Arc<AppState>, token_g
         }
 
         _ => {
-            let resp = json_response::<serde_json::Value>(404, false, Some("Not found".to_string()), None);
+            let resp =
+                json_response::<serde_json::Value>(404, false, Some("Not found".to_string()), None);
             let _ = req.respond(resp);
             Ok(())
         }
     }
 }
-
-
