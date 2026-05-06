@@ -2,3 +2,5 @@
 **/*.rs.bk
 /src/network/dodwan/runtime
 .env
+/src/network/tools
+src/network/logs

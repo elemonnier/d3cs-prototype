@@ -15,6 +15,7 @@ use rand_core::RngCore;
 mod api;
 mod authority;
 mod crypto;
+mod dodwantests;
 #[path = "network/main.rs"]
 mod network;
 
@@ -254,7 +255,7 @@ fn spawn_network_cluster(base_dir: &Path) -> Result<()> {
     );
     let network_dir = absolutize_path(
         base_dir,
-        load_env_var("D3CS_NETWORK_DIR", "src/network/dodwan/runtime"),
+        load_env_var("D3CS_NETWORK_DIR", "src/network/logs/runtime"),
     );
     let nodes = [
         "Authority",
@@ -374,6 +375,12 @@ fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if matches!(
         args.get(1).map(|s| s.to_ascii_lowercase()),
+        Some(ref v) if v.starts_with("dodwantests-")
+    ) {
+        return dodwantests::run_from_args(&args[1..]);
+    }
+    if matches!(
+        args.get(1).map(|s| s.to_ascii_lowercase()),
         Some(ref v) if v == "network-all"
     ) {
         return spawn_network_cluster(&base_dir);
@@ -408,7 +415,7 @@ fn main() -> Result<()> {
     );
     let network_dir = absolutize_path(
         &base_dir,
-        load_env_var("D3CS_NETWORK_DIR", "src/network/dodwan/runtime"),
+        load_env_var("D3CS_NETWORK_DIR", "src/network/logs/runtime"),
     );
     std::env::set_var("D3CS_CONFIG_DIR", config_dir.clone());
     std::env::set_var("D3CS_USERS_DIR", users_dir.clone());

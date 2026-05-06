@@ -2,6 +2,7 @@
 name = "d3cs-prototype"
 version = "0.1.0"
 edition = "2021"
+default-run = "d3cs-prototype"
 
 [dependencies]
 anyhow = "1.0"
@@ -15,6 +16,7 @@ serde_json = "1.0"
 sha2 = "0.10"
 tiny_http = "0.12"
 toml = "0.8"
+tungstenite = "0.21"
 
 ark-bls12-381 = "0.4"
 ark-ec = "0.4"

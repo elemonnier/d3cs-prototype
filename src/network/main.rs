@@ -93,7 +93,7 @@ impl NetworkRuntime {
     // new -> initialisation pour un noeud réseau
     pub fn new(_state: &Arc<AppState>, node_id: &str) -> Result<Self> {
         let runtime_dir = std::env::var("D3CS_NETWORK_DIR")
-            .unwrap_or_else(|_| "src/network/dodwan/runtime".to_string());
+            .unwrap_or_else(|_| "src/network/logs/runtime".to_string());
         let node_id = normalize_node(node_id);
         let group = std::env::var("D3CS_CONNECTIVITY").unwrap_or_else(|_| {
             if node_id.eq_ignore_ascii_case("U5") {

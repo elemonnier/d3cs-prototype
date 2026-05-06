@@ -26,7 +26,7 @@ struct NetworkManagerInner {
 }
 
 // comprend l'ensemble des méthodes permettant de faire fonctionner le network manager
-// on trouve dans src/network/dodwan/runtime/nodes et topics les logs de chaque noeud ou TM
+// on trouve dans src/network/logs/runtime/nodes et topics les logs de chaque noeud ou TM
 
 impl NetworkManager {
     // constructeur du NetworkManager

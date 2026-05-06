@@ -163,6 +163,26 @@ function defaultSigninCredentials() {
   return { login: u, password: u };
 }
 
+function defaultSignupClearance() {
+  const fallback = { classification: 'FR-DR', mission: 'M1' };
+  if (!state.network || !state.network.enabled) return fallback;
+
+  const mapping = {
+    U1: { classification: 'FR-DR', mission: 'M1' },
+    U2: { classification: 'FR-S', mission: 'M1' },
+    U3: { classification: 'FR-DR', mission: 'M2' },
+    U4: { classification: 'FR-S', mission: 'M2' },
+    U5: { classification: 'FR-DR', mission: 'M1' },
+    U6: { classification: 'FR-S', mission: 'M1' },
+    U7: { classification: 'FR-DR', mission: 'M2' },
+    U8: { classification: 'FR-S', mission: 'M2' },
+    U9: { classification: 'FR-DR', mission: 'M1' },
+  };
+
+  const nodeId = String(state.network.node_id || '').toUpperCase();
+  return mapping[nodeId] || fallback;
+}
+
 // affiche le nom utilisateur/autorité
 function displayUserName() {
   if (!state.me) return '';
@@ -337,6 +357,8 @@ function renderSignUp() {
   state.currentView = 'signup';
   setAlert(null, null);
   const defaults = defaultSigninCredentials();
+  const clearance = defaultSignupClearance();
+  const clearanceJson = JSON.stringify(clearance, null, 2);
   setView(`
     <div class="row">
       <div class="col-md-8 col-lg-7">
@@ -351,7 +373,7 @@ function renderSignUp() {
         </div>
         <div class="mb-3">
           <label class="form-label">Clearance (JSON)</label>
-          <textarea class="form-control" id="signup-clearance" rows="4">{ "classification": "FR-DR", "mission": "M1" }</textarea>
+          <textarea class="form-control" id="signup-clearance" rows="4">${escapeHtml(clearanceJson)}</textarea>
         </div>
         <button class="btn btn-primary" id="signup-btn">Create account</button>
         ${connectivityControlsHtml()}

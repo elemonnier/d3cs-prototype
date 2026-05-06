@@ -52,7 +52,7 @@ pub struct AbsSignatureV1 {
     pub r3: String,
 }
 
-// commentaires sur les outils de sérialisation dans cpabe.rs
+// voir commentaires sur les outils de sérialisation dans cpabe.rs
 
 fn b64_encode(data: &[u8]) -> String {
     base64::engine::general_purpose::STANDARD_NO_PAD.encode(data)
