@@ -2,10 +2,12 @@
 // comme encrypt_document, utilisant Encrypt de CP-ABE et Sign/Verify de ABS
 
 use std::collections::BTreeMap;
-use std::fs;
+use std::fs::{self, OpenOptions};
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::thread;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
@@ -179,7 +181,11 @@ fn is_write_allowed(cfg: &BlpBibaConfig, user_level: i32, doc_level: i32) -> boo
 // gestion de l'écriture des fichiers via fichier temporaire pour gérer des erreurs
 
 fn write_atomic(path: &str, data: &[u8]) -> Result<()> {
-    let tmp_path = format!("{}.tmp", path);
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let tmp_path = format!("{}.tmp.{}.{}", path, std::process::id(), nonce);
     {
         let mut f = fs::File::create(&tmp_path)?;
         f.write_all(data)?;
@@ -188,6 +194,57 @@ fn write_atomic(path: &str, data: &[u8]) -> Result<()> {
     fs::rename(&tmp_path, path)?;
     fs::remove_file(&tmp_path).ok();
     Ok(())
+}
+
+struct FileLock {
+    path: String,
+}
+
+impl Drop for FileLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
+}
+
+fn acquire_file_lock(path: String) -> Result<FileLock> {
+    let stale_after = Duration::from_secs(120);
+
+    loop {
+        match OpenOptions::new().write(true).create_new(true).open(&path) {
+            Ok(mut file) => {
+                writeln!(file, "pid={}", std::process::id()).ok();
+                file.sync_all().ok();
+                return Ok(FileLock { path });
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+                let stale = fs::metadata(&path)
+                    .and_then(|m| m.modified())
+                    .ok()
+                    .and_then(|modified| modified.elapsed().ok())
+                    .map(|elapsed| elapsed > stale_after)
+                    .unwrap_or(false);
+                if stale {
+                    let _ = fs::remove_file(&path);
+                    continue;
+                }
+                thread::sleep(Duration::from_millis(50));
+            }
+            Err(e) => return Err(e.into()),
+        }
+    }
+}
+
+fn lock_component(value: &str) -> String {
+    value
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect()
 }
 
 fn file_has_non_empty_content(path: &str) -> bool {
@@ -215,6 +272,52 @@ fn key_material_matches(
     matches!(result, Ok(msg) if msg == probe)
 }
 
+fn cpabe_setup_material_valid(pp_path: &str, msk_path: &str) -> bool {
+    let Ok(pp_s) = fs::read_to_string(pp_path) else {
+        return false;
+    };
+    let Ok(msk_s) = fs::read_to_string(msk_path) else {
+        return false;
+    };
+    let Ok(pp) = serde_json::from_str::<cpabe::PublicParamsV1>(&pp_s) else {
+        return false;
+    };
+    let Ok(msk) = serde_json::from_str::<cpabe::MasterKeyV1>(&msk_s) else {
+        return false;
+    };
+
+    let attrs = vec!["FR-DR".to_string(), "M1".to_string()];
+    let clearance = Clearance {
+        classification: "FR-DR".to_string(),
+        mission: "M1".to_string(),
+    };
+
+    cpabe::keygen(&pp, &msk, &attrs)
+        .map(|(pska, psks)| key_material_matches(&pp, &pska, &psks, &clearance))
+        .unwrap_or(false)
+}
+
+fn abs_setup_material_valid(params_path: &str, sk_path: &str) -> bool {
+    let Ok(params_s) = fs::read_to_string(params_path) else {
+        return false;
+    };
+    let Ok(sk_s) = fs::read_to_string(sk_path) else {
+        return false;
+    };
+    let Ok(params) = serde_json::from_str::<abs::AbsParamsV1>(&params_s) else {
+        return false;
+    };
+    let Ok(sk) = serde_json::from_str::<abs::AbsMasterKeyV1>(&sk_s) else {
+        return false;
+    };
+
+    let msg = b"__d3cs_abs_setup_probe__";
+    abs::extract(&params, &sk, "FR-DR")
+        .and_then(|user_key| abs::sign(&params, &user_key, msg))
+        .and_then(|sig| abs::verify_with_attr(&params, &sig, msg, "FR-DR"))
+        .unwrap_or(false)
+}
+
 // représente le treillis d'attributs (e.g. FR-DR inclus dans FR-S)
 
 fn user_attribute_set(clearance: &Clearance) -> Vec<String> {
@@ -235,124 +338,206 @@ fn user_attribute_set(clearance: &Clearance) -> Vec<String> {
     out
 }
 
-// indique le groupe réseau courant en mode réseau
-
-fn network_group(state: &Arc<AppState>) -> Option<String> {
-    if state.mode != crate::RunMode::Network {
-        return None;
-    }
-    let rt = state.network_runtime.lock().ok()?.clone()?;
-    Some(rt.status_for_login(state, "__guest__").group)
-}
-
 #[derive(Clone)]
 struct DocumentStorage {
     ct_dir: String,
-    sig_dir: String,
     cti_dir: String,
+    signatures_dir: String,
 }
 
-fn group_scoped_dir(state: &Arc<AppState>, group: &str, subdir: &str) -> String {
-    format!("{}/groups/{}/{}", state.tm_dir, group, subdir)
+#[derive(Clone)]
+pub(crate) struct StoredDocument {
+    pub ciphertext: String,
+    pub signature: String,
 }
 
-// renvoie le chemin d'écriture du groupe du TM (entre Net1 et Net2)
-
-fn tm_scoped_dir(state: &Arc<AppState>, subdir: &str) -> String {
-    if let Some(group) = network_group(state) {
-        group_scoped_dir(state, &group, subdir)
+fn storage_component(value: &str) -> String {
+    let out = value
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c.to_ascii_lowercase()
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+    if out.is_empty() {
+        "unknown".to_string()
     } else {
-        format!("{}/{}", state.tm_dir, subdir)
+        out
+    }
+}
+
+fn path_to_string(path: PathBuf) -> String {
+    path.to_string_lossy().to_string()
+}
+
+fn current_node_id() -> String {
+    std::env::var("D3CS_NODE_ID")
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "authority".to_string())
+}
+
+fn document_storage_for_node(state: &Arc<AppState>, node_id: &str) -> DocumentStorage {
+    let root = Path::new(&state.tm_dir)
+        .join("nodes")
+        .join(storage_component(node_id));
+    DocumentStorage {
+        ct_dir: path_to_string(root.join("ct")),
+        cti_dir: path_to_string(root.join("cti")),
+        signatures_dir: path_to_string(root.join("signatures")),
     }
 }
 
 fn current_document_storage(state: &Arc<AppState>) -> DocumentStorage {
-    DocumentStorage {
-        ct_dir: tm_scoped_dir(state, "ct"),
-        sig_dir: tm_scoped_dir(state, "s"),
-        cti_dir: tm_scoped_dir(state, "ct_intermediate"),
-    }
+    document_storage_for_node(state, &current_node_id())
 }
 
-fn all_document_storages(state: &Arc<AppState>) -> Vec<DocumentStorage> {
-    if state.mode != crate::RunMode::Network {
-        return vec![current_document_storage(state)];
-    }
+pub(crate) fn ensure_document_storage_dirs(state: &Arc<AppState>) -> Result<()> {
+    let storage = current_document_storage(state);
+    fs::create_dir_all(storage.ct_dir)?;
+    fs::create_dir_all(storage.cti_dir)?;
+    fs::create_dir_all(storage.signatures_dir)?;
+    Ok(())
+}
 
-    let mut storages = Vec::new();
-    let groups_root = format!("{}/groups", state.tm_dir);
-    if let Ok(entries) = fs::read_dir(&groups_root) {
-        let mut groups = entries
-            .flatten()
-            .filter_map(|entry| {
-                let file_type = entry.file_type().ok()?;
-                if !file_type.is_dir() {
-                    return None;
-                }
-                Some(entry.file_name().to_string_lossy().to_string())
-            })
-            .collect::<Vec<_>>();
-        groups.sort();
-        groups.dedup();
-
-        for group in groups {
-            storages.push(DocumentStorage {
-                ct_dir: group_scoped_dir(state, &group, "ct"),
-                sig_dir: group_scoped_dir(state, &group, "s"),
-                cti_dir: group_scoped_dir(state, &group, "ct_intermediate"),
-            });
+fn document_id_storages(state: &Arc<AppState>) -> Result<Vec<DocumentStorage>> {
+    let mut storages = vec![current_document_storage(state)];
+    let nodes_root = Path::new(&state.tm_dir).join("nodes");
+    if nodes_root.exists() {
+        for entry in fs::read_dir(nodes_root)? {
+            let entry = entry?;
+            if !entry.file_type()?.is_dir() {
+                continue;
+            }
+            let node_id = entry.file_name().to_string_lossy().to_string();
+            let storage = document_storage_for_node(state, &node_id);
+            if !storages.iter().any(|item| item.ct_dir == storage.ct_dir) {
+                storages.push(storage);
+            }
         }
     }
-
-    let current = current_document_storage(state);
-    if !storages
-        .iter()
-        .any(|storage| storage.ct_dir == current.ct_dir)
-    {
-        storages.push(current);
-    }
-
-    storages
+    Ok(storages)
 }
 
 fn next_document_id(state: &Arc<AppState>) -> Result<u64> {
-    let mut max_id = 0u64;
-
-    for storage in all_document_storages(state) {
+    let counter_path = Path::new(&state.tm_dir).join("document_id.counter");
+    let stored_counter = fs::read_to_string(&counter_path)
+        .ok()
+        .and_then(|raw| raw.trim().parse::<u64>().ok())
+        .unwrap_or(0);
+    let mut max_id = stored_counter;
+    for storage in document_id_storages(state)? {
         if !Path::new(&storage.ct_dir).exists() {
             continue;
         }
         for entry in fs::read_dir(&storage.ct_dir)? {
             let entry = entry?;
+            if !entry.file_type()?.is_file() {
+                continue;
+            }
             let name = entry.file_name().to_string_lossy().to_string();
             if !name.ends_with(".ct") {
                 continue;
             }
-            if let Ok(id) = name.split('.').next().unwrap_or("").parse::<u64>() {
-                if id > max_id {
-                    max_id = id;
-                }
+            if let Ok(id) = name.trim_end_matches(".ct").parse::<u64>() {
+                max_id = max_id.max(id);
             }
         }
     }
-
-    Ok(max_id + 1)
+    let next_id = max_id + 1;
+    write_atomic(
+        counter_path.to_string_lossy().as_ref(),
+        next_id.to_string().as_bytes(),
+    )?;
+    Ok(next_id)
 }
 
-fn find_document_storage(state: &Arc<AppState>, id: u64) -> Option<DocumentStorage> {
-    for storage in all_document_storages(state) {
+pub(crate) fn get_document_payload(
+    state: &Arc<AppState>,
+    id: u64,
+) -> Result<Option<StoredDocument>> {
+    for storage in document_id_storages(state)? {
         let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
-        let sig_path = format!("{}/{}.sign", storage.sig_dir, id);
+        let sig_path = format!("{}/{}.sign", storage.signatures_dir, id);
         if Path::new(&ct_path).exists() && Path::new(&sig_path).exists() {
-            return Some(storage);
+            return Ok(Some(StoredDocument {
+                ciphertext: fs::read_to_string(ct_path)?,
+                signature: fs::read_to_string(sig_path)?,
+            }));
         }
     }
-    None
+    Ok(None)
+}
+
+pub(crate) fn store_document_payload(
+    state: &Arc<AppState>,
+    id: u64,
+    ciphertext: String,
+    signature: String,
+) -> Result<()> {
+    let storage = current_document_storage(state);
+    fs::create_dir_all(&storage.ct_dir)?;
+    fs::create_dir_all(&storage.cti_dir)?;
+    fs::create_dir_all(&storage.signatures_dir)?;
+    let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
+    let sig_path = format!("{}/{}.sign", storage.signatures_dir, id);
+    if !Path::new(&ct_path).exists() {
+        write_atomic(&ct_path, ciphertext.as_bytes())?;
+    }
+    if !Path::new(&sig_path).exists() {
+        write_atomic(&sig_path, signature.as_bytes())?;
+    }
+    Ok(())
+}
+
+pub(crate) fn document_payload_entries(
+    state: &Arc<AppState>,
+) -> Result<Vec<(u64, StoredDocument)>> {
+    let mut out = Vec::new();
+    for storage in document_id_storages(state)? {
+        if !Path::new(&storage.ct_dir).exists() {
+            continue;
+        }
+        for entry in fs::read_dir(&storage.ct_dir)? {
+            let entry = entry?;
+            if !entry.file_type()?.is_file() {
+                continue;
+            }
+            let name = entry.file_name().to_string_lossy().to_string();
+            if !name.ends_with(".ct") {
+                continue;
+            }
+            let Ok(id) = name.trim_end_matches(".ct").parse::<u64>() else {
+                continue;
+            };
+            let sig_path = format!("{}/{}.sign", storage.signatures_dir, id);
+            if !Path::new(&sig_path).exists() {
+                continue;
+            }
+            out.push((
+                id,
+                StoredDocument {
+                    ciphertext: fs::read_to_string(entry.path())?,
+                    signature: fs::read_to_string(sig_path)?,
+                },
+            ));
+        }
+    }
+    out.sort_by_key(|(id, _)| *id);
+    out.dedup_by_key(|(id, _)| *id);
+    Ok(out)
 }
 
 // initialisation de la crypto (presets, attributs, ARL, ABE.Setup, ABS.Setup)
 
 pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
+    let _lock = acquire_file_lock(format!("{}/crypto_setup.lock", state.tm_dir))?;
+
+    ensure_document_storage_dirs(state)?;
     ensure_default_blpbiba(state)?;
     ensure_default_attributes(state)?;
     ensure_default_arl(state)?;
@@ -362,7 +547,7 @@ pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
     let params_path = format!("{}/params.bin", state.tm_dir);
     let abs_sk_path = format!("{}/sk.bin", state.authority_dir);
 
-    if !Path::new(&pp_path).exists() || !Path::new(&msk_path).exists() {
+    if !cpabe_setup_material_valid(&pp_path, &msk_path) {
         let (pp, msk) = cpabe::setup()?;
         let pp_s = serde_json::to_string(&pp)?;
         let msk_s = serde_json::to_string(&msk)?;
@@ -370,7 +555,7 @@ pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
         write_atomic(&msk_path, msk_s.as_bytes())?;
     }
 
-    if !Path::new(&params_path).exists() || !Path::new(&abs_sk_path).exists() {
+    if !abs_setup_material_valid(&params_path, &abs_sk_path) {
         let (params, sk) = abs::setup()?;
         let params_s = serde_json::to_string(&params)?;
         let sk_s = serde_json::to_string(&sk)?;
@@ -390,6 +575,12 @@ pub fn ensure_user_keys(
     clearance: &Clearance,
     user_is_admin: bool,
 ) -> Result<()> {
+    let _lock = acquire_file_lock(format!(
+        "{}/keygen_{}.lock",
+        state.users_dir,
+        lock_component(login)
+    ))?;
+
     let user_dir = format!("{}/{}", state.users_dir, login);
     fs::create_dir_all(&user_dir)?;
 
@@ -509,70 +700,42 @@ pub fn list_documents(
     let user_level = classification_level(&user_clearance.classification)?;
     let mut out = BTreeMap::new();
 
-    for storage in all_document_storages(state) {
-        if !Path::new(&storage.ct_dir).exists() {
+    for (id, document) in document_payload_entries(state)? {
+        let ct: cpabe::CiphertextV1 = match serde_json::from_str(&document.ciphertext) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        if serde_json::from_str::<abs::AbsSignatureV1>(&document.signature).is_err() {
             continue;
         }
 
-        for entry in fs::read_dir(&storage.ct_dir)? {
-            let entry = entry?;
-            let ft = entry.file_type()?;
-            if !ft.is_file() {
-                continue;
-            }
-            let name = entry.file_name().to_string_lossy().to_string();
-            if !name.ends_with(".ct") {
-                continue;
-            }
-            let id: u64 = match name.split('.').next().unwrap_or("").parse() {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-            let ct_s = match fs::read_to_string(entry.path()) {
-                Ok(s) => s,
-                Err(_) => continue,
-            };
-            let ct: cpabe::CiphertextV1 = match serde_json::from_str(&ct_s) {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-            let sig_path = format!("{}/{}.sign", storage.sig_dir, id);
-            let sig_s = match fs::read_to_string(&sig_path) {
-                Ok(s) => s,
-                Err(_) => continue,
-            };
-            if serde_json::from_str::<abs::AbsSignatureV1>(&sig_s).is_err() {
-                continue;
-            }
-
-            if is_mission_revoked(&arl, &ct.label.mission) {
-                continue;
-            }
-
-            let doc_level = match classification_level(&ct.label.classification) {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-
-            let accessible = if user_is_admin {
-                is_read_allowed(&cfg, user_level, doc_level)
-            } else {
-                is_read_allowed(&cfg, user_level, doc_level)
-                    && ct.label.mission == user_clearance.mission
-            };
-
-            if !accessible {
-                continue;
-            }
-
-            out.entry(id).or_insert_with(|| DocumentDescriptor {
-                id,
-                label: DocumentLabel {
-                    classification: ct.label.classification,
-                    mission: ct.label.mission,
-                },
-            });
+        if is_mission_revoked(&arl, &ct.label.mission) {
+            continue;
         }
+
+        let doc_level = match classification_level(&ct.label.classification) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+
+        let accessible = if user_is_admin {
+            is_read_allowed(&cfg, user_level, doc_level)
+        } else {
+            is_read_allowed(&cfg, user_level, doc_level)
+                && ct.label.mission == user_clearance.mission
+        };
+
+        if !accessible {
+            continue;
+        }
+
+        out.entry(id).or_insert_with(|| DocumentDescriptor {
+            id,
+            label: DocumentLabel {
+                classification: ct.label.classification,
+                mission: ct.label.mission,
+            },
+        });
     }
 
     Ok(out.into_values().collect())
@@ -623,28 +786,10 @@ pub fn encrypt_document(
         return Err(anyhow!("ABS.Verify failed after signing"));
     }
 
-    let storage = current_document_storage(state);
-    let ct_dir = storage.ct_dir;
-    let sig_dir = storage.sig_dir;
-    fs::create_dir_all(&ct_dir)?;
-    fs::create_dir_all(&sig_dir)?;
+    let _id_lock = acquire_file_lock(format!("{}/document_id.lock", state.tm_dir))?;
     let next_id = next_document_id(state)?;
-
-    let ct_path = format!("{}/{}.ct", ct_dir, next_id);
-    let sig_path = format!("{}/{}.sign", sig_dir, next_id);
-
     let sig_s = serde_json::to_string(&sig)?;
-
-    let tmp_ct_path = format!("{}.tmp", ct_path);
-    let tmp_sig_path = format!("{}.tmp", sig_path);
-
-    write_atomic(&tmp_ct_path, ct_s.as_bytes())?;
-    write_atomic(&tmp_sig_path, sig_s.as_bytes())?;
-
-    fs::rename(&tmp_ct_path, &ct_path)?;
-    fs::rename(&tmp_sig_path, &sig_path)?;
-    fs::remove_file(&tmp_ct_path).ok();
-    fs::remove_file(&tmp_sig_path).ok();
+    store_document_payload(state, next_id, ct_s, sig_s)?;
 
     Ok(next_id)
 }
@@ -662,11 +807,9 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
     };
     ensure_user_keys(state, login, &clearance, user_is_admin)?;
 
-    let storage = find_document_storage(state, id).ok_or_else(|| anyhow!("Document not found"))?;
-    let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
-    let sig_path = format!("{}/{}.sign", storage.sig_dir, id);
-    let ct_s = fs::read_to_string(&ct_path)?;
-    let sig_s = fs::read_to_string(&sig_path)?;
+    let document = get_document_payload(state, id)?.ok_or_else(|| anyhow!("Document not found"))?;
+    let ct_s = document.ciphertext;
+    let sig_s = document.signature;
 
     let ct: cpabe::CiphertextV1 = serde_json::from_str(&ct_s)?;
     let sig: abs::AbsSignatureV1 = serde_json::from_str(&sig_s)?;
@@ -695,12 +838,10 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
     let psks: cpabe::PsksV1 = serde_json::from_str(&psks_s)?;
 
     let cti = cpabe::tm_decrypt(&pp, &ct, &pska)?;
-    let cti_dir = storage.cti_dir;
-    fs::create_dir_all(&cti_dir).ok();
-    let cti_path = format!("{}/{}.cti", cti_dir, id);
+    let storage = current_document_storage(state);
+    fs::create_dir_all(&storage.cti_dir)?;
     let cti_s = serde_json::to_string(&cti)?;
-    write_atomic(&cti_path, cti_s.as_bytes()).ok();
-
+    write_atomic(&format!("{}/{}.cti", storage.cti_dir, id), cti_s.as_bytes())?;
     cpabe::decrypt(&pp, &cti, &psks)
 }
 

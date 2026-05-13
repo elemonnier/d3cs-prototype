@@ -170,6 +170,18 @@ fn user_has_abs_key(state: &Arc<AppState>, login: &str) -> bool {
     std::path::Path::new(&p).exists()
 }
 
+fn user_can_access_documents(state: &Arc<AppState>, login: &str, is_admin: bool) -> bool {
+    if state.mode != RunMode::Network || is_admin || is_authority_panel(state) {
+        return true;
+    }
+
+    let Some(rt) = get_runtime(state) else {
+        return false;
+    };
+    let status = rt.status_for_login(state, login);
+    status.has_public_params && status.has_user_secret_key && status.has_tm_delegate_key
+}
+
 // codage en dur des classifications qui peuvent être déléguées
 
 fn is_delegable_classification(classification: &str) -> bool {
@@ -198,14 +210,12 @@ fn me_data_for(
     clearance: Clearance,
     is_admin: bool,
 ) -> MeData {
-    let mut network_group = None;
     let mut pending_key_delivery = false;
     let mut has_abs_key = user_has_abs_key(state, &login);
 
     if state.mode == RunMode::Network {
         if let Some(rt) = get_runtime(state) {
             let status = rt.status_for_login(state, &login);
-            network_group = Some(status.group);
             pending_key_delivery = status.pending_key_delivery;
             has_abs_key = status.has_abs_key;
         }
@@ -222,7 +232,6 @@ fn me_data_for(
             "local".to_string()
         },
         has_abs_key,
-        network_group,
         pending_key_delivery,
     }
 }
@@ -249,6 +258,24 @@ fn ensure_signup_user_files(
 }
 
 // affichage du chemin vers le fichier des révocations en attente (en cas de déconnexion de l'autorité)
+
+fn clear_signup_network_material(state: &Arc<AppState>, login: &str) -> Result<()> {
+    let user_dir = format!("{}/{}", state.users_dir, login);
+    match fs::remove_dir_all(&user_dir) {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e.into()),
+    }
+
+    let pska_path = format!("{}/pska/pska{}.bin", state.tm_dir, login);
+    match fs::remove_file(&pska_path) {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e.into()),
+    }
+
+    Ok(())
+}
 
 fn pending_revocations_path(state: &Arc<AppState>) -> String {
     format!("{}/pending_revocations.json", state.tm_dir)
@@ -287,15 +314,33 @@ fn merge_pending_revocations(
     let mut all = a;
     all.extend(b);
     for item in all {
-        let key = format!("{}|{}|{}", item.id, item.requester, item.missions.join(","));
-        if seen.contains(&key) {
+        let key = (
+            item.requester.clone(),
+            normalize_revocation_missions(&item.missions),
+        );
+        if !seen.insert(key) {
             continue;
         }
-        seen.insert(key);
         out.push(item);
     }
     out.sort_by_key(|x| x.id);
     out
+}
+
+fn normalize_revocation_missions(missions: &[String]) -> Vec<String> {
+    let mut out = missions
+        .iter()
+        .map(|m| m.trim().to_string())
+        .filter(|m| !m.is_empty())
+        .collect::<Vec<_>>();
+    out.sort();
+    out.dedup();
+    out
+}
+
+fn same_pending_revocation(item: &PendingRevocation, requester: &str, missions: &[String]) -> bool {
+    item.requester == requester
+        && normalize_revocation_missions(&item.missions) == normalize_revocation_missions(missions)
 }
 
 // permet d'ajouter un id "serial" sur la liste de révocation
@@ -336,7 +381,6 @@ struct MeData {
     is_authority: bool,
     mode: String,
     has_abs_key: bool,
-    network_group: Option<String>,
     pending_key_delivery: bool,
 }
 
@@ -381,11 +425,6 @@ struct PresetsUpdateRequest {
 }
 
 #[derive(Deserialize)]
-struct NetworkGroupRequest {
-    group: String,
-}
-
-#[derive(Deserialize)]
 struct RevocationAskRequest {
     missions: Vec<String>,
 }
@@ -409,9 +448,7 @@ struct RevocationQueueData {
 // POST /api/signup             -> crée un nouvel utilisateur, et le connecte directement, après vérification
 //                              -> de l'ARL et si l'utilisateur n'existe pas déjà
 // POST /api/logout             -> permet de déconnecter l'utilisateur courant (via suppression cookie)
-// GET  /api/network/status     -> affiche des informations sur le statut réseau, comme le mode (local/network),
-//                              -> des identifiants, dans quel groupe de connectivité le noeud se trouve, etc.
-// POST /api/network/group      -> permet de changer de groupe de connectivité réseau (Net1/Net2)
+// GET  /api/network/status     -> affiche le statut reseau et les voisins fournis par Lepton.
 // GET  /api/presets            -> permet de récupérer la configuration actuelle BLP/Biba
 // POST /api/presets            -> permet de modifier la config BLP/Biba
 // GET  /api/revocations        -> permet de récupérer la liste de révocation
@@ -474,7 +511,6 @@ pub fn handle_request(
                     enabled: false,
                     node_id: "local".to_string(),
                     tm_id: "local".to_string(),
-                    group: "local".to_string(),
                     joined: false,
                     subscriptions: Vec::new(),
                     pending_key_delivery: false,
@@ -495,55 +531,6 @@ pub fn handle_request(
             if let Some(rt) = get_runtime(&state) {
                 let data = rt.status_for_login(&state, login.as_deref().unwrap_or("__guest__"));
                 let _ = req.respond(json_response(200, true, None, Some(data)));
-            } else {
-                let _ = req.respond(json_response::<NetworkStatus>(
-                    500,
-                    false,
-                    Some("Network runtime unavailable".to_string()),
-                    None,
-                ));
-            }
-            Ok(())
-        }
-
-        (Method::Post, "/api/network/group") => {
-            let login = get_session_user(&state, &req);
-            let body = read_body(&mut req)?;
-            let parsed: NetworkGroupRequest =
-                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
-            if state.mode != RunMode::Network {
-                let _ = req.respond(json_response::<NetworkStatus>(
-                    400,
-                    false,
-                    Some("Only available in network mode".to_string()),
-                    None,
-                ));
-                return Ok(());
-            }
-            if let Some(rt) = get_runtime(&state) {
-                match rt.set_connectivity_group(&state, &parsed.group) {
-                    Ok(_) => {
-                        if let Some(login_ref) = login.as_ref() {
-                            if let Some((clearance, is_admin)) = get_user_record(&state, login_ref)
-                            {
-                                if !is_admin && !user_has_abs_key(&state, login_ref) {
-                                    let _ = rt.new_user(&state, login_ref, &clearance);
-                                }
-                            }
-                        }
-                        let data =
-                            rt.status_for_login(&state, login.as_deref().unwrap_or("__guest__"));
-                        let _ = req.respond(json_response(200, true, None, Some(data)));
-                    }
-                    Err(e) => {
-                        let _ = req.respond(json_response::<NetworkStatus>(
-                            400,
-                            false,
-                            Some(e.to_string()),
-                            None,
-                        ));
-                    }
-                }
             } else {
                 let _ = req.respond(json_response::<NetworkStatus>(
                     500,
@@ -674,6 +661,7 @@ pub fn handle_request(
 
             let mut signup_message = None;
             if state.mode == RunMode::Network {
+                clear_signup_network_material(&state, &parsed.login)?;
                 ensure_signup_user_files(&state, &parsed.login, &clearance)?;
                 if let Some(rt) = get_runtime(&state) {
                     rt.new_user(&state, &parsed.login, &clearance)
@@ -823,7 +811,8 @@ pub fn handle_request(
             let body = read_body(&mut req)?;
             let parsed: RevocationAskRequest =
                 serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
-            if parsed.missions.is_empty() {
+            let missions = normalize_revocation_missions(&parsed.missions);
+            if missions.is_empty() {
                 let resp = json_response::<serde_json::Value>(
                     400,
                     false,
@@ -842,18 +831,61 @@ pub fn handle_request(
                     .map_err(|_| anyhow!("Revocation queue error"))?
                     .clone()
             };
+            if let Some(existing) = queue
+                .iter()
+                .find(|r| same_pending_revocation(r, &login, &missions))
+            {
+                let _ = req.respond(json_response::<serde_json::Value>(
+                    200,
+                    true,
+                    Some(format!(
+                        "Revocation request #{} is already pending",
+                        existing.id
+                    )),
+                    None,
+                ));
+                return Ok(());
+            }
             let next_id = next_revocation_id(&queue);
             queue.push(PendingRevocation {
                 id: next_id,
                 requester: login.clone(),
-                missions: parsed.missions,
+                missions: missions.clone(),
             });
             if state.mode == RunMode::Network {
                 save_pending_revocations_shared(&state, &queue)?;
                 if let Some(rt) = get_runtime(&state) {
                     if let Some(last) = queue.last() {
-                        let _ = rt.ask_revocation_request(&last.requester, &last.missions);
+                        if let Err(e) =
+                            rt.ask_revocation_request(last.id, &last.requester, &last.missions)
+                        {
+                            queue.retain(|r| r.id != next_id);
+                            save_pending_revocations_shared(&state, &queue)?;
+                            if let Ok(mut local_q) = state.pending_revocations.lock() {
+                                *local_q = queue;
+                            }
+                            let _ = req.respond(json_response::<serde_json::Value>(
+                                502,
+                                false,
+                                Some(format!("Revocation request could not be sent: {e}")),
+                                None,
+                            ));
+                            return Ok(());
+                        }
                     }
+                } else {
+                    queue.retain(|r| r.id != next_id);
+                    save_pending_revocations_shared(&state, &queue)?;
+                    if let Ok(mut local_q) = state.pending_revocations.lock() {
+                        *local_q = queue;
+                    }
+                    let _ = req.respond(json_response::<serde_json::Value>(
+                        503,
+                        false,
+                        Some("Network runtime unavailable".to_string()),
+                        None,
+                    ));
+                    return Ok(());
                 }
             }
             if let Ok(mut local_q) = state.pending_revocations.lock() {
@@ -977,6 +1009,16 @@ pub fn handle_request(
             let login = require_auth(&state, &req)?;
             let (clearance, is_admin) =
                 get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
+            if !user_can_access_documents(&state, &login, is_admin) {
+                let resp = json_response::<DocumentsData>(
+                    403,
+                    false,
+                    Some("Documents unavailable until PSKA/TM key is received".to_string()),
+                    None,
+                );
+                let _ = req.respond(resp);
+                return Ok(());
+            }
             let docs = crate::crypto::list_documents(&state, &clearance, is_admin)?;
             let resp = json_response(200, true, None, Some(DocumentsData { documents: docs }));
             let _ = req.respond(resp);
@@ -1024,6 +1066,18 @@ pub fn handle_request(
 
         (Method::Post, "/api/decrypt") => {
             let login = require_auth(&state, &req)?;
+            let (_, is_admin) =
+                get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
+            if !user_can_access_documents(&state, &login, is_admin) {
+                let resp = json_response::<DecryptData>(
+                    403,
+                    false,
+                    Some("Documents unavailable until PSKA/TM key is received".to_string()),
+                    None,
+                );
+                let _ = req.respond(resp);
+                return Ok(());
+            }
             let body = read_body(&mut req)?;
             let parsed: DecryptRequest =
                 serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;

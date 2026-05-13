@@ -1,3 +1,5 @@
+// fichier permettant de mesurer les temps d'exécution des primitives crypto
+
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -37,25 +39,8 @@ pub enum RunMode {
 }
 
 pub mod network {
-    use std::sync::Arc;
-
-    use crate::AppState;
-
-    #[derive(Clone)]
-    pub struct NetworkStatus {
-        pub group: String,
-    }
-
     #[derive(Clone)]
     pub struct NetworkRuntime;
-
-    impl NetworkRuntime {
-        pub fn status_for_login(&self, _state: &Arc<AppState>, _login: &str) -> NetworkStatus {
-            NetworkStatus {
-                group: "Net1".to_string(),
-            }
-        }
-    }
 }
 
 pub struct AppState {

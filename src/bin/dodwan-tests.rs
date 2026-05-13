@@ -1,3 +1,5 @@
+// fichier permettant de tester les messages DoDWAN de base (ping, add_sub, publish)
+
 use std::net::TcpStream;
 use std::path::Path;
 use std::process::Command;
@@ -5,10 +7,15 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
-use tungstenite::{connect as ws_connect, stream::MaybeTlsStream, Message, WebSocket};
+use base64::Engine;
+use tungstenite::{
+    connect as ws_connect, error::Error as WsError, stream::MaybeTlsStream, Message, WebSocket,
+};
 
 const NODE_ID: &str = "DODWAN_NAPI";
 const WS_PORT: u16 = 18090;
+const WS_RESPONSE_TIMEOUT: Duration = Duration::from_secs(3);
+const WS_IDLE_TIMEOUT: Duration = Duration::from_millis(500);
 type DodwanWs = WebSocket<MaybeTlsStream<TcpStream>>;
 
 fn main() -> Result<()> {
@@ -18,8 +25,8 @@ fn main() -> Result<()> {
 
     let mut ws = connect()?;
     ping(&mut ws)?;
-    subscribe(&mut ws)?;
-    publish(&mut ws)?;
+    subscribe(&mut ws, "d3cs")?;
+    publish(&mut ws, "d3cs", "TM0", "TM1", "KEY_REQUEST", "true")?;
 
     disconnect(ws)?;
 
@@ -85,35 +92,109 @@ fn ping(ws: &mut DodwanWs) -> Result<()> {
 }
 
 // fonction permettant d'envoyer une souscription puis de lire la réponse websocket
-fn subscribe(ws: &mut DodwanWs) -> Result<()> {
-    ws.send(Message::Binary(
-        br#"{"name":"add_sub","tkn":"t2","key":"sub-d3cs","desc":{"topic":"d3cs"}}"#.to_vec(),
-    ))
-    .context("impossible d'envoyer la souscription DoDWAN")?;
+fn subscribe(ws: &mut DodwanWs, topic: &str) -> Result<()> {
+    let request = serde_json::json!({
+        "name": "add_sub",
+        "tkn": "t2",
+        "key": format!("sub-{topic}"),
+        "desc": {
+            "topic": topic,
+        },
+    });
 
-    let message = ws
-        .read()
-        .context("impossible de lire la reponse websocket DoDWAN")?;
-    print_message(&message);
+    ws.send(Message::Binary(serde_json::to_vec(&request)?))
+        .context("impossible d'envoyer la souscription DoDWAN")?;
+
+    read_ws_responses(ws, "souscription")?;
 
     Ok(())
 }
 
 // fonction permettant de publier un message puis de lire la réponse websocket
-fn publish(ws: &mut DodwanWs) -> Result<()> {
-    ws.send(Message::Binary(
-        br#"{"name":"publish","tkn":"t3","desc":{"topic":"d3cs","src":"cli"},"dummy":1}"#.to_vec(),
-    ))
-    .context("impossible d'envoyer la publication DoDWAN")?;
+fn publish(
+    ws: &mut DodwanWs,
+    topic: &str,
+    sender: &str,
+    receiver: &str,
+    request_name: &str,
+    secured: &str,
+) -> Result<()> {
+    let payload = serde_json::json!({
+        "sender": sender,
+        "receiver": receiver,
+        "request": request_name,
+        "secured": secured,
+    });
+    let data = base64::engine::general_purpose::STANDARD.encode(serde_json::to_vec(&payload)?);
 
-    for i in 1..=2 {
-        let message = ws.read().with_context(|| {
-            format!("impossible de lire la reponse websocket DoDWAN numero {i}")
-        })?;
-        print_message(&message);
-    }
+    let request = serde_json::json!({
+        "name": "publish",
+        "tkn": "t3",
+        "desc": {
+            "topic": topic,
+            "src": "cli",
+        },
+        "data": data,
+    });
+
+    ws.send(Message::Binary(serde_json::to_vec(&request)?))
+        .context("impossible d'envoyer la publication DoDWAN")?;
+
+    read_ws_responses(ws, "publication")?;
 
     Ok(())
+}
+
+// lit et affiche toutes les reponses websocket déjà produites par DoDWAN
+// prend en paramètre "action", permettant de savoir si c'est au moment d'une souscription ou publication
+fn read_ws_responses(ws: &mut DodwanWs, action: &str) -> Result<()> {
+    let previous_timeout = set_ws_read_timeout(ws, Some(WS_IDLE_TIMEOUT))?;
+    let deadline = Instant::now() + WS_RESPONSE_TIMEOUT;
+    let mut read_count = 0;
+
+    loop {
+        match ws.read() {
+            Ok(message) => {
+                read_count += 1;
+                print_message(&message);
+            }
+            Err(WsError::Io(err))
+                if matches!(
+                    err.kind(),
+                    std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut
+                ) =>
+            {
+                if read_count > 0 || Instant::now() >= deadline {
+                    break;
+                }
+            }
+            Err(err) => {
+                let _ = set_ws_read_timeout(ws, previous_timeout);
+                return Err(err).with_context(|| {
+                    format!("impossible de lire les reponses websocket DoDWAN pour {action}")
+                });
+            }
+        }
+    }
+
+    set_ws_read_timeout(ws, previous_timeout)?;
+
+    anyhow::ensure!(
+        read_count > 0,
+        "aucune reponse websocket DoDWAN recue pour {action}"
+    );
+    Ok(())
+}
+
+fn set_ws_read_timeout(ws: &mut DodwanWs, timeout: Option<Duration>) -> Result<Option<Duration>> {
+    match ws.get_mut() {
+        MaybeTlsStream::Plain(stream) => {
+            let previous_timeout = stream.read_timeout()?;
+            stream.set_read_timeout(timeout)?;
+            Ok(previous_timeout)
+        }
+        _ => anyhow::bail!("le timeout websocket n'est gere que pour les connexions ws://"),
+    }
 }
 
 // permet d'afficher un message présent dans la boucle

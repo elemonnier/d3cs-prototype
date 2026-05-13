@@ -1,4 +1,4 @@
-// logique réseau haut niveau
+// logique réseau haut niveau -> notamment une fonction traitant chaque requête
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -11,6 +11,10 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 
+#[path = "dodwan.rs"]
+pub mod dodwan;
+#[path = "lepton.rs"]
+pub mod lepton;
 #[path = "netmanager.rs"]
 pub mod netmanager;
 #[path = "packets.rs"]
@@ -35,7 +39,6 @@ pub struct NetworkStatus {
     pub enabled: bool,
     pub node_id: String,
     pub tm_id: String,
-    pub group: String,
     pub joined: bool,
     pub subscriptions: Vec<String>,
     pub pending_key_delivery: bool,
@@ -83,8 +86,9 @@ pub struct NetworkRuntime {
     is_authority: bool,
     pending: Mutex<HashMap<String, PendingKey>>,
     notifications: Mutex<Vec<String>>,
-    authority_seen: Mutex<Option<(String, Instant)>>,
+    authority_seen: Mutex<Option<Instant>>,
     abs_sync_attempts: Mutex<HashMap<String, Instant>>,
+    revocation_relays: Mutex<HashMap<String, Instant>>,
 }
 
 // implémentation permettant de créer et initialiser le runtime réseau d'un noeud
@@ -95,17 +99,10 @@ impl NetworkRuntime {
         let runtime_dir = std::env::var("D3CS_NETWORK_DIR")
             .unwrap_or_else(|_| "src/network/logs/runtime".to_string());
         let node_id = normalize_node(node_id);
-        let group = std::env::var("D3CS_CONNECTIVITY").unwrap_or_else(|_| {
-            if node_id.eq_ignore_ascii_case("U5") {
-                "Net2".to_string()
-            } else {
-                "Net1".to_string()
-            }
-        });
         let tm_id = std::env::var("D3CS_TM_ID").unwrap_or_else(|_| tm_for_node(&node_id));
         let is_authority = node_id.eq_ignore_ascii_case("Authority");
 
-        let manager = NetworkManager::new(&node_id, &runtime_dir, &group)?;
+        let manager = NetworkManager::new(&node_id, &runtime_dir)?;
         manager.join()?;
         manager.subscribe("TM")?;
         manager.subscribe(&tm_id)?;
@@ -124,6 +121,7 @@ impl NetworkRuntime {
             notifications: Mutex::new(Vec::new()),
             authority_seen: Mutex::new(None),
             abs_sync_attempts: Mutex::new(HashMap::new()),
+            revocation_relays: Mutex::new(HashMap::new()),
         })
     }
 
@@ -138,7 +136,6 @@ impl NetworkRuntime {
 
     // revoie le statut du noeud (local/network, identifiants, clés, authority_reachable, etc.)
     pub fn status_for_login(&self, state: &Arc<AppState>, login: &str) -> NetworkStatus {
-        let group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
         let pending = self.pending.lock().ok().and_then(|p| p.get(login).cloned());
         let pending_key_delivery = pending
             .map(|x| !(x.user_done && x.tm_done))
@@ -154,7 +151,6 @@ impl NetworkRuntime {
             enabled: true,
             node_id: self.node_id.clone(),
             tm_id: self.tm_id.clone(),
-            group,
             joined: self.manager.is_joined(),
             subscriptions: self.manager.subscriptions(),
             pending_key_delivery,
@@ -166,20 +162,6 @@ impl NetworkRuntime {
             notifications: self.latest_notifications(),
             connected_nodes: self.connected_nodes(state),
         }
-    }
-
-    // permet de switcher de groupe de connectivité Net1<->Net2
-    pub fn set_connectivity_group(&self, state: &Arc<AppState>, group: &str) -> Result<()> {
-        self.manager.set_group(group)?;
-        self.subscribe_core()?;
-        if self.tm_id == "TM0" {
-            self.send_synchronize(state)?;
-        }
-        if self.is_authority {
-            self.sync_missing_abs_keys(state)?;
-        }
-        self.notify(format!("Connectivity switched to {group}"));
-        Ok(())
     }
 
     // appelée lorsqu'un utilisateur sign up en mode réseau, ce qui fait une requête de clés
@@ -232,13 +214,13 @@ impl NetworkRuntime {
 
     // partage d'un document chiffré sur le réseau
     pub fn share_ciphertext(&self, state: &Arc<AppState>, doc_id: u64) -> Result<()> {
-        let ct = fs::read_to_string(format!("{}/{}.ct", self.ct_dir(state), doc_id))?;
-        let sig = fs::read_to_string(format!("{}/{}.sign", self.sig_dir(state), doc_id))?;
+        let document = crypto::get_document_payload(state, doc_id)?
+            .ok_or_else(|| anyhow!("Document not found"))?;
         self.publish(
             &self.tm_id,
             "TM",
             D3csRequest::CtShare,
-            vec![doc_id.to_string(), ct, sig],
+            vec![doc_id.to_string(), document.ciphertext, document.signature],
             false,
         )
     }
@@ -349,11 +331,9 @@ impl NetworkRuntime {
         Ok(())
     }
 
-    // crée les répertoires de stockage (chiffrés, chiffrés intermédiaires, signatures, PSKA)
+    // crée le répertoire des clés TM
     pub fn setup_storage(&self, state: &Arc<AppState>) -> Result<()> {
-        fs::create_dir_all(self.ct_dir(state))?;
-        fs::create_dir_all(self.sig_dir(state))?;
-        fs::create_dir_all(self.cti_dir(state))?;
+        crypto::ensure_document_storage_dirs(state)?;
         fs::create_dir_all(format!("{}/pska", state.tm_dir))?;
         Ok(())
     }
@@ -413,12 +393,25 @@ impl NetworkRuntime {
     }
 
     // permet d'envoyer à l'autorité une demande de révocation
-    pub fn ask_revocation_request(&self, requester: &str, missions: &[String]) -> Result<()> {
+    pub fn ask_revocation_request(
+        &self,
+        request_id: u64,
+        requester: &str,
+        missions: &[String],
+    ) -> Result<()> {
+        let missions = normalize_revocation_missions(missions);
+        let request_key =
+            revocation_request_key(requester, &missions, Some(&request_id.to_string()));
+        let _ = self.remember_revocation_relay(&request_key);
         self.publish(
             &self.tm_id,
-            "Authority",
+            "TM",
             D3csRequest::AskRevocation,
-            vec![requester.to_string(), serde_json::to_string(missions)?],
+            vec![
+                requester.to_string(),
+                serde_json::to_string(&missions)?,
+                request_key,
+            ],
             true,
         )
     }
@@ -449,8 +442,7 @@ impl NetworkRuntime {
         }
         if frame.src.eq_ignore_ascii_case("Authority") {
             if let Ok(mut s) = self.authority_seen.lock() {
-                let current_group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
-                *s = Some((current_group, Instant::now()));
+                *s = Some(Instant::now());
             }
         }
 
@@ -488,6 +480,9 @@ impl NetworkRuntime {
             .unwrap_or_else(|| tm_for_login(&login).unwrap_or_else(|| self.tm_id.clone()));
 
         if self.is_authority {
+            if !self.is_reachable_login(&login) {
+                return Ok(());
+            }
             let k = self.authority_keygen(state, &login, &clearance)?;
             self.publish(
                 "Authority",
@@ -689,14 +684,7 @@ impl NetworkRuntime {
         if !abs::verify_any(&params, &sig, ct_ser.as_bytes())? {
             return Ok(());
         }
-        let ct_path = format!("{}/{}.ct", self.ct_dir(state), id);
-        let sig_path = format!("{}/{}.sign", self.sig_dir(state), id);
-        if !Path::new(&ct_path).exists() {
-            write_atomic_text(&ct_path, &frame.args[1])?;
-        }
-        if !Path::new(&sig_path).exists() {
-            write_atomic_text(&sig_path, &frame.args[2])?;
-        }
+        crypto::store_document_payload(state, id, frame.args[1].clone(), frame.args[2].clone())?;
         Ok(())
     }
 
@@ -718,18 +706,32 @@ impl NetworkRuntime {
 
     // permet de traiter la trame ASK_REVOCATION
     fn on_ask_revocation(&self, state: &Arc<AppState>, frame: &D3csFrame) -> Result<()> {
-        if !self.is_authority || frame.args.len() < 2 {
+        if frame.args.len() < 2 {
             return Ok(());
         }
         let requester = frame.args[0].clone();
-        let missions: Vec<String> = serde_json::from_str(&frame.args[1]).unwrap_or_default();
+        let missions_raw: Vec<String> = serde_json::from_str(&frame.args[1]).unwrap_or_default();
+        let missions = normalize_revocation_missions(&missions_raw);
         if missions.is_empty() {
             return Ok(());
+        }
+        let request_key = revocation_request_key(&requester, &missions, frame.args.get(2));
+        if !self.remember_revocation_relay(&request_key) {
+            return Ok(());
+        }
+        if !self.is_authority {
+            return self.relay_ask_revocation(&requester, &missions, &request_key);
         }
         let mut queue = state
             .pending_revocations
             .lock()
             .map_err(|_| anyhow!("Revocation queue error"))?;
+        if queue
+            .iter()
+            .any(|r| same_pending_revocation(r, &requester, &missions))
+        {
+            return Ok(());
+        }
         let next_id = queue.iter().map(|x| x.id).max().unwrap_or(0) + 1;
         queue.push(PendingRevocation {
             id: next_id,
@@ -737,6 +739,27 @@ impl NetworkRuntime {
             missions: missions.clone(),
         });
         self.notify(format!("ASK_REVOCATION from {requester}"));
+        Ok(())
+    }
+
+    fn relay_ask_revocation(
+        &self,
+        requester: &str,
+        missions: &[String],
+        request_key: &str,
+    ) -> Result<()> {
+        self.publish(
+            &self.tm_id,
+            "TM",
+            D3csRequest::AskRevocation,
+            vec![
+                requester.to_string(),
+                serde_json::to_string(missions)?,
+                request_key.to_string(),
+            ],
+            true,
+        )?;
+        self.notify(format!("ASK_REVOCATION relayed for {requester}"));
         Ok(())
     }
 
@@ -792,6 +815,9 @@ impl NetworkRuntime {
         if self.is_authority {
             for p in diff {
                 if let Some(login) = login_from_pska_file(&p.name) {
+                    if !self.is_reachable_login(&login) {
+                        continue;
+                    }
                     self.extract_abs_after_sync(state, &login)?;
                     self.new_user_alert(&login);
                 }
@@ -801,7 +827,7 @@ impl NetworkRuntime {
     }
 
     // permet de gérer les demandes de clé en attente
-    fn process_pending(&self, state: &Arc<AppState>) -> Result<()> {
+    fn process_pending(&self, _state: &Arc<AppState>) -> Result<()> {
         let authority_present = self.manager.is_node_present("Authority").unwrap_or(false)
             || self.authority_reachable();
         let delay = if authority_present {
@@ -844,21 +870,17 @@ impl NetworkRuntime {
             )?;
         }
 
-        if self.tm_id == "TM0" {
-            let _ = self.send_synchronize(state);
-        }
-
         Ok(())
     }
 
-    // lorsque l'autorité rejoint un groupe, elle doit livrer les clés ABS manquantes
-    // aux utilisateurs déjà sign up présents dans ce même groupe
+    // lorsque l'autorite est active, elle livre les cles ABS manquantes
     fn sync_missing_abs_keys(&self, state: &Arc<AppState>) -> Result<()> {
         if !self.is_authority {
             return Ok(());
         }
 
-        let current_group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
+        let reachable_users = self.reachable_logins()?;
+
         let now = Instant::now();
         let retry_delay = Duration::from_secs(2);
         let mut to_sync = Vec::new();
@@ -870,14 +892,12 @@ impl NetworkRuntime {
                 .map_err(|_| anyhow!("ABS sync attempts lock poisoned"))?;
 
             for (login, _) in signed_up_users(state) {
-                let user_topic = login_to_user_topic(&login);
-                let user_group = self.manager.current_group_of(&user_topic).ok().flatten();
-                if user_group.as_deref() != Some(current_group.as_str()) {
-                    continue;
-                }
-
                 let abs_key_path = format!("{}/{}/skw{}.bin", state.users_dir, login, login);
                 if Path::new(&abs_key_path).exists() {
+                    attempts.remove(&login);
+                    continue;
+                }
+                if !reachable_users.contains(&login) {
                     attempts.remove(&login);
                     continue;
                 }
@@ -900,19 +920,21 @@ impl NetworkRuntime {
         Ok(())
     }
 
-    // permet d'envoyer un message SYNCHRONIZE à tous les autres TMs
-    fn send_synchronize(&self, state: &Arc<AppState>) -> Result<()> {
-        let pskas = self.read_pska_entries(state)?;
-        let cts = self.read_ct_entries(state)?;
-        self.publish(
-            &self.tm_id,
-            "TM",
-            D3csRequest::Synchronize,
-            vec![serde_json::to_string(&pskas)?, serde_json::to_string(&cts)?],
-            false,
-        )
+    fn reachable_logins(&self) -> Result<HashSet<String>> {
+        Ok(lepton::connected_neighbors(&self.node_id)?
+            .into_iter()
+            .filter(|node| !node.eq_ignore_ascii_case("Authority"))
+            .map(|node| normalize_login(&node))
+            .collect::<HashSet<_>>())
     }
 
+    fn is_reachable_login(&self, login: &str) -> bool {
+        self.reachable_logins()
+            .map(|users| users.contains(&normalize_login(login)))
+            .unwrap_or(false)
+    }
+
+    // permet d'envoyer un message SYNCHRONIZE à tous les autres TMs
     // permet de lancer ABE.Keygen et ABS.extract
     fn authority_keygen(
         &self,
@@ -1007,59 +1029,16 @@ impl NetworkRuntime {
     }
 
     // lecture de tous les chiffrés avant de faire une synchronisation
-    fn read_ct_entries(&self, state: &Arc<AppState>) -> Result<Vec<CtEntry>> {
-        let mut out = Vec::new();
-        let ct_dir = self.ct_dir(state);
-        if !Path::new(&ct_dir).exists() {
-            return Ok(out);
-        }
-        for e in fs::read_dir(&ct_dir)? {
-            let e = e?;
-            if !e.file_type()?.is_file() {
-                continue;
-            }
-            let name = e.file_name().to_string_lossy().to_string();
-            if !name.ends_with(".ct") {
-                continue;
-            }
-            let Ok(id) = name.trim_end_matches(".ct").parse::<u64>() else {
-                continue;
-            };
-            let sig_path = format!("{}/{}.sign", self.sig_dir(state), id);
-            if !Path::new(&sig_path).exists() {
-                continue;
-            }
-            let ciphertext = fs::read_to_string(e.path())?;
-            let signature = fs::read_to_string(sig_path)?;
-            if ciphertext.trim().is_empty() || signature.trim().is_empty() {
-                continue;
-            }
-            out.push(CtEntry {
-                id,
-                ciphertext,
-                signature,
-            });
-        }
-        out.sort_by_key(|x| x.id);
-        Ok(out)
-    }
-
     // stockage local des chiffrés lors d'une synchronisation réseau
     fn store_ct_entries(&self, state: &Arc<AppState>, items: &[CtEntry]) -> Result<()> {
-        fs::create_dir_all(self.ct_dir(state))?;
-        fs::create_dir_all(self.sig_dir(state))?;
         for i in items {
-            let ct_path = format!("{}/{}.ct", self.ct_dir(state), i.id);
-            let sig_path = format!("{}/{}.sign", self.sig_dir(state), i.id);
-            if !Path::new(&ct_path).exists() {
-                if !i.ciphertext.trim().is_empty() {
-                    write_atomic_text(&ct_path, &i.ciphertext)?;
-                }
-            }
-            if !Path::new(&sig_path).exists() {
-                if !i.signature.trim().is_empty() {
-                    write_atomic_text(&sig_path, &i.signature)?;
-                }
+            if !i.ciphertext.trim().is_empty() && !i.signature.trim().is_empty() {
+                crypto::store_document_payload(
+                    state,
+                    i.id,
+                    i.ciphertext.clone(),
+                    i.signature.clone(),
+                )?;
             }
         }
         Ok(())
@@ -1166,17 +1145,6 @@ impl NetworkRuntime {
     }
 
     // permet au runtime de s'abonner aux topics essentiels (e.g., TM associé)
-    fn subscribe_core(&self) -> Result<()> {
-        self.manager.subscribe("TM")?;
-        self.manager.subscribe(&self.tm_id)?;
-        self.manager.subscribe(&self.node_id)?;
-        if self.is_authority {
-            self.manager.subscribe("Authority")?;
-            self.manager.subscribe("TM0")?;
-        }
-        Ok(())
-    }
-
     // log de la liste des messages en mémoire
     fn notify(&self, msg: String) {
         if let Ok(mut n) = self.notifications.lock() {
@@ -1202,76 +1170,75 @@ impl NetworkRuntime {
             .unwrap_or_default()
     }
 
-    // retourne si l'autorité est accessible ou non
+    fn remember_revocation_relay(&self, request_key: &str) -> bool {
+        let Ok(mut relays) = self.revocation_relays.lock() else {
+            return true;
+        };
+        relays.retain(|_, seen_at| seen_at.elapsed() < Duration::from_secs(300));
+        if relays.contains_key(request_key) {
+            return false;
+        }
+        relays.insert(request_key.to_string(), Instant::now());
+        true
+    }
+
+    // retourne si l'autorité est accessible ou non, y compris via multi-sauts Lepton
     fn authority_reachable(&self) -> bool {
         if self.is_authority {
             return true;
         }
-        let current_group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
+        if lepton::connected_neighbors(&self.node_id)
+            .map(|nodes| {
+                nodes
+                    .iter()
+                    .any(|node| node.eq_ignore_ascii_case("Authority"))
+            })
+            .unwrap_or(false)
+        {
+            return true;
+        }
         self.authority_seen
             .lock()
             .ok()
             .and_then(|x| x.clone())
-            .map(|(seen_group, t)| {
-                seen_group == current_group && t.elapsed() < Duration::from_secs(20)
-            })
+            .map(|t| t.elapsed() < Duration::from_secs(20))
             .unwrap_or(false)
     }
 
-    // liste les autres noeuds visibles dans le même groupe réseau que le noeud courant
-    fn connected_nodes(&self, state: &Arc<AppState>) -> Vec<ConnectedNode> {
-        let current_group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
+    // liste les autres noeuds visibles dans la simulation Lepton, y compris via multi-sauts
+    fn connected_nodes(&self, _state: &Arc<AppState>) -> Vec<ConnectedNode> {
+        if let Ok(nodes) = lepton::connected_neighbors(&self.node_id) {
+            return self.connected_nodes_from_lepton(nodes);
+        }
+
+        Vec::new()
+    }
+
+    // transforme la composante Lepton en liste de noeuds sans exposer leurs attributs.
+    fn connected_nodes_from_lepton(&self, lepton_neighbors: Vec<String>) -> Vec<ConnectedNode> {
         let mut out = Vec::new();
 
-        if !self.node_id.eq_ignore_ascii_case("Authority") {
-            let authority_group = self.manager.current_group_of("Authority").ok().flatten();
-            if authority_group.as_deref() == Some(current_group.as_str()) {
+        for node_id in lepton_neighbors {
+            if node_id.eq_ignore_ascii_case("Authority") {
                 out.push(ConnectedNode {
                     name: "Authority".to_string(),
                     classification: None,
                     mission: None,
                     is_authority: true,
                 });
+                continue;
             }
-        }
 
-        for (login, clearance) in signed_up_users(state) {
-            let node_id = login_to_user_topic(&login);
-            if node_id.eq_ignore_ascii_case(&self.node_id) {
-                continue;
-            }
-            let node_group = self.manager.current_group_of(&node_id).ok().flatten();
-            if node_group.as_deref() != Some(current_group.as_str()) {
-                continue;
-            }
             out.push(ConnectedNode {
-                name: login,
-                classification: Some(clearance.classification),
-                mission: Some(clearance.mission),
+                name: node_id,
+                classification: None,
+                mission: None,
                 is_authority: false,
             });
         }
 
         out.sort_by(|a, b| connected_node_sort_key(a).cmp(&connected_node_sort_key(b)));
         out
-    }
-
-    // retourne le répertoire des chiffrés
-    fn ct_dir(&self, state: &Arc<AppState>) -> String {
-        let group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
-        format!("{}/groups/{}/ct", state.tm_dir, group)
-    }
-
-    // retourne le répertoire des signatures
-    fn sig_dir(&self, state: &Arc<AppState>) -> String {
-        let group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
-        format!("{}/groups/{}/s", state.tm_dir, group)
-    }
-
-    // retourne le répertoire des chiffrés intermédiaires
-    fn cti_dir(&self, state: &Arc<AppState>) -> String {
-        let group = self.manager.group().unwrap_or_else(|_| "Net1".to_string());
-        format!("{}/groups/{}/ct_intermediate", state.tm_dir, group)
     }
 }
 
@@ -1372,6 +1339,41 @@ fn attrs_from_clearance(c: &Clearance) -> Vec<String> {
     v.sort();
     v.dedup();
     v
+}
+
+fn normalize_revocation_missions(missions: &[String]) -> Vec<String> {
+    let mut out = missions
+        .iter()
+        .map(|m| m.trim().to_string())
+        .filter(|m| !m.is_empty())
+        .collect::<Vec<_>>();
+    out.sort();
+    out.dedup();
+    out
+}
+
+fn same_pending_revocation(item: &PendingRevocation, requester: &str, missions: &[String]) -> bool {
+    item.requester == requester
+        && normalize_revocation_missions(&item.missions) == normalize_revocation_missions(missions)
+}
+
+fn revocation_request_key(
+    requester: &str,
+    missions: &[String],
+    request_id: Option<&String>,
+) -> String {
+    if let Some(id) = request_id {
+        if id.contains('|') {
+            return id.clone();
+        }
+    }
+    let id = request_id.map(String::as_str).unwrap_or("legacy");
+    format!(
+        "{}|{}|{}",
+        id,
+        requester,
+        normalize_revocation_missions(missions).join(",")
+    )
 }
 
 // permet de retourner un login en fonction de la pska associée

@@ -42,7 +42,7 @@ Important constraints:
    publish
    publishSecured
    onRcv
-6. Respect the opportunistic connectivity model (Net1/Net2 groups).
+6. Respect the opportunistic connectivity model provided by the Lepton simulation.
 7. Ensure the acceptance criteria described in SLIDES_LAYOUT.md are satisfied.
 
 Before writing code:
@@ -74,11 +74,11 @@ Changements majeurs :
 - Utiliser pubsub via Dodwan : utile si tous les nÅ“uds ne sont pas intéressés par tout (par exemple, TM1 n'a pas besoin de la PSKA de TM3 / un TM n'a pas besoin d'un chiffré non accessible par l'utilisateur correspondant â€“ il y a juste l'ARL Ã  correctement répliquer)
 - Un processus = un acteur complet et indépendant. 10 processus applicatifs, runnant une IHM sur son port. Autorité = port 18080, U1 = 18081, U2 = 18082, U3 = 18083, U4 = 18084, U5 = 18085, U6 = 18086, U7 = 18087, U8 = 18088, U9 = 18089. Toutes les instances tournent en localhost sur la mÃªme machine. 1 démon DoDWAN global.
 - L'autorité est relié Ã  TM0, l'utilisateur 1 Ã  TM1, et caetera jusqu'Ã  l'utilisateur 9 et TM9
-- Possibilité aux utilisateurs et Ã  l'autorité d'aller dans des Â« groupes » d'interconnexion Net1 & Net2.
+- La connectivite opportuniste est fournie par la simulation Lepton.
 
 Changements mineurs Ã  réaliser sur le projet : 
 - Changer les fonctions Rust de démarrage de programme. SPEC1.md (déjÃ  codé) en "cargo run -- local" et SPEC2.md en "cargo run -- network" 
-- Pour les 4 objectifs, rendre l'affichage de l'IHM plus Â« grand » pour un enregistrement vidéo (je suis sur un navigateur 1920x1080. 
+- Pour les 4 objectifs, rendre l'affichage de l'IHM plus Â« grand » pour un enregistrement vidéo (je suis sur un navigateur 1920x1080. )
 - Enlever l'interface de révocation pour l'objectif 2 sur le panel admin : l'admin recevra une notification de délégation 
 - Dans tout le code, refactor le Â« LK11 » en Â« LK10 » pour le papier de Li-Kim car je m'étais trompé d'année.
 - Changer le mot de passe admin en Â« minad » 
@@ -158,7 +158,7 @@ Fonctions réseau autour du Network Manager, Ã  coder dans main/netmanager.rs 
 
 CritÃ¨res d'acceptation :
 - Doit respecter le fichier SLIDES_LAYOUT.md dans le répertoire courant
-- on peut voir son espace de connectivité Net1/Net2 sur son panel (admin ou user) et on peut le changer avec un bouton directement sur le panel
+- on peut voir les noeuds voisins fournis par Lepton sur le panel (admin ou user).
 
 ## CritÃ¨res d'acceptation â€” mode `network`
 
@@ -185,18 +185,18 @@ CritÃ¨res d'acceptation :
 
 - [ ] Sur une fenÃªtre navigateur en `1920x1080`, les écrans utiles Ã  la démo sont lisibles sans scroll vertical ni horizontal.
 - [ ] L'IHM maximise la surface utile visible pour permettre de suivre clairement les actions pendant l'enregistrement.
-- [ ] Le groupe de connectivité courant (`Net1` ou `Net2`) est visible directement sur le panel utilisateur et sur le panel admin.
-- [ ] Le changement de groupe de connectivité est possible directement depuis le panel, sans manipulation externe.
+- [ ] Les noeuds voisins fournis par Lepton sont visibles directement sur le panel utilisateur et sur le panel admin.
+- [ ] Les changements de voisinage Lepton sont refletes automatiquement sur le panel.
 - [ ] Les éléments non autorisés ou révoqués peuvent Ãªtre simplement non visibles ; un affichage grisé n'est pas exigé sauf cas explicitement demandé.
 - [ ] Aucun texte d'erreur exact n'est imposé ; seul le refus backend effectif est obligatoire.
 
 ### Connectivité opportuniste
 
-- [ ] Tout utilisateur et l'autorité peuvent basculer entre `Net1` et `Net2`.
-- [ ] Aucun groupe de connectivité initial n'est figé comme critÃ¨re d'acceptation.
-- [ ] Une bascule de `Net1` vers `Net2` ou inversement prend effet immédiatement.
-- [ ] Aucun message applicatif ne peut traverser `Net1 -> Net2` ou `Net2 -> Net1`.
-- [ ] Une autorité est considérée comme joignable si elle appartient au mÃªme groupe de connectivité que le requÃªteur d'accÃ¨s.
+- [ ] Tout utilisateur et l'autorité utilisent les contacts calcules par Lepton.
+- [ ] Aucun voisinage initial n'est fige comme critere d'acceptation.
+- [ ] Une modification de voisinage Lepton prend effet immediatement.
+- [ ] Aucun message applicatif ne peut traverser deux noeuds non voisins selon Lepton.
+- [ ] Une autorite est consideree comme joignable si Lepton la rend voisine du demandeur d'acces.
 
 ### Network Manager
 
@@ -302,7 +302,7 @@ CritÃ¨res d'acceptation :
 
 ### Scénario U1 / U5 avec connectivité intermittente
 
-- [ ] Si `U1` est en `Net2` et l'autorité reste en `Net1`, `U5` peut tout de mÃªme faire un `Sign up`.
+- [ ] Si l'autorite n'est pas voisine du nouvel utilisateur selon Lepton, une delegation peut tout de meme permettre un `Sign up`.
 - [ ] Dans ce cas, `U5` peut atteindre un panel connecté avec des clés partielles issues d'une délégation.
 - [ ] Tant que `skw` n'a pas été obtenue depuis l'autorité, l'onglet de chiffrement de `U5` est grisé et non cliquable.
 - [ ] Lorsque l'autorité redevient joignable et que `skw` est reÃ§ue, l'onglet de chiffrement de `U5` s'active immédiatement.

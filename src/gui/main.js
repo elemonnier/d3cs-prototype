@@ -5,6 +5,7 @@
   network: null,
   revocationQueue: [],
   promptedRevocationIds: new Set(),
+  revocationRequestPending: false,
   currentView: null,
 };
 
@@ -31,7 +32,7 @@ function escapeHtml(str) {
 
 // permet de faire une requête GET vers le backend
 async function apiGet(path) {
-  const r = await fetch(path, { method: 'GET' });
+  const r = await fetch(path, { method: 'GET', cache: 'no-store' });
   return await r.json();
 }
 
@@ -58,6 +59,16 @@ function hasDelegatedAccessReady() {
     && !!state.network.has_user_secret_key
     && !!state.network.has_tm_delegate_key
     && !state.me.has_abs_key;
+}
+
+function canUseDocuments() {
+  if (!state.me) return false;
+  if (state.me.is_admin || state.me.is_authority) return true;
+  if (state.me.mode !== 'network') return true;
+  if (!state.network || !state.network.enabled) return false;
+  return !!state.network.has_public_params
+    && !!state.network.has_user_secret_key
+    && !!state.network.has_tm_delegate_key;
 }
 
 function shouldShowLabellingNav() {
@@ -97,7 +108,7 @@ function keyReceptionStatusHtml() {
 
 function populateConnectedDocumentsSummary() {
   const container = document.getElementById('connected-documents-summary');
-  if (!container || !state.me || !hasDelegatedAccessReady()) return;
+  if (!container || !state.me || !canUseDocuments()) return;
 
   container.innerHTML = '<div class="text-muted">Checking accessible documents...</div>';
   apiGet('/api/documents').then((j) => {
@@ -113,7 +124,7 @@ function populateConnectedDocumentsSummary() {
     if (!docs.length) {
       current.innerHTML = `
         <div class="mt-3 text-muted">
-          Delegation completed successfully. The Documents view is ready, but no compatible document is currently available.
+          Document access is ready, but no compatible document is currently available.
         </div>
       `;
       return;
@@ -200,7 +211,7 @@ function setNav() {
   const isAuthority = isAuthed && state.me.is_authority;
 
   document.getElementById('nav-labelling').parentElement.style.display = shouldShowLabellingNav() ? '' : 'none';
-  document.getElementById('nav-documents').parentElement.style.display = isAuthed ? '' : 'none';
+  document.getElementById('nav-documents').parentElement.style.display = canUseDocuments() ? '' : 'none';
   document.getElementById('nav-revocation').parentElement.style.display = (isAuthed && !isAuthority) ? '' : 'none';
   document.getElementById('nav-presets').parentElement.style.display = isAdmin ? '' : 'none';
   document.getElementById('nav-arl').parentElement.style.display = (isAuthed && isAuthority) ? '' : 'none';
@@ -290,6 +301,7 @@ async function refreshRevocationQueue() {
 async function refreshNetworkStatus() {
   const j = await apiGet('/api/network/status');
   state.network = j.data ? j.data : null;
+  updateNetworkStatusPanels();
 }
 
 // remplace le contenu principal d'une page
@@ -315,7 +327,6 @@ function renderSignIn() {
           <input class="form-control" id="signin-password" type="password" autocomplete="current-password" value="${escapeHtml(defaults.password)}">
         </div>
         <button class="btn btn-primary" id="signin-btn">Sign in</button>
-        ${connectivityControlsHtml()}
         ${networkStatusHtml()}
       </div>
     </div>
@@ -346,10 +357,6 @@ function renderSignIn() {
   document.getElementById('signin-password').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit();
   });
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 }
 
 // code HTML de la page sign up
@@ -376,7 +383,6 @@ function renderSignUp() {
           <textarea class="form-control" id="signup-clearance" rows="4">${escapeHtml(clearanceJson)}</textarea>
         </div>
         <button class="btn btn-primary" id="signup-btn">Create account</button>
-        ${connectivityControlsHtml()}
         ${networkStatusHtml()}
       </div>
     </div>
@@ -413,10 +419,6 @@ function renderSignUp() {
   document.getElementById('signup-password').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit();
   });
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 }
 
 // affiche les classifications que l'utilisateur a le droit d'utiliser depuis le panel Labelling
@@ -446,49 +448,20 @@ function computeMissionOptions() {
   return [state.me.clearance.mission];
 }
 
-// permet de changer de groupe de connectivité depuis l'interface
-async function setConnectivity(group) {
-  const r = await apiPost('/api/network/group', { group });
-  if (!r.ok) {
-    setAlert('error', r.message || 'Failed to switch connectivity group');
-    return;
-  }
-  state.network = r.data;
-  if (state.me) {
-    state.me.network_group = r.data.group;
-  }
-  setAlert('success', `Connectivity group set to ${r.data.group}`);
-  if (state.currentView === 'labelling') {
-    renderLabelling();
-  } else if (state.currentView === 'signin') {
-    renderSignIn();
-  } else if (state.currentView === 'signup') {
-    renderSignUp();
-  } else if (state.currentView === 'documents') {
-    await renderDocuments();
-  }
-}
-
-// génère les boutons de changement de réseau
-function connectivityControlsHtml() {
-  if (!state.network || !state.network.enabled) return '';
-  const current = state.network.group || (state.me ? state.me.network_group : null) || 'Net1';
-  return `
-    <div class="mt-3">
-      <div class="mb-2"><strong>Connectivity</strong>: ${escapeHtml(current)}</div>
-      <div class="btn-group" role="group">
-        <button class="btn btn-outline-primary btn-sm" id="group-Net1" ${current === 'Net1' ? 'disabled' : ''}>Net1</button>
-        <button class="btn btn-outline-primary btn-sm" id="group-Net2" ${current === 'Net2' ? 'disabled' : ''}>Net2</button>
-      </div>
-    </div>
-  `;
-}
-
 function connectedNodesHtml() {
+  return `<div class="mt-3 connected-nodes-panel">${connectedNodesContentHtml()}</div>`;
+}
+
+function connectedNodesContentHtml() {
   if (!state.network || !state.network.enabled) return '';
+  const userLine = state.me
+    ? `${escapeHtml(state.me.login)} (${escapeHtml(state.me.clearance.classification)}, ${escapeHtml(state.me.clearance.mission)})`
+    : escapeHtml(state.network.node_id || 'guest');
   const nodes = Array.isArray(state.network.connected_nodes) ? state.network.connected_nodes : [];
   const lines = nodes.map((node) => {
-    const name = escapeHtml(node.name || '');
+    const rawName = node.name || '';
+    const displayName = node.is_authority ? rawName : rawName.toLowerCase();
+    const name = escapeHtml(displayName);
     if (node.is_authority) return name;
     if (node.classification && node.mission) {
       return `${name} (${escapeHtml(node.classification)}, ${escapeHtml(node.mission)})`;
@@ -497,23 +470,37 @@ function connectedNodesHtml() {
   });
 
   return `
-    <div class="mt-3">
-      <div><strong>Connected nodes</strong></div>
-      ${lines.length
-        ? `<div>${lines.join('<br>')}</div>`
-        : `<div class="text-muted">No other connected nodes</div>`}
-    </div>
+    <div><strong>User</strong></div>
+    <div>${userLine}</div>
+    <div class="mt-3"><strong>Connected nodes</strong></div>
+    ${lines.length
+      ? `<div>${lines.join('<br>')}</div>`
+      : `<div class="text-muted">No other connected nodes</div>`}
   `;
+}
+
+function updateConnectedNodesPanels() {
+  document.querySelectorAll('.connected-nodes-panel').forEach((el) => {
+    el.innerHTML = connectedNodesContentHtml();
+  });
+}
+
+function updateNetworkStatusPanels() {
+  document.querySelectorAll('.network-status-panel').forEach((el) => {
+    el.innerHTML = networkStatusContentHtml();
+  });
+  updateConnectedNodesPanels();
 }
 
 // affiche le statut réseau (net1-net2) sur la page HTML
 function networkStatusHtml() {
   if (!state.network || !state.network.enabled) return '';
-  return `
-    <div class="mt-3">
-      ${connectedNodesHtml()}
-    </div>
-  `;
+  return `<div class="mt-3 network-status-panel">${networkStatusContentHtml()}</div>`;
+}
+
+function networkStatusContentHtml() {
+  if (!state.network || !state.network.enabled) return '';
+  return connectedNodesHtml();
 }
 
 // affiche la page HTML Labelling
@@ -546,16 +533,11 @@ function renderLabelling() {
           <h4>Status</h4>
           <div class="card"><div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div></div>
         </div>
       </div>
     `);
-    if (document.getElementById('group-Net1')) {
-      document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-      document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-    }
     return;
   }
 
@@ -591,18 +573,12 @@ function renderLabelling() {
           <div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
             ${state.me.is_authority ? '' : `<div><strong>Clearance</strong>: ${escapeHtml(state.me.clearance.classification)} / ${escapeHtml(state.me.clearance.mission)}</div>`}
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
       </div>
     </div>
   `);
-
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 
   document.getElementById('encrypt-btn').onclick = async () => {
     setAlert(null, null);
@@ -629,6 +605,7 @@ function renderConnectedPanel() {
   setAlert(null, null);
 
   const hasDelegatedAccess = hasDelegatedAccessReady();
+  const documentsReady = canUseDocuments();
   setView(`
     <div class="row">
       <div class="col-lg-8">
@@ -643,15 +620,15 @@ function renderConnectedPanel() {
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
             ${state.me.is_authority ? '' : `<div><strong>Clearance</strong>: ${escapeHtml(state.me.clearance.classification)} / ${escapeHtml(state.me.clearance.mission)}</div>`}
             ${keyReceptionStatusHtml()}
-            <div class="mt-3 text-muted">
-              ${hasDelegatedAccess
-                ? 'The Documents view is available right now. The Labelling tab will appear automatically when the ABS key is delivered.'
-                : 'This panel will refresh automatically as soon as key material is received.'}
-            </div>
+            ${hasDelegatedAccess ? `
+              <div class="mt-3 text-muted">
+                The Documents view is available right now. The Labelling tab will appear automatically when the ABS key is delivered.
+              </div>
+            ` : ''}
             <div id="connected-documents-summary"></div>
-            <div class="mt-3">
+            ${documentsReady ? `<div class="mt-3">
               <button class="btn btn-outline-secondary" id="connected-documents">Open Documents</button>
-            </div>
+            </div>` : ''}
           </div>
         </div>
       </div>
@@ -660,7 +637,6 @@ function renderConnectedPanel() {
         <div class="card">
           <div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
@@ -668,18 +644,21 @@ function renderConnectedPanel() {
     </div>
   `);
 
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
   populateConnectedDocumentsSummary();
-  document.getElementById('connected-documents').onclick = () => renderDocuments();
+  const documentsButton = document.getElementById('connected-documents');
+  if (documentsButton) {
+    documentsButton.onclick = () => renderDocuments();
+  }
 }
 
 // affiche la page HTML Documents
 async function renderDocuments() {
   if (!state.me) {
     renderDefaultAuthView();
+    return;
+  }
+  if (!canUseDocuments()) {
+    renderConnectedPanel();
     return;
   }
   state.currentView = 'documents';
@@ -723,18 +702,12 @@ async function renderDocuments() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
       </div>
     </div>
   `);
-
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 
   document.querySelectorAll('button[data-docid]').forEach(btn => {
     btn.onclick = async () => {
@@ -819,18 +792,12 @@ async function renderRevocation() {
         <div class="card">
           <div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
       </div>
     </div>
   `);
-
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 
   const arlList = document.getElementById('arl-list');
   if (revoked.length === 0) {
@@ -918,27 +885,42 @@ async function renderRevocationRequest() {
         <div class="card">
           <div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
       </div>
     </div>
   `);
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
   document.getElementById('ask-revoke-btn').onclick = async () => {
+    if (state.revocationRequestPending) return;
     const missions = [];
     if (document.getElementById('ask-revoke-m1').checked) missions.push('M1');
     if (document.getElementById('ask-revoke-m2').checked) missions.push('M2');
-    const r = await apiPost('/api/revocation/request', { missions });
-    if (!r.ok) {
-      setAlert('error', r.message || 'Request failed');
+    if (!missions.length) {
+      setAlert('error', 'Select at least one mission');
       return;
     }
-    setAlert('success', r.message || 'Request sent');
+    const btn = document.getElementById('ask-revoke-btn');
+    state.revocationRequestPending = true;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      const r = await apiPost('/api/revocation/request', { missions });
+      if (!r.ok) {
+        setAlert('error', r.message || 'Request failed');
+        return;
+      }
+      setAlert('success', r.message || 'Request sent');
+    } catch (_e) {
+      setAlert('error', 'Request failed');
+    } finally {
+      state.revocationRequestPending = false;
+      const currentBtn = document.getElementById('ask-revoke-btn');
+      if (currentBtn) {
+        currentBtn.disabled = false;
+        currentBtn.textContent = 'AskRevocation';
+      }
+    }
   };
 }
 
@@ -983,18 +965,12 @@ async function renderPresets() {
         <div class="card">
           <div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
       </div>
     </div>
   `);
-
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 
   document.getElementById('presets-save').onclick = async () => {
     setAlert(null, null);
@@ -1051,7 +1027,6 @@ async function renderArl() {
         <div class="card">
           <div class="card-body">
             <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${connectivityControlsHtml()}
             ${networkStatusHtml()}
           </div>
         </div>
@@ -1059,10 +1034,6 @@ async function renderArl() {
     </div>
   `);
 
-  if (document.getElementById('group-Net1')) {
-    document.getElementById('group-Net1').onclick = () => setConnectivity('Net1');
-    document.getElementById('group-Net2').onclick = () => setConnectivity('Net2');
-  }
 }
 
 // décrit les éléments d'action dans la navbar lorsque l'on clique
@@ -1080,12 +1051,12 @@ function wireNav() {
 
 // refresh l'état de l'application toutes les 500ms (valeur donnée dans init)
 async function backgroundRefresh() {
+  await refreshNetworkStatus();
   if (!state.me) return;
   const oldHasAbs = state.me.has_abs_key;
   const oldPendingKeyDelivery = state.me.pending_key_delivery;
   const oldHasDelegatedAccess = hasDelegatedAccessReady();
   await refreshMe();
-  await refreshNetworkStatus();
   if (state.me && state.me.is_admin) {
     await refreshRevocationQueue();
     for (const req of state.revocationQueue) {
