@@ -12,6 +12,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 use base64::Engine;
+use chrono::Local;
 use rand_core::RngCore;
 
 mod api;
@@ -30,7 +31,7 @@ pub struct Clearance {
 pub struct UserRecord {
     pub password: String,
     pub clearance: Clearance,
-    pub is_admin: bool,
+    pub is_authority_user: bool,
 }
 
 pub struct UserDb {
@@ -49,6 +50,9 @@ pub enum RunMode {
     Local,
     Network,
 }
+
+pub const AUTHORITY_LOGIN: &str = "authority";
+pub const AUTHORITY_PASSWORD: &str = "authority";
 
 pub struct AppState {
     pub host: String,
@@ -73,20 +77,81 @@ fn random_session_token() -> String {
     base64::engine::general_purpose::STANDARD_NO_PAD.encode(bytes)
 }
 
-// permet de créer l'utilisateur admin
+pub(crate) fn console_log(message: impl AsRef<str>) {
+    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S%.3f");
+    let line = if let Some(node) = console_log_node_prefix() {
+        format!("{timestamp} {node}: {}", message.as_ref())
+    } else {
+        format!("{timestamp} {}", message.as_ref())
+    };
+    println!("{line}\n");
+    let _ = append_console_log_file(&line);
+}
+
+fn console_log_node_prefix() -> Option<String> {
+    let raw = std::env::var("D3CS_NODE_ID").ok()?;
+    let node = raw.trim();
+    if node.eq_ignore_ascii_case("Authority") {
+        return Some("Authority".to_string());
+    }
+    let suffix = node.strip_prefix('U').or_else(|| node.strip_prefix('u'))?;
+    let n = suffix.parse::<u16>().ok()?;
+    if n == 0 {
+        return None;
+    }
+    Some(format!("U{n}"))
+}
+
+fn init_console_log(base_dir: &Path) -> Result<()> {
+    let path = console_log_path(base_dir);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    if std::env::var("D3CS_LOG_INITIALIZED").ok().as_deref() != Some("1") {
+        fs::write(&path, "")?;
+    }
+    std::env::set_var("D3CS_LOG_FILE", path.to_string_lossy().to_string());
+    std::env::set_var("D3CS_LOG_INITIALIZED", "1");
+    Ok(())
+}
+
+fn append_console_log_file(line: &str) -> Result<()> {
+    let path = std::env::var("D3CS_LOG_FILE")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            console_log_path(&detect_base_dir().unwrap_or_else(|_| PathBuf::from(".")))
+        });
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let mut file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)?;
+    file.write_all(format!("{line}\n").as_bytes())?;
+    Ok(())
+}
+
+fn console_log_path(base_dir: &Path) -> PathBuf {
+    std::env::var("D3CS_LOG_FILE")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| base_dir.join("runtime").join("logs").join("d3cs.log"))
+}
+
+// permet de créer l'utilisateur authority
 
 fn build_default_users() -> HashMap<String, UserRecord> {
     let mut users = HashMap::new();
 
     users.insert(
-        "admin".to_string(),
+        AUTHORITY_LOGIN.to_string(),
         UserRecord {
-            password: "minad".to_string(),
+            password: AUTHORITY_PASSWORD.to_string(),
             clearance: Clearance {
                 classification: "FR-S".to_string(),
                 mission: "M1".to_string(),
             },
-            is_admin: true,
+            is_authority_user: true,
         },
     );
 
@@ -113,10 +178,10 @@ fn quiet_startup() -> bool {
 fn print_access_urls(bind_host: &str, port: u16, mode: RunMode, node_id: &str) {
     if mode == RunMode::Network {
         if !quiet_startup() {
-            println!("started {node_id} on {bind_host}:{port}");
+            console_log(format!("started {node_id} on {bind_host}:{port}"));
         }
     } else {
-        println!("listening on http://{bind_host}:{port}");
+        console_log(format!("listening on http://{bind_host}:{port}"));
     }
 }
 
@@ -163,7 +228,7 @@ fn derive_node_from_port(port: u16) -> String {
     }
 }
 
-// retourne la valeur du port en fonction de l'admin/utilisateur
+// retourne la valeur du port en fonction du noeud authority/utilisateur
 
 fn default_port_for_node(node_id: &str) -> u16 {
     let upper = node_id.to_ascii_uppercase();
@@ -341,7 +406,7 @@ fn reset_network_run_state(users_dir: &str, tm_dir: &str, network_dir: &str) -> 
                 continue;
             }
             let login = entry.file_name().to_string_lossy().to_string();
-            if login != "admin" {
+            if login != AUTHORITY_LOGIN {
                 remove_dir_if_exists(entry.path())?;
             }
         }
@@ -355,45 +420,26 @@ fn reset_network_run_state(users_dir: &str, tm_dir: &str, network_dir: &str) -> 
     remove_file_if_exists(Path::new(tm_dir).join("pending_revocations.json"))?;
     remove_file_if_exists(Path::new(tm_dir).join("crypto_setup.lock"))?;
     remove_file_if_exists(Path::new(tm_dir).join("document_id.lock"))?;
-    clear_tm_node_document_files(tm_dir)?;
+    remove_file_if_exists(Path::new(tm_dir).join("document_id.counter"))?;
+    remove_tm_node_dirs(tm_dir)?;
     remove_dir_if_exists(network_dir)?;
 
     Ok(())
 }
 
-fn clear_files_in_dir(dir: &Path) -> Result<()> {
-    if !dir.exists() {
-        return Ok(());
+fn resettable_tm_node_dirs(tm_dir: &str) -> Vec<PathBuf> {
+    let nodes_root = Path::new(tm_dir).join("nodes");
+    let mut dirs = vec![nodes_root.join("authority")];
+    for i in 1..=9 {
+        dirs.push(nodes_root.join(format!("u{i}")));
     }
-
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        if entry.file_type()?.is_file() {
-            remove_file_if_exists(entry.path())?;
-        }
-    }
-
-    Ok(())
+    dirs
 }
 
-fn clear_tm_node_document_files(tm_dir: &str) -> Result<()> {
-    let nodes_root = Path::new(tm_dir).join("nodes");
-    if !nodes_root.exists() {
-        return Ok(());
+fn remove_tm_node_dirs(tm_dir: &str) -> Result<()> {
+    for dir in resettable_tm_node_dirs(tm_dir) {
+        remove_dir_if_exists(dir)?;
     }
-
-    for node_entry in fs::read_dir(nodes_root)? {
-        let node_entry = node_entry?;
-        if !node_entry.file_type()?.is_dir() {
-            continue;
-        }
-
-        let node_dir = node_entry.path();
-        clear_files_in_dir(&node_dir.join("ct"))?;
-        clear_files_in_dir(&node_dir.join("cti"))?;
-        clear_files_in_dir(&node_dir.join("signatures"))?;
-    }
-
     Ok(())
 }
 
@@ -460,7 +506,7 @@ fn spawn_network_cluster(base_dir: &Path) -> Result<()> {
     clear_terminal()?;
 
     let lepton_child = spawn_lepton_dodwan(base_dir, &users_dir)?;
-    println!("started Lepton with DoDWAN adapter (10 DoDWAN daemons)");
+    console_log("started Lepton with DoDWAN adapter (10 DoDWAN daemons)");
 
     for node in nodes {
         let port = default_port_for_node(node);
@@ -486,9 +532,9 @@ fn spawn_network_cluster(base_dir: &Path) -> Result<()> {
             .env("D3CS_NETWORK_DIR", network_dir.clone())
             .env("D3CS_QUIET_STARTUP", "1")
             .spawn()?;
-        println!(
+        console_log(format!(
             "started {node} on {host}:{port} (DoDWAN {dodwan_node} ws 127.0.0.1:{dodwan_ws_port})"
-        );
+        ));
         children.push((node.to_string(), child));
     }
 
@@ -516,8 +562,11 @@ fn spawn_network_cluster(base_dir: &Path) -> Result<()> {
 // clear de l'ARL, dossiers utilisateur, PSKA dès lancement de l'application
 
 fn reset_startup_state(state: &Arc<AppState>) -> Result<()> {
+    remove_file_if_exists(Path::new(&state.tm_dir).join("arl.json"))?;
+    remove_file_if_exists(Path::new(&state.tm_dir).join("document_id.counter"))?;
+    remove_dir_if_exists(Path::new(&state.tm_dir).join("pska"))?;
+    remove_tm_node_dirs(&state.tm_dir)?;
     crate::crypto::clear_arl(state)?;
-    clear_tm_node_document_files(&state.tm_dir)?;
 
     if Path::new(&state.users_dir).exists() {
         for entry in fs::read_dir(&state.users_dir)? {
@@ -526,26 +575,8 @@ fn reset_startup_state(state: &Arc<AppState>) -> Result<()> {
                 continue;
             }
             let login = entry.file_name().to_string_lossy().to_string();
-            if login != "admin" {
+            if login != AUTHORITY_LOGIN {
                 if let Err(e) = fs::remove_dir_all(entry.path()) {
-                    if e.kind() != std::io::ErrorKind::NotFound {
-                        return Err(e.into());
-                    }
-                }
-            }
-        }
-    }
-
-    let pska_dir = format!("{}/pska", state.tm_dir);
-    if Path::new(&pska_dir).exists() {
-        for entry in fs::read_dir(&pska_dir)? {
-            let entry = entry?;
-            if !entry.file_type()?.is_file() {
-                continue;
-            }
-            let name = entry.file_name().to_string_lossy().to_string();
-            if name != "pskaadmin.bin" {
-                if let Err(e) = fs::remove_file(entry.path()) {
                     if e.kind() != std::io::ErrorKind::NotFound {
                         return Err(e.into());
                     }
@@ -564,6 +595,7 @@ fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     let base_dir = detect_base_dir()?;
     std::env::set_var("D3CS_BASE_DIR", base_dir.to_string_lossy().to_string());
+    init_console_log(&base_dir).context("log init failed")?;
 
     let args: Vec<String> = std::env::args().collect();
     if matches!(
@@ -643,7 +675,7 @@ fn main() -> Result<()> {
     {
         let db = state.user_db.lock().unwrap();
         for (login, record) in db.users.iter() {
-            crypto::ensure_user_keys(&state, login, &record.clearance, record.is_admin)
+            crypto::ensure_user_keys(&state, login, &record.clearance, record.is_authority_user)
                 .with_context(|| format!("key provisioning failed for user {login}"))?;
         }
     }

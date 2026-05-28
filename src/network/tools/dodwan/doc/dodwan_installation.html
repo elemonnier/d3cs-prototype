@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="dodwan.css">
+    <title>
+      DoDWAN: Document Dissemination in Wireless Ad hoc Networks
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>Installing DoDWAN</h1>
+
+<p>DoDWAN can be installed either from an archive that contains only
+executable code, or from an archive that contains source code.</p>
+
+<p>In the following we assume you wish to install DoDWAN on a Linux
+platform, as this is the most commonly used platform for
+experimentation in opportunistic networking.</p>
+
+<h2>Requirements</h2>
+
+<ul>
+<li><p>DoDWAN is 100% Java code and therefore requires a recent <strong>JRE</strong> (Java
+Runtime Environment) to be installed on your system. If you plan to
+compile the source code, you actually need to have a <strong>JDK</strong> (Java
+Development Kit) installed.</p></li>
+<li><p>DoDWAN comes with a bash script that makes it easy to run commands
+with DoDWAN. This script requires that package <strong>netcat</strong> be installed
+on your system.</p></li>
+</ul>
+
+<h2>Installing from the executable archive</h2>
+
+<p>Download the latest <a href="http://casa-irisa.univ-ubs.fr/download/dodwan.zip">DoDWAN archive</a>:</p>
+
+<pre><code class="prettyprint">wget http://casa-irisa.univ-ubs.fr/download/dodwan.zip
+</code></pre>
+
+<p>Unzip this archive:</p>
+
+<pre><code class="prettyprint">unzip dodwan.zip
+</code></pre>
+
+<p>Set environment variables (only required if this is the first installation of DoDWAN on this host):</p>
+
+<pre><code class="prettyprint">cat &lt;&lt; EOF &gt;&gt; ~/.$(basename $SHELL)rc
+#
+# DODWAN environment variables
+export DODWAN_HOME="${PWD}/dodwan"
+export PATH="\${DODWAN_HOME}/bin:\${PATH}"
+#
+EOF
+source ~/.$(basename $SHELL)rc
+</code></pre>
+
+<h2>Installing from the source code</h2>
+
+<p>Download the latest <a href="http://casa-irisa.univ-ubs.fr/download/dodwan-src.zip">DoDWAN source archive</a>:</p>
+
+<pre><code class="prettyprint">wget http://casa-irisa.univ-ubs.fr/download/dodwan-src.zip
+</code></pre>
+
+<p>Unzip this archive:</p>
+
+<pre><code class="prettyprint">unzip dodwan_src.zip
+</code></pre>
+
+<p>Compile DoDWAN:</p>
+
+<pre><code class="prettyprint">cd dodwan ; make ; cd ..
+</code></pre>
+
+<p>Set environment variables (only required if this is the first installation of DoDWAN on this host):</p>
+
+<pre><code class="prettyprint">cat &lt;&lt; EOF &gt;&gt; ~/.$(basename $SHELL)rc
+#
+# DODWAN environment variables
+export DODWAN_HOME="${PWD}/dodwan"
+export PATH="\${DODWAN_HOME}/bin:\${PATH}"
+#
+EOF
+source ~/.$(basename $SHELL)rc
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

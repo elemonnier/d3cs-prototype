@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="dodwan.css">
+    <title>
+      DoDWAN: Document Dissemination in Wireless Ad hoc Networks
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>Destination-based communication over content-based dissemination</h1>
+
+<h2>Preamble</h2>
+
+<p>DoDWAN implements a content-based epidemic dissemination model, that
+is, a model where content flows towards interested receivers rather
+than towards specifically set destinations. This does not mean that it
+cannot support destination-based communication, though.</p>
+
+<p>In the following, we show how Alice (on <code>host1</code>) and Bob (on <code>host2</code>)
+can exchange content, possibly with the collaboration of other users.</p>
+
+<h2>Sending content to a set destination</h2>
+
+<p>Assume Alice wants to send a file to Bob:</p>
+
+<pre><code class="prettyprint">host1$ dodwan.sh publish dst=Bob /path/to/file
+</code></pre>
+
+<p>With this command the file is embedded as the payload of a message, whose descriptor indicates who is the source, and who is the destination of the message.</p>
+
+<h2>Receiving content</h2>
+
+<p>In order to be able to receive a message such as that sent by Alice,
+Bob should set a subscription accordingly:</p>
+
+<pre><code class="prettyprint">host2$ mkdir /tmp/Inbox
+host2$ dodwan.sh subscribe key1 dst=Bob -d /tmp/Inbox
+</code></pre>
+
+<p>With this command, any message whose descriptor matches the pattern
+<code>dst=Bob</code> (i.e., any content sent to Bob) will be deposited in <code>/tmp/Inbox</code>.</p>
+
+<p>Alice should of course set a similar subscription (but with pattern
+<code>dst=Alice</code>) on <code>host1</code> in order to receive content Bob --or any other
+user-- may send to her.</p>
+
+<h2>Group communication</h2>
+
+<p>Assume Alice and Bob are members of a group of friends (or colleagues,
+or fans of Tolkien) called... HOBBITS!</p>
+
+<p>Content can be shared among members of this group, as soon as they all
+set appropriate subscriptions on their own DoDWAN node. Alice may for
+example set the following subscriptions:</p>
+
+<pre><code class="prettyprint">host1$ dodwan.sh subscribe key2 grp=HOBBITS
+host1$ dodwan.sh subscribe key3 "dst=(Alice|ALL),grp=HOBBITS" -d /tmp/Inbox
+</code></pre>
+
+<p>With subscription <code>key2</code>, Alice states that she would like <code>host1</code> to
+receive and store in its local cache any content whose descriptor
+matches the pattern <code>grp=HOBBITS</code>. In other words, any content
+exchanged between members of the group should be stored in the cache,
+and thus kept available for other members of the group.</p>
+
+<p>With subscription <code>key3</code>, Alice states that she would also like any
+content addressed to herself or to all members of the group to be
+deposited in <code>/tmp/Inbox</code>.</p>
+
+<p>Thus, Bob can send a message to Alice (as a member of group HOBBITS) with:</p>
+
+<pre><code class="prettyprint">host2$ dodwan.sh publish dst=Alice,grp=HOBBITS /path/to/file
+</code></pre>
+
+<p>This message will be stored in their local cache by any member of
+group HOBBITS, which will henceforth behave as a (possibly mobile) carrier
+for the message.</p>
+
+<p>Bob can likewise send the same message simultaneously to all members
+of group HOBBITS with:</p>
+
+<pre><code class="prettyprint">host2$ dodwan.sh publish dst=ALL,grp=HOBBITS /path/to/file
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>Main commands for running LEPTON (on a Linux host)</h1>
+
+<p>LEPTON's source code is 100% Java code. It can therefore run on any
+platform featuring a standard JRE (Java Runtime Environment).</p>
+
+<p>This code is however distributed with a bash script <code>lepton.sh</code> (located in
+<code>$LEPTON_HOME/bin</code>) that makes it easy to start and stop LEPTON on a
+Linux host.</p>
+
+<pre><code class="prettyprint">Usage: ./bin/lepton.sh &lt;command&gt; [option]*
+
+With command:
+    info|status|start|stop|clean|start_node|stop_node|exec
+
+To display help about the commands:   ./bin/lepton.sh -h &lt;command&gt;
+   about the default configuration: ./bin/lepton.sh -h info
+</code></pre>
+
+<h2>Starting or stopping LEPTON</h2>
+
+<pre><code class="prettyprint">lepton.sh start
+lepton.sh stop
+</code></pre>
+
+<p>Note that although several LEPTON instances could run concurrently on
+the same host, the bash script <code>lepton.sh</code> has been designed so
+that only one experiment shall be conducted at any time on a host platform.</p>
+
+<h2>Checking if LEPTON is running</h2>
+
+<pre><code class="prettyprint">lepton.sh status
+</code></pre>
+
+<h2>Cleaning the log directory</h2>
+
+<pre><code class="prettyprint">lepton.sh clean
+</code></pre>
+
+<p>By default the log directory is <code>/dev/shm/${USER}/lepton</code>. This can be
+changed by modifying parameter <code>log_dir</code> (see below).</p>
+
+<h2>Displaying the current configuration parameters</h2>
+
+<pre><code class="prettyprint">lepton.sh info
+</code></pre>
+
+<h2>Adjusting configuration parameters when starting LEPTON</h2>
+
+<pre><code class="prettyprint">lepton.sh start [&lt;key&gt;=&lt;value&gt;]* [conf=&lt;config_file&gt;]*
+</code></pre>
+
+<p>with:</p>
+
+<ul>
+<li><code>&lt;key&gt;=&lt;value&gt;</code> : an individual custom property</li>
+<li><code>config_file</code>: a configuration file that contains <code>key=value</code> pairs </li>
+</ul>
+
+<p>The list of configuration properties is accessible
+<a href="howtos/default_conf.html">here</a>. See
+<a href="howtos/configuration.html">this tutorial</a> for more informations about
+the LEPTON configuration.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

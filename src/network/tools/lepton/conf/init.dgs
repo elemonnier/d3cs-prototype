@@ -1,0 +1,1345 @@
+DGS004
+null 0 0
+cg x=0 y=0 width=200 height=200
+st 0
+an Authority x=100 y=175
+an U1 x=40 y=125 label="U1|FR-DR:M1|"
+an U2 x=80 y=125 label="U2|FR-S:M1|"
+an U3 x=120 y=125 label="U3|FR-DR:M2|"
+an U4 x=160 y=125 label="U4|FR-S:M2|"
+an U5 x=40 y=75 label="U5|FR-DR:M1|"
+an U6 x=80 y=75 label="U6|FR-S:M1|"
+an U7 x=120 y=75 label="U7|FR-DR:M2|"
+an U8 x=160 y=75 label="U8|FR-S:M2|"
+an U9 x=100 y=25 label="U9|FR-DR:M1|"
+st 1000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 2000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 3000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 4000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 5000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 6000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 7000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 8000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 9000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 10000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 11000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 12000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 13000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 14000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 15000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 16000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 17000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 18000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 19000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 20000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 21000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 22000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 23000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 24000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 25000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 26000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 27000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 28000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 29000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 30000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 31000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 32000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 33000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 34000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 35000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 36000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 37000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 38000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 39000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 40000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 41000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 42000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 43000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 44000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 45000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 46000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 47000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 48000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 49000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 50000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 51000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 52000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 53000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 54000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 55000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 56000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 57000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 58000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 59000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 60000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 61000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 62000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 63000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 64000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 65000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 66000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 67000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 68000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 69000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 70000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 71000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 72000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 73000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 74000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 75000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 76000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 77000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 78000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 79000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 80000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 81000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 82000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 83000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 84000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 85000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 86000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 87000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 88000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 89000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 90000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 91000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 92000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 93000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 94000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 95000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 96000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 97000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 98000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 99000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 100000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 101000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 102000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 103000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 104000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 105000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 106000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 107000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 108000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 109000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 110000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 111000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 112000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 113000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 114000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 115000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 116000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 117000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 118000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 119000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 120000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25
+st 600000
+cn Authority x=100 y=175
+cn U1 x=40 y=125
+cn U2 x=80 y=125
+cn U3 x=120 y=125
+cn U4 x=160 y=125
+cn U5 x=40 y=75
+cn U6 x=80 y=75
+cn U7 x=120 y=75
+cn U8 x=160 y=75
+cn U9 x=100 y=25

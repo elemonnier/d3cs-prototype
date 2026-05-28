@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 use base64::Engine;
+use chrono::Local;
 use tungstenite::{
     connect as ws_connect, error::Error as WsError, stream::MaybeTlsStream, Message, WebSocket,
 };
@@ -200,9 +201,17 @@ fn set_ws_read_timeout(ws: &mut DodwanWs, timeout: Option<Duration>) -> Result<O
 // permet d'afficher un message présent dans la boucle
 fn print_message(message: &Message) {
     match message {
-        Message::Binary(bytes) => println!("{}", String::from_utf8_lossy(bytes)),
-        _ => println!("{message:?}"),
+        Message::Binary(bytes) => console_log(String::from_utf8_lossy(bytes)),
+        _ => console_log(format!("{message:?}")),
     }
+}
+
+fn console_log(message: impl AsRef<str>) {
+    println!(
+        "{} {}",
+        Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+        message.as_ref()
+    );
 }
 
 // fonction permettant de fermer la connexion websocket lancée juste avant

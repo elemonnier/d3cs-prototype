@@ -4,7 +4,8 @@
   arl: null,
   network: null,
   revocationQueue: [],
-  promptedRevocationIds: new Set(),
+  activeRevocationPromptId: null,
+  revocationDecisionPending: false,
   revocationRequestPending: false,
   currentView: null,
 };
@@ -49,12 +50,12 @@ async function apiPost(path, payload) {
 // empêche l'utilisateur d'avoir accès au panel Labelling s'il n'a pas accès 
 function canUseLabelling() {
   if (!state.me) return false;
-  return state.me.is_admin || state.me.has_abs_key;
+  return state.me.is_authority_user || state.me.has_abs_key;
 }
 
 function hasDelegatedAccessReady() {
   if (!state.me || !state.network) return false;
-  if (state.me.is_admin || state.me.is_authority) return false;
+  if (state.me.is_authority_user || state.me.is_authority) return false;
   return !!state.network.has_public_params
     && !!state.network.has_user_secret_key
     && !!state.network.has_tm_delegate_key
@@ -63,7 +64,7 @@ function hasDelegatedAccessReady() {
 
 function canUseDocuments() {
   if (!state.me) return false;
-  if (state.me.is_admin || state.me.is_authority) return true;
+  if (state.me.is_authority_user || state.me.is_authority) return true;
   if (state.me.mode !== 'network') return true;
   if (!state.network || !state.network.enabled) return false;
   return !!state.network.has_public_params
@@ -71,9 +72,24 @@ function canUseDocuments() {
     && !!state.network.has_tm_delegate_key;
 }
 
+function hasAbeKeysReady() {
+  if (!state.me) return false;
+  if (state.me.mode !== 'network') return true;
+  if (!state.network || !state.network.enabled) return false;
+  return !!state.network.has_public_params
+    && !!state.network.has_user_secret_key
+    && !!state.network.has_tm_delegate_key;
+}
+
+function canUseRevocation() {
+  if (!state.me || state.me.is_authority) return false;
+  if (state.me.is_authority_user) return true;
+  return !!state.me.has_abs_key && hasAbeKeysReady();
+}
+
 function shouldShowLabellingNav() {
   if (!state.me) return false;
-  if (state.me.is_authority || state.me.is_admin) return true;
+  if (state.me.is_authority || state.me.is_authority_user) return true;
   return canUseLabelling();
 }
 
@@ -121,7 +137,8 @@ function populateConnectedDocumentsSummary() {
     }
 
     const docs = (j.data && j.data.documents) ? j.data.documents : [];
-    if (!docs.length) {
+    const viewableDocs = docs.filter((doc) => documentStatus(doc) === 'viewable');
+    if (!viewableDocs.length) {
       current.innerHTML = `
         <div class="mt-3 text-muted">
           Document access is ready, but no compatible document is currently available.
@@ -130,14 +147,14 @@ function populateConnectedDocumentsSummary() {
       return;
     }
 
-    const preview = docs
+    const preview = viewableDocs
       .slice(0, 5)
       .map((doc) => `<div>#${doc.id} (${escapeHtml(doc.label.classification)}, ${escapeHtml(doc.label.mission)})</div>`)
       .join('');
 
     current.innerHTML = `
       <div class="mt-3">
-        <div><strong>Accessible documents now</strong>: ${docs.length}</div>
+        <div><strong>Accessible documents now</strong>: ${viewableDocs.length}</div>
         <div class="text-muted">You can already consult these ciphertexts:</div>
         <div class="mt-2">${preview}</div>
       </div>
@@ -207,13 +224,13 @@ function setNav() {
   navRight.innerHTML = '';
 
   const isAuthed = !!state.me;
-  const isAdmin = isAuthed && state.me.is_admin;
+  const isAuthorityUser = isAuthed && state.me.is_authority_user;
   const isAuthority = isAuthed && state.me.is_authority;
 
   document.getElementById('nav-labelling').parentElement.style.display = shouldShowLabellingNav() ? '' : 'none';
   document.getElementById('nav-documents').parentElement.style.display = canUseDocuments() ? '' : 'none';
-  document.getElementById('nav-revocation').parentElement.style.display = (isAuthed && !isAuthority) ? '' : 'none';
-  document.getElementById('nav-presets').parentElement.style.display = isAdmin ? '' : 'none';
+  document.getElementById('nav-revocation').parentElement.style.display = canUseRevocation() ? '' : 'none';
+  document.getElementById('nav-presets').parentElement.style.display = isAuthorityUser ? '' : 'none';
   document.getElementById('nav-arl').parentElement.style.display = (isAuthed && isAuthority) ? '' : 'none';
 
   if (!isAuthed) {
@@ -272,7 +289,7 @@ async function refreshPresets() {
 
 // permet de recharger la liste de révocation depuis le backend
 async function refreshArl() {
-  if (!state.me || !state.me.is_admin) {
+  if (!state.me || !state.me.is_authority_user) {
     state.arl = null;
     return;
   }
@@ -282,18 +299,110 @@ async function refreshArl() {
 
 // recharge la liste des demandes de révocation en attente
 async function refreshRevocationQueue() {
-  if (!state.me || !state.me.is_admin) {
+  if (!state.me || !state.me.is_authority_user) {
     state.revocationQueue = [];
-    state.promptedRevocationIds.clear();
+    state.activeRevocationPromptId = null;
+    hideRevocationRequestModal();
     return;
   }
   const j = await apiGet('/api/revocation/requests');
   state.revocationQueue = (j.ok && j.data && j.data.requests) ? j.data.requests : [];
   const liveIds = new Set(state.revocationQueue.map((x) => x.id));
-  for (const id of Array.from(state.promptedRevocationIds)) {
-    if (!liveIds.has(id)) {
-      state.promptedRevocationIds.delete(id);
+  if (state.activeRevocationPromptId && !liveIds.has(state.activeRevocationPromptId)) {
+    state.activeRevocationPromptId = null;
+  }
+}
+
+function ensureRevocationRequestModal() {
+  let modal = document.getElementById('revocation-request-modal');
+  if (modal) return modal;
+
+  modal = document.createElement('div');
+  modal.className = 'modal fade';
+  modal.id = 'revocation-request-modal';
+  modal.tabIndex = -1;
+  modal.setAttribute('aria-labelledby', 'revocation-request-modal-title');
+  modal.setAttribute('aria-hidden', 'true');
+  modal.setAttribute('data-bs-backdrop', 'static');
+  modal.setAttribute('data-bs-keyboard', 'false');
+  modal.innerHTML = `
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="revocation-request-modal-title">Pending Revocation Request</h5>
+        </div>
+        <div class="modal-body" id="revocation-request-modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger" id="revocation-request-reject">Reject</button>
+          <button type="button" class="btn btn-success" id="revocation-request-approve">Accept</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById('revocation-request-reject').onclick = () => submitRevocationDecision(false);
+  document.getElementById('revocation-request-approve').onclick = () => submitRevocationDecision(true);
+  return modal;
+}
+
+function hideRevocationRequestModal() {
+  const modal = document.getElementById('revocation-request-modal');
+  if (!modal || !window.bootstrap) return;
+  const instance = bootstrap.Modal.getInstance(modal);
+  if (instance) instance.hide();
+}
+
+function syncRevocationRequestModal() {
+  if (!state.me || !state.me.is_authority_user || state.revocationQueue.length === 0) {
+    state.activeRevocationPromptId = null;
+    hideRevocationRequestModal();
+    return;
+  }
+
+  const current = state.revocationQueue.find((req) => req.id === state.activeRevocationPromptId)
+    || state.revocationQueue[0];
+  state.activeRevocationPromptId = current.id;
+
+  const modal = ensureRevocationRequestModal();
+  document.getElementById('revocation-request-modal-body').innerHTML = `
+    <div class="mb-2"><strong>Request</strong>: #${current.id}</div>
+    <div class="mb-2"><strong>User</strong>: ${escapeHtml(current.requester)}</div>
+    <div><strong>Missions</strong>: ${current.missions.map((m) => escapeHtml(m)).join(', ')}</div>
+  `;
+  document.getElementById('revocation-request-reject').disabled = state.revocationDecisionPending;
+  document.getElementById('revocation-request-approve').disabled = state.revocationDecisionPending;
+
+  if (window.bootstrap) {
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+  }
+}
+
+async function submitRevocationDecision(approve) {
+  if (state.revocationDecisionPending || !state.activeRevocationPromptId) return;
+  state.revocationDecisionPending = true;
+  syncRevocationRequestModal();
+
+  try {
+    const id = state.activeRevocationPromptId;
+    const r = await apiPost('/api/revocation/approve', { id, approve });
+    if (!r.ok) {
+      setAlert('error', r.message || 'Revocation update failed');
+      return;
     }
+
+    setAlert('success', r.message || (approve ? 'Revocation approved' : 'Revocation rejected'));
+    state.activeRevocationPromptId = null;
+    hideRevocationRequestModal();
+    await refreshRevocationQueue();
+    if (state.currentView === 'revocation' && state.me && state.me.is_authority_user) {
+      await renderRevocation();
+    }
+  } catch (_e) {
+    setAlert('error', 'Revocation update failed');
+  } finally {
+    state.revocationDecisionPending = false;
+    syncRevocationRequestModal();
   }
 }
 
@@ -345,7 +454,7 @@ function renderSignIn() {
     await refreshNetworkStatus();
     setNav();
     await refreshPresets();
-    if (state.me.is_admin) {
+    if (state.me.is_authority_user) {
       await refreshArl();
     }
     renderAuthedHome();
@@ -444,12 +553,30 @@ function computeClassificationOptions() {
 // affiche la/les mission(s) que l'utilisateur peut utiliser pour chiffrer depuis Labelling
 function computeMissionOptions() {
   if (!state.me) return [];
-  if (state.me.is_admin) return ['M1', 'M2'];
+  if (state.me.is_authority_user) return ['M1', 'M2'];
   return [state.me.clearance.mission];
 }
 
-function connectedNodesHtml() {
-  return `<div class="mt-3 connected-nodes-panel">${connectedNodesContentHtml()}</div>`;
+function missionCheckboxHtml(mission, idPrefix) {
+  const id = `${idPrefix}-${mission.toLowerCase()}`;
+  return `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${escapeHtml(mission)}" id="${escapeHtml(id)}" data-revocation-mission>
+      <label class="form-check-label" for="${escapeHtml(id)}">${escapeHtml(mission)}</label>
+    </div>
+  `;
+}
+
+function selectedRevocationMissions(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('input[data-revocation-mission]:checked'))
+    .map((input) => input.value);
+}
+
+function connectedNodesHtml(flush = false) {
+  const className = flush ? 'connected-nodes-panel' : 'mt-3 connected-nodes-panel';
+  return `<div class="${className}">${connectedNodesContentHtml()}</div>`;
 }
 
 function connectedNodesContentHtml() {
@@ -487,20 +614,22 @@ function updateConnectedNodesPanels() {
 
 function updateNetworkStatusPanels() {
   document.querySelectorAll('.network-status-panel').forEach((el) => {
-    el.innerHTML = networkStatusContentHtml();
+    el.innerHTML = networkStatusContentHtml(el.getAttribute('data-network-status-flush') === '1');
   });
   updateConnectedNodesPanels();
 }
 
 // affiche le statut réseau (net1-net2) sur la page HTML
-function networkStatusHtml() {
+function networkStatusHtml(flush = false) {
   if (!state.network || !state.network.enabled) return '';
-  return `<div class="mt-3 network-status-panel">${networkStatusContentHtml()}</div>`;
+  const className = flush ? 'network-status-panel' : 'mt-3 network-status-panel';
+  const flushAttr = flush ? ' data-network-status-flush="1"' : '';
+  return `<div class="${className}"${flushAttr}>${networkStatusContentHtml(flush)}</div>`;
 }
 
-function networkStatusContentHtml() {
+function networkStatusContentHtml(flush = false) {
   if (!state.network || !state.network.enabled) return '';
-  return connectedNodesHtml();
+  return connectedNodesHtml(flush);
 }
 
 // affiche la page HTML Labelling
@@ -651,6 +780,22 @@ function renderConnectedPanel() {
   }
 }
 
+function documentStatus(doc) {
+  return doc.status || 'viewable';
+}
+
+function documentActionButtonHtml(doc) {
+  const id = escapeHtml(doc.id);
+  const status = documentStatus(doc);
+  if (status === 'revoked') {
+    return '<button class="btn btn-sm btn-outline-danger" disabled>Revoked</button>';
+  }
+  if (status !== 'viewable') {
+    return '<button class="btn btn-sm btn-secondary" disabled>View</button>';
+  }
+  return `<button class="btn btn-sm btn-secondary" data-docid="${id}">View</button>`;
+}
+
 // affiche la page HTML Documents
 async function renderDocuments() {
   if (!state.me) {
@@ -677,7 +822,7 @@ async function renderDocuments() {
         <td>${d.id}</td>
         <td>${escapeHtml(d.label.classification)}</td>
         <td>${escapeHtml(d.label.mission)}</td>
-        <td><button class="btn btn-sm btn-secondary" data-docid="${d.id}">View</button></td>
+        <td>${documentActionButtonHtml(d)}</td>
       </tr>
       <tr>
         <td colspan="4">
@@ -702,7 +847,7 @@ async function renderDocuments() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            ${networkStatusHtml()}
+            ${networkStatusHtml(true)}
           </div>
         </div>
       </div>
@@ -726,17 +871,21 @@ async function renderDocuments() {
   });
 }
 
-// affiche la page HTML révocation. Si utilisateur -> renderRevocationRequest() et si authority -> renderArl()
+// affiche la page HTML révocation. Si utilisateur -> renderRevocationRequest()
 async function renderRevocation() {
   if (!state.me) {
     renderDefaultAuthView();
     return;
   }
   if (state.me.is_authority) {
-    renderLabelling();
+    renderArl();
     return;
   }
-  if (!state.me.is_admin) {
+  if (!canUseRevocation()) {
+    renderConnectedPanel();
+    return;
+  }
+  if (!state.me.is_authority_user) {
     return renderRevocationRequest();
   }
   state.currentView = 'revocation';
@@ -770,15 +919,8 @@ async function renderRevocation() {
         </table>
 
         <h5>Direct Authority Revocation</h5>
-        <div class="mb-3">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="M1" id="revoke-m1">
-            <label class="form-check-label" for="revoke-m1">M1</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="M2" id="revoke-m2">
-            <label class="form-check-label" for="revoke-m2">M2</label>
-          </div>
+        <div class="mb-3" id="revoke-mission-options">
+          ${computeMissionOptions().map((mission) => missionCheckboxHtml(mission, 'revoke')).join('')}
         </div>
         <button class="btn btn-danger" id="revoke-btn">Revoke selected missions</button>
 
@@ -808,9 +950,7 @@ async function renderRevocation() {
 
   document.getElementById('revoke-btn').onclick = async () => {
     setAlert(null, null);
-    const missions = [];
-    if (document.getElementById('revoke-m1').checked) missions.push('M1');
-    if (document.getElementById('revoke-m2').checked) missions.push('M2');
+    const missions = selectedRevocationMissions('revoke-mission-options');
 
     if (missions.length === 0) {
       setAlert('error', 'Select at least one mission');
@@ -838,6 +978,7 @@ async function renderRevocation() {
       }
       setAlert('success', r.message || 'Revocation approved');
       await renderRevocation();
+      syncRevocationRequestModal();
     };
   });
 
@@ -851,32 +992,29 @@ async function renderRevocation() {
       }
       setAlert('success', r.message || 'Revocation rejected');
       await renderRevocation();
+      syncRevocationRequestModal();
     };
   });
+
+  syncRevocationRequestModal();
 }
 
 // affiche la page révocation pour un utilisateur
 async function renderRevocationRequest() {
-  if (!state.me || state.me.is_admin || state.me.is_authority) {
-    renderLabelling();
+  if (!state.me || state.me.is_authority_user || state.me.is_authority || !canUseRevocation()) {
+    renderConnectedPanel();
     return;
   }
   state.currentView = 'revocation';
   setAlert(null, null);
+  const revocableMissions = [state.me.clearance.mission];
   setView(`
     <div class="row">
       <div class="col-lg-7">
         <h4>Ask Revocation</h4>
         <p class="text-muted">Request authority validation for mission revocation.</p>
-        <div class="mb-3">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="M1" id="ask-revoke-m1">
-            <label class="form-check-label" for="ask-revoke-m1">M1</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="M2" id="ask-revoke-m2">
-            <label class="form-check-label" for="ask-revoke-m2">M2</label>
-          </div>
+        <div class="mb-3" id="ask-revoke-mission-options">
+          ${revocableMissions.map((mission) => missionCheckboxHtml(mission, 'ask-revoke')).join('')}
         </div>
         <button class="btn btn-warning" id="ask-revoke-btn">AskRevocation</button>
       </div>
@@ -893,9 +1031,7 @@ async function renderRevocationRequest() {
   `);
   document.getElementById('ask-revoke-btn').onclick = async () => {
     if (state.revocationRequestPending) return;
-    const missions = [];
-    if (document.getElementById('ask-revoke-m1').checked) missions.push('M1');
-    if (document.getElementById('ask-revoke-m2').checked) missions.push('M2');
+    const missions = selectedRevocationMissions('ask-revoke-mission-options');
     if (!missions.length) {
       setAlert('error', 'Select at least one mission');
       return;
@@ -926,7 +1062,7 @@ async function renderRevocationRequest() {
 
 // affiche la page des presets pour l'autorité 
 async function renderPresets() {
-  if (!state.me || !state.me.is_admin) {
+  if (!state.me || !state.me.is_authority_user) {
     renderDefaultAuthView();
     return;
   }
@@ -1008,6 +1144,9 @@ async function renderArl() {
     <tr>
       <td>${escapeHtml(x.attribute_type)}</td>
       <td>${escapeHtml(x.attribute_value)}</td>
+      <td>
+        ${x.attribute_type === 'mission' ? `<button class="btn btn-sm btn-outline-success" data-unrevoke-mission="${escapeHtml(x.attribute_value)}">Unrevoke</button>` : ''}
+      </td>
     </tr>
   `).join('');
 
@@ -1017,9 +1156,9 @@ async function renderArl() {
         <h4>ARL</h4>
         <table class="table table-sm table-striped">
           <thead>
-            <tr><th>Type</th><th>Value</th></tr>
+            <tr><th>Type</th><th>Value</th><th>Actions</th></tr>
           </thead>
-          <tbody>${rows || '<tr><td colspan="2">Empty</td></tr>'}</tbody>
+          <tbody>${rows || '<tr><td colspan="3">Empty</td></tr>'}</tbody>
         </table>
       </div>
       <div class="col-lg-4">
@@ -1033,6 +1172,22 @@ async function renderArl() {
       </div>
     </div>
   `);
+
+  document.querySelectorAll('button[data-unrevoke-mission]').forEach((btn) => {
+    btn.onclick = async () => {
+      const mission = btn.getAttribute('data-unrevoke-mission');
+      btn.disabled = true;
+      const r = await apiPost('/api/unrevoke', { missions: [mission] });
+      if (!r.ok) {
+        setAlert('error', r.message || 'Unrevoke failed');
+        btn.disabled = false;
+        return;
+      }
+      state.arl = r.data;
+      await renderArl();
+      setAlert('success', `Mission ${mission} unrevoked`);
+    };
+  });
 
 }
 
@@ -1057,31 +1212,23 @@ async function backgroundRefresh() {
   const oldPendingKeyDelivery = state.me.pending_key_delivery;
   const oldHasDelegatedAccess = hasDelegatedAccessReady();
   await refreshMe();
-  if (state.me && state.me.is_admin) {
+  if (state.me && state.me.is_authority_user) {
     await refreshRevocationQueue();
-    for (const req of state.revocationQueue) {
-      if (state.promptedRevocationIds.has(req.id)) continue;
-      state.promptedRevocationIds.add(req.id);
-      const ok = window.confirm(
-        `Revocation request #${req.id} from ${req.requester} for [${req.missions.join(', ')}]. Accept?`
-      );
-      await apiPost('/api/revocation/approve', { id: req.id, approve: ok });
-      break;
-    }
+    syncRevocationRequestModal();
   }
   const delegatedAccessChanged = oldHasDelegatedAccess !== hasDelegatedAccessReady();
   if (state.currentView === 'labelling' && (oldHasAbs !== state.me.has_abs_key || oldPendingKeyDelivery !== state.me.pending_key_delivery || delegatedAccessChanged)) {
     renderLabelling();
   } else if (state.currentView === 'connected' && (oldHasAbs !== state.me.has_abs_key || oldPendingKeyDelivery !== state.me.pending_key_delivery || delegatedAccessChanged)) {
     renderAuthedHome();
-  } else if (state.currentView === 'arl') {
+  } else if (state.currentView === 'arl' && !state.me.is_authority) {
+    renderLabelling();
+  } else if (state.currentView === 'revocation') {
     if (state.me.is_authority) {
       await renderArl();
-    } else {
-      renderLabelling();
-    }
-  } else if (state.currentView === 'revocation') {
-    if (state.me.is_admin && !state.me.is_authority) {
+    } else if (!canUseRevocation()) {
+      renderAuthedHome();
+    } else if (state.me.is_authority_user) {
       await renderRevocation();
     }
   }
@@ -1094,7 +1241,7 @@ async function init() {
   await refreshNetworkStatus();
   if (state.me) {
     await refreshPresets();
-    if (state.me.is_admin) {
+    if (state.me.is_authority_user) {
       await refreshArl();
       await refreshRevocationQueue();
     }

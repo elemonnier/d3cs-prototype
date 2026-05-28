@@ -1,6 +1,6 @@
 ﻿Maquettage démo. L'indexage de la forme « n/28 » correspond à une slide correspondante, non présente et non utile pour la spec.
 1-4/28
-Screen démonstrateur sur les presets depuis le panel admin
+Screen démonstrateur sur les presets depuis le panel authority
 5/28
 U1 fait Sign up avec login / mdp / clearance : temps de chargement « waiting for key generation or delegation process »
 Cela appelle un keyrequest sur le réseau
@@ -9,7 +9,7 @@ Cela le connecte automatiquement et il peut voir ses clés directement sur son p
 6-10/28
 Lepton place U1 hors voisinage direct de l'autorité.
 U5 fait Sign up avec login / mdp / clearance : temps de chargement « waiting for key generation or delegation process »
-Puis U5 accède à son panel : on voit qu'il ne peut pas chiffrer car il n'a pas de clé ABS (l'onglet n'est pas dispo dans le nav), il la recevra lorsque il retournera dans l'espace de connectivité de l'admin
+Puis U5 accède à son panel : on voit qu'il ne peut pas chiffrer car il n'a pas de clé ABS (l'onglet n'est pas dispo dans le nav), il la recevra lorsque il retournera dans l'espace de connectivité de l'authority
 11-15/28
 Lepton replace U1 dans le voisinage direct de l'autorité.
 Montrer un chiffrement de la part de U1 sur le panel Labelling. Montrer que U1 a accès à FR-DR aussi, mais pas à M2 (besoin d'en connaître). 
@@ -26,7 +26,7 @@ U5 ne voit pas 1.ct, et s'il voulait le voir il ne pourrait pas à cause de sa c
 Lepton rend U5 et U7 voisins dans une zone ou l'autorité n'est pas directement joignable.
 20/28
 TM1 fait un askRevocation à TM0 pour l'attribut M2
-TM0 informe l'admin, une alerte apparaît sur son panel respectif
+TM0 informe l'authority, une alerte apparaît sur son panel respectif
 21-22/28
 U9 tente de créer un compte avec l'attribut M2 : blocage car attribut révoqué
 23-26/28

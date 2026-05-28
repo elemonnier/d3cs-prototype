@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>How to run LEPTON with DoDWAN nodes</h1>
+
+<h2>Preamble</h2>
+
+<p><a href="http://www-casa.irisa.fr/dodwan">DoDWAN</a> is an opportunistic
+networking middleware system that allows mobile devices to exchange
+information using the publish/subscribe model.</p>
+
+<p>LEPTON can emulate DoDWAN nodes, allowing such nodes to run
+concurrently on a single host platform (or on a cluster of hosts),
+while simulating the mobility of these nodes, and while conducting
+communications between them according to their respective
+positions in the simulation area.</p>
+
+<h2>Requirements</h2>
+
+<p>Besides LEPTON you need to install
+<a href="http://www-casa.irisa.fr/dodwan">DoDWAN</a> on your host platform, as
+well as a specific
+<a href="http://casa-irisa.univ-ubs.fr/download/dodwan-adapter.zip">adapter</a>. This
+adapter will allow LEPTON to control DoDWAN nodes, and to process
+traffic received from these nodes.</p>
+
+<h2>Installation of DoDWAN and its adapter</h2>
+
+<p>In the following we assume you have already installed LEPTON on your
+system, but DoDWAN and its adapter are still missing.</p>
+
+<p>Download the latest
+<a href="http://casa-irisa.univ-ubs.fr/download/dodwan.zip">DoDWAN archive</a>,
+as well as the corresponding
+<a href="http://casa-irisa.univ-ubs.fr/download/dodwan-adapter.zip">adapter archive</a>:</p>
+
+<pre><code class="prettyprint">wget http://casa-irisa.univ-ubs.fr/download/dodwan.zip
+wget http://casa-irisa.univ-ubs.fr/download/dodwan-adapter.zip
+</code></pre>
+
+<p>Unzip both archives:</p>
+
+<pre><code class="prettyprint">unzip dodwan.zip
+unzip dodwan-adapter.zip
+</code></pre>
+
+<p>Set environment variables <code>DODWAN_HOME</code> and <code>DODWAN_ADAPTER_HOME</code> so they point to the folders you've just created:</p>
+
+<pre><code class="prettyprint">cat &lt;&lt; EOF &gt;&gt; ~/.$(basename $SHELL)rc
+#
+# DODWAN_HOME environment variable
+export DODWAN_HOME="${PWD}/dodwan"
+export PATH="\${DODWAN_HOME}/bin:\${PATH}"
+#
+# DODWAN_ADAPTER_HOME environment variable
+export DODWAN_ADAPTER_HOME="${PWD}/dodwan-adapter"
+#
+EOF
+source ~/.$(basename $SHELL)rc
+</code></pre>
+
+<h2>Running LEPTON with DoDWAN nodes: a short tutorial</h2>
+
+<p>LEPTON supports several modes of operation. In the following we assume
+LEPTON and several DoDWAN nodes must run concurrently on the same
+host. Other options would be to distribute the DoDWAN nodes on a
+cluster of workstations, or to run each DoDWAN node on a distinct real
+device (e.g., smartphone, laptop, or tablet).</p>
+
+<h3>Starting LEPTON</h3>
+
+<p>When starting LEPTON a reference to DoDWAN's adapter must be provided,
+so LEPTON knows how to process the traffic it will receive from DoDWAN
+nodes. This is obtained by defining argument <code>oppnet_adapter</code> when
+starting LEPTON:</p>
+
+<pre><code class="prettyprint">lepton.sh start oppnet_adapter=${DODWAN_ADAPTER_HOME}/bin/adapter.sh
+</code></pre>
+
+<p>In this example, LEPTON is started with its default configuration,
+except that argument <code>oppnet_adapter</code> indicates where to find the adapter
+required for interacting with DoDWAN nodes.</p>
+
+<p>Using LEPTON's default configuration means that a number of nodes are
+created automatically when LEPTON starts. After running the command
+above you should thus see a number of nodes moving in the display
+window.</p>
+
+<p>So what's the difference between starting LEPTON with or without
+argument <code>oppnet_adapter</code>? The difference is that when
+<code>oppnet_adapter</code> is used, the nodes you see on the display screen are
+not just blips moving around. For each node you observe on the screen
+there is an instance of DoDWAN (we'll call it a "DoDWAN node") running
+in the background on your system.</p>
+
+<p>At any time you can use the following command to check whether LEPTON
+is running or not, and how many DoDWAN nodes are running as well:</p>
+
+<pre><code class="prettyprint">lepton.sh status
+</code></pre>
+
+<p>If you're <em>really</em> curious you can also use the following command to
+verify that many instances of DoDWAN are indeed running in the
+background on your system:</p>
+
+<pre><code class="prettyprint">ps ux | grep dodwand | grep -v grep
+</code></pre>
+
+<p>Now what are these DoDWAN nodes doing? Well, they are trying to
+discover one another, and engage in gossiping transactions. But they
+are doing so via a software hub that is part of LEPTON, so LEPTON
+actually orchestrates communications between all these nodes. You can
+observe the activity of LEPTON's hub by scanning its log file:</p>
+
+<pre><code class="prettyprint">tail -f /dev/shm/${USER}/lepton/lepton.out
+(Use Ctrl-C to terminate)
+</code></pre>
+
+<p>You should see that there is a lot of traffic passing through LEPTON's
+hub, which means that DoDWAN nodes are indeed exchanging messages
+whenever LEPTON estimantes that they are close enough to do so.</p>
+
+<h3>What happens on the display screen?</h3>
+
+<p>You may have observed that the vertices that appear between nodes
+change color every now and then. A blue vertex between two nodes means
+that LEPTON considers that these nodes are "in radio range", that is,
+close enough to communicate. This does not mean that they are actually
+communicating, though: they are just close enough to do so. A vertex
+turns red when a connection is actually established between both
+nodes, which means that they have discovered one another, and have
+reacted accordingly.</p>
+
+<p>By default DoDWAN nodes use UDP transmissions for neighbor discovery,
+and a TCP session is established between two neighbor nodes as soon as
+they have discovered one another. This TCP session is maintained as
+long as possible, that is until the link between the nodes is
+disrupted because they are not in transmission range anymore. </p>
+
+<p>When running with LEPTON, all DoDWAN nodes redirect their traffic to
+the hub, which serves as some kind of a proxy. A red vertex between
+two DoDWAN nodes on the screen therefore means that these nodes are
+connected by TCP... but through the hub.</p>
+
+<h3>Interacting with the DoDWAN nodes at runtime</h3>
+
+<p>DoDWAN comes with a bash script <code>dodwan.sh</code> that makes it easy to
+control a DoDWAN node at runtime. This script is meant to control a
+single instance of DoDWAN, though.</p>
+
+<p>Since many DoDWAN nodes can run concurrently on the same host when
+running with LEPTON, the script <code>lepton.sh</code> makes it possible to
+control each node individually, using the same set of commands as that
+offered by <code>dodwan.sh</code>:</p>
+
+<pre><code class="prettyprint">lepton.sh exec [node_id] start
+                       | stop
+                       | status
+                       | clear
+                       | publish &lt;desc&gt; &lt;fname&gt;
+                       | subscribe &lt;key&gt; &lt;pattern&gt; {-d dir | -e cmd}
+                       | unsubscribe &lt;key&gt;
+                       | console (for experts)
+</code></pre>
+
+<p>Please refer to DoDWAN's documentation for details about these
+commands, but remember that when calling <code>lepton.sh</code> with option
+<code>exec</code> the second argument must always be <code>node_id</code>, so LEPTON knows
+which DoDWAN node the command must be addressed to.</p>
+
+<p>Let us assume you would like node <code>N00</code> to publish a (pseudo) music
+file:</p>
+
+<pre><code class="prettyprint">echo "Let us pretend this is jazz music" &gt; /tmp/file1.mp3
+lepton.sh exec N00 publish type=music,style=jazz /tmp/file1.mp3
+</code></pre>
+
+<p>And if you wish node <code>N12</code> to be able to receive music files and save
+them in directory <code>/tmp/music_for_N12</code>, you simply need to set a
+subscription accordingly on that node:</p>
+
+<pre><code class="prettyprint">mkdir /tmp/music_for_N12
+lepton.sh exec N12 subscribe myMusicPrefs "type=music,style=(jazz|classical)" -d /tmp/music_for_N12
+</code></pre>
+
+<p>You can now wait for <code>N12</code> to receive the file published by <code>N00</code>:</p>
+
+<pre><code class="prettyprint">watch -n 1 ls /tmp/music_for_N12
+(Use Ctrl-C to terminate)
+</code></pre>
+
+<p>This may take some time, of course, since you have to wait for nodes
+<code>N00</code> and <code>N12</code> to come within radio range.</p>
+
+<p>But you can make things way faster by setting subscriptions on some of
+the other nodes, so they become mobile carriers for any kind of music:</p>
+
+<pre><code class="prettyprint">for node in N00 N01 N02 N03 N04 N05 N06 N07 N08 N09 N10 N11 N12 N13 N14 N15 N16 N17 N18 N19 ; do
+  lepton.sh exec $node subscribe anyMusic "type=music" ;
+done
+</code></pre>
+
+<p>Now it shouldn't take too long for <code>N12</code> to receive <code>file1.mp3</code>!</p>
+
+<h3>Stopping LEPTON</h3>
+
+<pre><code class="prettyprint">lepton.sh stop
+</code></pre>
+
+<p>This command stops LEPTON, but also all the DoDWAN nodes that may be
+running as well.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

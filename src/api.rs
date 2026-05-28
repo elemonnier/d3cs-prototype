@@ -10,7 +10,7 @@ use tiny_http::{Header, Method, Response, StatusCode};
 
 use crate::crypto::{BlpBibaConfig, DocumentLabel, RevocationList};
 use crate::network::NetworkStatus;
-use crate::{AppState, Clearance, PendingRevocation, RunMode};
+use crate::{AppState, Clearance, PendingRevocation, RunMode, AUTHORITY_LOGIN};
 
 #[derive(Serialize)]
 struct ApiResponse<T: Serialize> {
@@ -134,7 +134,7 @@ fn get_session_user(state: &Arc<AppState>, req: &tiny_http::Request) -> Option<S
         }
     }
     if is_authority_panel(state) {
-        return Some("admin".to_string());
+        return Some(AUTHORITY_LOGIN.to_string());
     }
     None
 }
@@ -145,14 +145,17 @@ fn require_auth(state: &Arc<AppState>, req: &tiny_http::Request) -> Result<Strin
     get_session_user(state, req).ok_or_else(|| anyhow!("Not authenticated"))
 }
 
-// retourne True si l'utilisateur courant est un admin
+// retourne True si l'utilisateur courant est l'authority
 
-fn is_admin(state: &Arc<AppState>, login: &str) -> bool {
+fn is_authority_user(state: &Arc<AppState>, login: &str) -> bool {
     let db = match state.user_db.lock() {
         Ok(v) => v,
         Err(_) => return false,
     };
-    db.users.get(login).map(|u| u.is_admin).unwrap_or(false)
+    db.users
+        .get(login)
+        .map(|u| u.is_authority_user)
+        .unwrap_or(false)
 }
 
 // récup les infos utiles de l'utilisateur en mémoire
@@ -160,7 +163,7 @@ fn is_admin(state: &Arc<AppState>, login: &str) -> bool {
 fn get_user_record(state: &Arc<AppState>, login: &str) -> Option<(Clearance, bool)> {
     let db = state.user_db.lock().ok()?;
     let u = db.users.get(login)?;
-    Some((u.clearance.clone(), u.is_admin))
+    Some((u.clearance.clone(), u.is_authority_user))
 }
 
 // vérification de clé ABS
@@ -170,8 +173,8 @@ fn user_has_abs_key(state: &Arc<AppState>, login: &str) -> bool {
     std::path::Path::new(&p).exists()
 }
 
-fn user_can_access_documents(state: &Arc<AppState>, login: &str, is_admin: bool) -> bool {
-    if state.mode != RunMode::Network || is_admin || is_authority_panel(state) {
+fn user_can_access_documents(state: &Arc<AppState>, login: &str, is_authority_user: bool) -> bool {
+    if state.mode != RunMode::Network || is_authority_user || is_authority_panel(state) {
         return true;
     }
 
@@ -183,6 +186,17 @@ fn user_can_access_documents(state: &Arc<AppState>, login: &str, is_admin: bool)
 }
 
 // codage en dur des classifications qui peuvent être déléguées
+
+fn user_can_request_revocation(
+    state: &Arc<AppState>,
+    login: &str,
+    is_authority_user: bool,
+) -> bool {
+    if is_authority_panel(state) || !user_has_abs_key(state, login) {
+        return false;
+    }
+    user_can_access_documents(state, login, is_authority_user)
+}
 
 fn is_delegable_classification(classification: &str) -> bool {
     matches!(classification, "FR-S" | "FR-DR")
@@ -208,7 +222,7 @@ fn me_data_for(
     state: &Arc<AppState>,
     login: String,
     clearance: Clearance,
-    is_admin: bool,
+    is_authority_user: bool,
 ) -> MeData {
     let mut pending_key_delivery = false;
     let mut has_abs_key = user_has_abs_key(state, &login);
@@ -224,7 +238,7 @@ fn me_data_for(
     MeData {
         login,
         clearance,
-        is_admin,
+        is_authority_user,
         is_authority: is_authority_panel(state),
         mode: if state.mode == RunMode::Network {
             "network".to_string()
@@ -267,12 +281,7 @@ fn clear_signup_network_material(state: &Arc<AppState>, login: &str) -> Result<(
         Err(e) => return Err(e.into()),
     }
 
-    let pska_path = format!("{}/pska/pska{}.bin", state.tm_dir, login);
-    match fs::remove_file(&pska_path) {
-        Ok(()) => {}
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-        Err(e) => return Err(e.into()),
-    }
+    crate::crypto::remove_pska_for_login(state, login)?;
 
     Ok(())
 }
@@ -377,7 +386,7 @@ struct SignupRequest {
 struct MeData {
     login: String,
     clearance: Clearance,
-    is_admin: bool,
+    is_authority_user: bool,
     is_authority: bool,
     mode: String,
     has_abs_key: bool,
@@ -448,7 +457,7 @@ struct RevocationQueueData {
 // POST /api/signup             -> crée un nouvel utilisateur, et le connecte directement, après vérification
 //                              -> de l'ARL et si l'utilisateur n'existe pas déjà
 // POST /api/logout             -> permet de déconnecter l'utilisateur courant (via suppression cookie)
-// GET  /api/network/status     -> affiche le statut reseau et les voisins fournis par Lepton.
+// GET  /api/network/status     -> affiche le statut reseau et les voisins fournis par DoDWAN.
 // GET  /api/presets            -> permet de récupérer la configuration actuelle BLP/Biba
 // POST /api/presets            -> permet de modifier la config BLP/Biba
 // GET  /api/revocations        -> permet de récupérer la liste de révocation
@@ -456,7 +465,7 @@ struct RevocationQueueData {
 // POST /api/revocation/request -> permet d'ajouter une demande dans la liste des pending revocation requests
 // POST /api/revocation/approve -> permet d'approuver une demande de révocation (acceptation ou rejet)
 // POST /api/revoke             -> permet de révoquer une ou plusieurs missions
-// GET  /api/documents          -> récupère les documents chiffrés accessibles par l'utilisateur connecté
+// GET  /api/documents          -> récupère les documents chiffrés avec leur statut pour l'utilisateur connecté
 // POST /api/encrypt            -> permet de chiffrer un document via l'interface de labellisation
 // POST /api/decrypt            -> permet de déchiffrer/afficher un document via l'interface Documents
 
@@ -488,12 +497,12 @@ pub fn handle_request(
     match (method, url.as_str()) {
         (Method::Get, "/api/me") => {
             if let Some(login) = get_session_user(&state, &req) {
-                if let Some((clearance, is_admin)) = get_user_record(&state, &login) {
+                if let Some((clearance, is_authority_user)) = get_user_record(&state, &login) {
                     let resp = json_response(
                         200,
                         true,
                         None,
-                        Some(me_data_for(&state, login, clearance, is_admin)),
+                        Some(me_data_for(&state, login, clearance, is_authority_user)),
                     );
                     let _ = req.respond(resp);
                     return Ok(());
@@ -546,9 +555,24 @@ pub fn handle_request(
             let body = read_body(&mut req)?;
             let parsed: SigninRequest =
                 serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let login = parsed.login.trim().to_ascii_lowercase();
+
+            if login == AUTHORITY_LOGIN
+                && state.mode == RunMode::Network
+                && !is_authority_panel(&state)
+            {
+                let resp = json_response::<MeData>(
+                    401,
+                    false,
+                    Some("Authority login is only available on the Authority panel".to_string()),
+                    None,
+                );
+                let _ = req.respond(resp);
+                return Ok(());
+            }
 
             let db = state.user_db.lock().map_err(|_| anyhow!("DB error"))?;
-            let record = db.users.get(&parsed.login).cloned();
+            let record = db.users.get(&login).cloned();
             drop(db);
 
             match record {
@@ -559,13 +583,13 @@ pub fn handle_request(
                             .sessions
                             .lock()
                             .map_err(|_| anyhow!("Session store error"))?;
-                        sessions.insert(token.clone(), parsed.login.clone());
+                        sessions.insert(token.clone(), login.clone());
                     }
                     let data = me_data_for(
                         &state,
-                        parsed.login.clone(),
+                        login.clone(),
                         u.clearance.clone(),
-                        u.is_admin,
+                        u.is_authority_user,
                     );
                     let resp = json_response(200, true, None, Some(data))
                         .with_header(set_cookie_header(&state, &token));
@@ -600,11 +624,8 @@ pub fn handle_request(
                 _ => return Err(anyhow!("Invalid clearance format")),
             };
 
-            let arl = crate::crypto::get_arl(&state).map_err(|e| anyhow!(e.to_string()))?;
-            if arl
-                .items
-                .iter()
-                .any(|e| e.attribute_type == "mission" && e.attribute_value == clearance.mission)
+            if crate::crypto::mission_revoked(&state, &clearance.mission)
+                .map_err(|e| anyhow!(e.to_string()))?
             {
                 let resp = json_response::<MeData>(
                     400,
@@ -654,7 +675,7 @@ pub fn handle_request(
                 crate::UserRecord {
                     password: parsed.password.clone(),
                     clearance: clearance.clone(),
-                    is_admin: false,
+                    is_authority_user: false,
                 },
             );
             drop(db);
@@ -714,7 +735,7 @@ pub fn handle_request(
 
         (Method::Post, "/api/presets") => {
             let login = require_auth(&state, &req)?;
-            if !is_admin(&state, &login) {
+            if !is_authority_user(&state, &login) {
                 let resp = json_response::<BlpBibaConfig>(
                     403,
                     false,
@@ -744,7 +765,7 @@ pub fn handle_request(
 
         (Method::Get, "/api/revocations") => {
             let login = require_auth(&state, &req)?;
-            if !is_admin(&state, &login) {
+            if !is_authority_user(&state, &login) {
                 let resp = json_response::<RevocationList>(
                     403,
                     false,
@@ -762,7 +783,7 @@ pub fn handle_request(
 
         (Method::Get, "/api/revocation/requests") => {
             let login = require_auth(&state, &req)?;
-            if !is_admin(&state, &login) {
+            if !is_authority_user(&state, &login) {
                 let resp = json_response::<RevocationQueueData>(
                     403,
                     false,
@@ -798,11 +819,13 @@ pub fn handle_request(
 
         (Method::Post, "/api/revocation/request") => {
             let login = require_auth(&state, &req)?;
-            if is_admin(&state, &login) {
+            let (_, is_authority_user_flag) =
+                get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
+            if !user_can_request_revocation(&state, &login, is_authority_user_flag) {
                 let resp = json_response::<serde_json::Value>(
-                    400,
+                    403,
                     false,
-                    Some("Authority cannot request revocation".to_string()),
+                    Some("Revocation unavailable until ABE and ABS keys are received".to_string()),
                     None,
                 );
                 let _ = req.respond(resp);
@@ -822,63 +845,8 @@ pub fn handle_request(
                 let _ = req.respond(resp);
                 return Ok(());
             }
-            let mut queue = if state.mode == RunMode::Network {
-                load_pending_revocations_shared(&state)
-            } else {
-                state
-                    .pending_revocations
-                    .lock()
-                    .map_err(|_| anyhow!("Revocation queue error"))?
-                    .clone()
-            };
-            if let Some(existing) = queue
-                .iter()
-                .find(|r| same_pending_revocation(r, &login, &missions))
-            {
-                let _ = req.respond(json_response::<serde_json::Value>(
-                    200,
-                    true,
-                    Some(format!(
-                        "Revocation request #{} is already pending",
-                        existing.id
-                    )),
-                    None,
-                ));
-                return Ok(());
-            }
-            let next_id = next_revocation_id(&queue);
-            queue.push(PendingRevocation {
-                id: next_id,
-                requester: login.clone(),
-                missions: missions.clone(),
-            });
             if state.mode == RunMode::Network {
-                save_pending_revocations_shared(&state, &queue)?;
-                if let Some(rt) = get_runtime(&state) {
-                    if let Some(last) = queue.last() {
-                        if let Err(e) =
-                            rt.ask_revocation_request(last.id, &last.requester, &last.missions)
-                        {
-                            queue.retain(|r| r.id != next_id);
-                            save_pending_revocations_shared(&state, &queue)?;
-                            if let Ok(mut local_q) = state.pending_revocations.lock() {
-                                *local_q = queue;
-                            }
-                            let _ = req.respond(json_response::<serde_json::Value>(
-                                502,
-                                false,
-                                Some(format!("Revocation request could not be sent: {e}")),
-                                None,
-                            ));
-                            return Ok(());
-                        }
-                    }
-                } else {
-                    queue.retain(|r| r.id != next_id);
-                    save_pending_revocations_shared(&state, &queue)?;
-                    if let Ok(mut local_q) = state.pending_revocations.lock() {
-                        *local_q = queue;
-                    }
+                let Some(rt) = get_runtime(&state) else {
                     let _ = req.respond(json_response::<serde_json::Value>(
                         503,
                         false,
@@ -886,10 +854,47 @@ pub fn handle_request(
                         None,
                     ));
                     return Ok(());
+                };
+                let request_id = next_revocation_id(&[]);
+                if let Err(e) = rt.ask_revocation_request(request_id, &login, &missions) {
+                    let _ = req.respond(json_response::<serde_json::Value>(
+                        502,
+                        false,
+                        Some(format!("Revocation request could not be sent: {e}")),
+                        None,
+                    ));
+                    return Ok(());
                 }
-            }
-            if let Ok(mut local_q) = state.pending_revocations.lock() {
-                *local_q = queue.clone();
+            } else {
+                let mut queue = state
+                    .pending_revocations
+                    .lock()
+                    .map_err(|_| anyhow!("Revocation queue error"))?
+                    .clone();
+                if let Some(existing) = queue
+                    .iter()
+                    .find(|r| same_pending_revocation(r, &login, &missions))
+                {
+                    let _ = req.respond(json_response::<serde_json::Value>(
+                        200,
+                        true,
+                        Some(format!(
+                            "Revocation request #{} is already pending",
+                            existing.id
+                        )),
+                        None,
+                    ));
+                    return Ok(());
+                }
+                let next_id = next_revocation_id(&queue);
+                queue.push(PendingRevocation {
+                    id: next_id,
+                    requester: login.clone(),
+                    missions: missions.clone(),
+                });
+                if let Ok(mut local_q) = state.pending_revocations.lock() {
+                    *local_q = queue;
+                }
             }
             let _ = req.respond(json_response::<serde_json::Value>(
                 200,
@@ -902,7 +907,7 @@ pub fn handle_request(
 
         (Method::Post, "/api/revocation/approve") => {
             let login = require_auth(&state, &req)?;
-            if !is_admin(&state, &login) {
+            if !is_authority_user(&state, &login) {
                 let resp = json_response::<serde_json::Value>(
                     403,
                     false,
@@ -950,14 +955,12 @@ pub fn handle_request(
             }
 
             if parsed.approve {
+                let arl = crate::crypto::revoke_missions(&state, &req_item.missions)?;
                 if state.mode == RunMode::Network {
                     if let Some(rt) = get_runtime(&state) {
-                        for m in &req_item.missions {
-                            let _ = rt.ask_revocation(m);
-                        }
+                        let _ = rt.broadcast_arl_update(&arl);
                     }
                 }
-                let _ = crate::crypto::revoke_missions(&state, &req_item.missions)?;
                 let _ = req.respond(json_response::<serde_json::Value>(
                     200,
                     true,
@@ -977,7 +980,9 @@ pub fn handle_request(
 
         (Method::Post, "/api/revoke") => {
             let login = require_auth(&state, &req)?;
-            if !is_admin(&state, &login) || is_authority_panel(&state) {
+            if !is_authority_user(&state, &login)
+                || (state.mode == RunMode::Network && !is_authority_panel(&state))
+            {
                 let resp = json_response::<RevocationList>(
                     403,
                     false,
@@ -991,15 +996,52 @@ pub fn handle_request(
             let parsed: RevokeRequest =
                 serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
 
+            let arl = crate::crypto::revoke_missions(&state, &parsed.missions)?;
             if state.mode == RunMode::Network {
                 if let Some(rt) = get_runtime(&state) {
-                    for m in &parsed.missions {
-                        let _ = rt.ask_revocation(m);
-                    }
+                    let _ = rt.broadcast_arl_update(&arl);
                 }
             }
+            let resp = json_response(200, true, None, Some(arl));
+            let _ = req.respond(resp);
+            Ok(())
+        }
 
-            let arl = crate::crypto::revoke_missions(&state, &parsed.missions)?;
+        (Method::Post, "/api/unrevoke") => {
+            let login = require_auth(&state, &req)?;
+            if !is_authority_user(&state, &login)
+                || (state.mode == RunMode::Network && !is_authority_panel(&state))
+            {
+                let resp = json_response::<RevocationList>(
+                    403,
+                    false,
+                    Some("Authority only".to_string()),
+                    None,
+                );
+                let _ = req.respond(resp);
+                return Ok(());
+            }
+            let body = read_body(&mut req)?;
+            let parsed: RevokeRequest =
+                serde_json::from_slice(&body).map_err(|_| anyhow!("Invalid JSON"))?;
+            let missions = normalize_revocation_missions(&parsed.missions);
+            if missions.is_empty() {
+                let resp = json_response::<RevocationList>(
+                    400,
+                    false,
+                    Some("Select at least one mission".to_string()),
+                    None,
+                );
+                let _ = req.respond(resp);
+                return Ok(());
+            }
+
+            let arl = crate::crypto::unrevoke_missions(&state, &missions)?;
+            if state.mode == RunMode::Network {
+                if let Some(rt) = get_runtime(&state) {
+                    let _ = rt.broadcast_arl_update(&arl);
+                }
+            }
             let resp = json_response(200, true, None, Some(arl));
             let _ = req.respond(resp);
             Ok(())
@@ -1007,9 +1049,9 @@ pub fn handle_request(
 
         (Method::Get, "/api/documents") => {
             let login = require_auth(&state, &req)?;
-            let (clearance, is_admin) =
+            let (clearance, is_authority_user) =
                 get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
-            if !user_can_access_documents(&state, &login, is_admin) {
+            if !user_can_access_documents(&state, &login, is_authority_user) {
                 let resp = json_response::<DocumentsData>(
                     403,
                     false,
@@ -1019,7 +1061,7 @@ pub fn handle_request(
                 let _ = req.respond(resp);
                 return Ok(());
             }
-            let docs = crate::crypto::list_documents(&state, &clearance, is_admin)?;
+            let docs = crate::crypto::list_documents(&state, &clearance, is_authority_user)?;
             let resp = json_response(200, true, None, Some(DocumentsData { documents: docs }));
             let _ = req.respond(resp);
             Ok(())
@@ -1027,7 +1069,7 @@ pub fn handle_request(
 
         (Method::Post, "/api/encrypt") => {
             let login = require_auth(&state, &req)?;
-            let (clearance, is_admin_flag) =
+            let (clearance, is_authority_user_flag) =
                 get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
             let body = read_body(&mut req)?;
             let parsed: EncryptRequest =
@@ -1042,7 +1084,7 @@ pub fn handle_request(
                 &state,
                 &login,
                 &clearance,
-                is_admin_flag,
+                is_authority_user_flag,
                 &label,
                 &parsed.message,
             ) {
@@ -1066,9 +1108,9 @@ pub fn handle_request(
 
         (Method::Post, "/api/decrypt") => {
             let login = require_auth(&state, &req)?;
-            let (_, is_admin) =
+            let (_, is_authority_user) =
                 get_user_record(&state, &login).ok_or_else(|| anyhow!("User not found"))?;
-            if !user_can_access_documents(&state, &login, is_admin) {
+            if !user_can_access_documents(&state, &login, is_authority_user) {
                 let resp = json_response::<DecryptData>(
                     403,
                     false,

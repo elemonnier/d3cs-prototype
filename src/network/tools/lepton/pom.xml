@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+			     http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- ===================================================================== -->
+	<!-- Basic project information                                             -->
+	<!-- ===================================================================== -->
+
+	<groupId>casa.lepton</groupId>
+	<artifactId>lepton</artifactId>
+	<name>Lepton</name>
+	<description>Lightweight Emulation PlaTform for Opportunistic Networking</description>
+	<version>1.0</version>
+	<packaging>jar</packaging>
+	<organization>
+		<name>CASA Team, IRISA Lab, Université Bretagne Sud</name>
+		<url>http://www-casa.irisa.fr/</url>
+	</organization>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<!-- ===================================================================== -->
+	<!-- Project repositories                                                  -->
+	<!-- ===================================================================== -->
+
+	<repositories>
+		<!-- CASA repository that contains the casa-util and dgs-util dependencies -->
+		<repository>
+			<id>casa-maven-repo</id>
+			<url>http://casa-irisa.univ-ubs.fr/download/maven2</url>
+		</repository>
+	</repositories>
+
+	<!-- ===================================================================== -->
+	<!-- Project dependencies                                                  -->
+	<!-- ===================================================================== -->
+
+	<dependencies>
+
+		<dependency>
+			<groupId>casa.dgs</groupId>
+			<artifactId>dgs-util</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.graphstream</groupId>
+			<artifactId>gs-ui</artifactId>
+			<version>1.3</version>
+		</dependency>
+
+	</dependencies>
+
+	<!-- ===================================================================== -->
+	<!-- Target jar generation                                                 -->
+	<!-- ===================================================================== -->
+
+	<build>
+		<plugins>
+			<!-- copy the dependencies to the libs/ directory -->
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/libs</outputDirectory>
+							<excludeArtifactIds>mbox2</excludeArtifactIds>
+							<excludeGroupIds>bouncycastle,org.jfree,com.lowagie,junit,org.apache.commons,org.hamcrest,xml-apis</excludeGroupIds>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- make the target jar in the libs/ directory -->
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.2</version>
+				<configuration>
+					<outputDirectory>${project.basedir}/libs</outputDirectory>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

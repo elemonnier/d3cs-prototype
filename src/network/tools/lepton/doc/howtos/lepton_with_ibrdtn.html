@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>How to run LEPTON with IBRDTN nodes</h1>
+
+<h2>Preamble</h2>
+
+<p><a href="https://github.com/ibrdtn/ibrdtn">IBRDTN</a> is an opportunistic
+networking middleware system that implements the Bundle protocol, as
+defined in <a href="https://tools.ietf.org/html/rfc5050">RFC 5050</a>.</p>
+
+<p>LEPTON can emulate IBRDTN nodes, allowing such nodes to run
+concurrently on a single host platform (or on a cluster of hosts),
+while simulating the mobility of these nodes, and while conducting
+communications between them according to their respective
+positions in the simulation area.</p>
+
+<h2>Requirements</h2>
+
+<p>Besides LEPTON you need to install
+<a href="https://github.com/ibrdtn/ibrdtn">IBRDTN</a> on your host platform, as
+well as a specific
+<a href="http://casa-irisa.univ-ubs.fr/download/ibrdtn-adapter.zip">adapter</a>. This
+adapter will allow LEPTON to control IBRDTN nodes, and to process
+traffic received from these nodes.</p>
+
+<p>In the following we assume you have already installed LEPTON on your
+system, but IBRDTN and its adapter are still missing.</p>
+
+<h2>Installation of IBRDTN and its adapter</h2>
+
+<p><strong>Note: the official version of IBRDTN (available on GitHub) is not
+directly compatible with LEPTON. Therefore you need to install a
+sligthly modified version of IBRDTN on your system.</strong></p>
+
+<p>Download the
+<a href="http://casa-irisa.univ-ubs.fr/download/ibrdtn-for-lepton.zip">archive</a>
+that contains this modified version of IBRDTN, as well as the
+<a href="http://casa-irisa.univ-ubs.fr/download/ibrdtn-adapter.zip">adapter archive</a>
+that will allow LEPTON to control IBRDTN nodes:</p>
+
+<pre><code class="prettyprint">wget http://casa-irisa.univ-ubs.fr/download/ibrdtn-for-lepton.zip
+wget http://casa-irisa.univ-ubs.fr/download/ibrdtn-adapter.zip
+</code></pre>
+
+<p>Unzip both archives:</p>
+
+<pre><code class="prettyprint">unzip ibrdtn-for-lepton.zip
+unzip ibrdtn-adapter.zip
+</code></pre>
+
+<p>In order to build IBRDTN on a Linux plaform, you may have to install
+several packages first:</p>
+
+<pre><code class="prettyprint">sudo apt-get install build-essential libssl-dev libz-dev libsqlite3-dev \
+  libcurl4-gnutls-dev libdaemon-dev automake autoconf pkg-config libtool libcppunit-dev \
+  libnl-3-dev libnl-cli-3-dev libnl-genl-3-dev libnl-nf-3-dev libnl-route-3-dev libarchive-dev
+</code></pre>
+
+<p>Once your Linux platform is ready, you can start building IBRDTN (this
+may take a while!):</p>
+
+<pre><code class="prettyprint">pushd ibrdtn-for-lepton/ibrdtn
+./autogen.sh
+</code></pre>
+
+<p>Note: while running autogen.sh the script may complain that the folder
+is not a git repository. Don't worry about that and continue with the
+following commands:</p>
+
+<pre><code class="prettyprint">./configure --prefix=$(realpath $(pwd)/../target)
+make
+make install
+popd
+</code></pre>
+
+<p>Set environment variables so they point to the folders you've just
+created:</p>
+
+<pre><code class="prettyprint">cat &lt;&lt; EOF &gt;&gt; ~/.$(basename $SHELL)rc
+#
+# IBRDTN environment variables
+export IBRDTN_HOME="${PWD}/ibrdtn-for-lepton/target"
+export IBRDTN_ADAPTER_HOME="${PWD}/ibrdtn-adapter"
+export PATH="\${PATH}:\${IBRDTN_HOME}/bin:\${IBRDTN_HOME}/sbin"
+export LD_LIBRARY_PATH="\${LD_LIBRARY_PATH}:\${IBRDTN_HOME}/lib"
+#
+EOF
+source ~/.$(basename $SHELL)rc
+</code></pre>
+
+<h2>Running LEPTON with IBRDTN nodes: a short tutorial</h2>
+
+<p>LEPTON supports several modes of operation. In the following we assume
+LEPTON and several IBRDTN nodes must run concurrently on the same
+host. Another option would be to distribute the IBRDTN nodes on a
+cluster of workstations.</p>
+
+<h3>Starting LEPTON</h3>
+
+<p>When starting LEPTON a reference to IBRDTN's adapter must be provided,
+so LEPTON knows how to process the traffic it will receive from IBRDTN
+nodes. This is obtained by defining argument <code>oppnet_adapter</code> when
+starting LEPTON:</p>
+
+<pre><code class="prettyprint">lepton.sh start oppnet_adapter=${IBRDTN_ADAPTER_HOME}/bin/adapter.sh
+</code></pre>
+
+<p>In this example, LEPTON is started with its default configuration,
+except that argument <code>oppnet_adapter</code> indicates where to find the adapter
+required for interacting with IBRDTN nodes.</p>
+
+<p>Using LEPTON's default configuration means that a number of nodes are
+created automatically when LEPTON starts. After running the command
+above you should thus see a number of nodes moving in the display
+window.</p>
+
+<p>So what's the difference between starting LEPTON with or without
+argument <code>oppnet_adapter</code>? The difference is that when
+<code>oppnet_adapter</code> is used, the nodes you see on the display screen are
+not just blips moving around. For each node you observe on the display
+screen there is an instance of IBRDTN (we'll call it an "IBRDTN node")
+running in the background on your system.</p>
+
+<p>At any time you can use the following command to check whether LEPTON
+is running or not, and how many IBRDTN nodes are running as well:</p>
+
+<pre><code class="prettyprint">lepton.sh status
+</code></pre>
+
+<p>If you're <em>really</em> curious you can also use the following command to
+verify that many instances of IBRDTN are indeed running in the
+background on your system:</p>
+
+<pre><code class="prettyprint">ps ux | grep dtnd | grep -v grep
+</code></pre>
+
+<p>Now what are these IBRDTN nodes doing? Well, they are trying to
+discover one another using the <a href="https://tools.ietf.org/html/draft-irtf-dtnrg-ipnd-01">IPND</a> (IP
+Neighbor Discovery) protocol. But they are doing so via a software hub
+that is part of LEPTON, so LEPTON actually orchestrates communications
+between all these nodes. You can observe the activity of LEPTON's hub
+by scanning its log file:</p>
+
+<pre><code class="prettyprint">tail -f /dev/shm/${USER}/lepton/lepton.out
+(Use Ctrl-C to terminate)
+</code></pre>
+
+<p>You should see that there is a lot of traffic passing through LEPTON's
+hub, which means that IBRDTN nodes are indeed exchanging messages
+(actually IPND beacons) whenever LEPTON estimates that they are close
+enough to do so.</p>
+
+<p>When the node start exchanging data rather than just beacons (see
+below), there will be even more traffic passing through the hub.</p>
+
+<h3>Interacting with the IBRDTN nodes at runtime</h3>
+
+<p>IBRDTN_Adapter comes with a bash script <code>ibrdtn.sh</code> that makes it easy
+to control an IBRDTN node at runtime. This script, which simply calls
+IBRDTN commands (<code>dtnsend</code>, <code>dtnrecv</code>, etc.), is meant to control a
+single instance of IBRDTN.</p>
+
+<p>Since many IBRDTN nodes can run concurrently on the same host when
+running with LEPTON, the script <code>lepton.sh</code> makes it possible to
+control each node individually, using the same set of commands as that
+offered by <code>ibrdtn.sh</code>:</p>
+
+<pre><code class="prettyprint">lepton.sh exec [node_id] start
+                       | stop
+                       | status
+                       | send &lt;dest&gt; &lt;fname&gt;
+                       | recv
+</code></pre>
+
+<p>Note that when calling <code>lepton.sh</code> with option <code>exec</code> the second
+argument must always be <code>node_id</code>, so LEPTON knows which IBRDTN node
+the command must be addressed to.</p>
+
+<p>Options <code>start</code> and <code>stop</code> allow you to create and terminate IBRDTN
+nodes manually. This is not required with LEPTON's default
+configuration, since in that case several nodes are created
+automatically when LEPTON is started.</p>
+
+<p>Now let us assume you would like node <code>N00</code> to send a small file to node <code>N12</code>:</p>
+
+<pre><code class="prettyprint">echo "This is my file" &gt; /tmp/file
+lepton.sh exec N00 send N12 /tmp/file
+</code></pre>
+
+<p>Basically, the second command above is equivalent to calling command
+<code>dtnsend</code> on node <code>N00</code>, asking this node to send a bundle containing
+file <code>/tmp/file</code> to node <code>N12</code>.</p>
+
+<p>If you wish node <code>N12</code> to be able to receive that bundle (and display
+its content on the screen):</p>
+
+<pre><code class="prettyprint">lepton.sh exec N12 recv
+</code></pre>
+
+<p>This is equivalent to calling command <code>dtnrecv</code> on node <code>N12</code>. </p>
+
+<p>By default the nodes created with IBRDTN_Adapter use IBRTDN's epidemic
+routing module, so all nodes participate in the dissemination of
+bundles. Thus it shouldn't take too long for <code>N12</code> to receive the file
+sent by <code>N00</code>.</p>
+
+<h3>What happens on the display screen?</h3>
+
+<p>You may have observed that the vertices that appear between nodes
+change color every now and then. A blue vertex between two nodes means
+that LEPTON considers that these nodes are "in radio range", that is,
+close enough to communicate. This does not mean that they are actually
+communicating, though: they are just close enough to do so. A vertex
+turns red when a connection is actually established between both
+nodes, which means that they have discovered one another, and have
+reacted accordingly.</p>
+
+<p>With the default configuration defined by IBRDTN_Adapter, the IBRDTN
+nodes use UDP transmissions for neighbor discovery, and a TCP session
+is established between two neighbor nodes whenever they have bundles
+to exchange. This TCP session is maintained as long as possible, that
+is until the link between the nodes is disrupted because they are not
+in transmission range anymore.</p>
+
+<p>When running with LEPTON, all IBRDTN nodes redirect their traffic to
+the hub, which serves as some kind of a proxy. A red vertex between
+two IBRDTN nodes on the screen therefore means that these nodes are
+connected by TCP... but through the hub.</p>
+
+<h3>Stopping LEPTON</h3>
+
+<pre><code class="prettyprint">lepton.sh stop
+</code></pre>
+
+<p>This command stops LEPTON, but also all the IBRDTN nodes that may be
+running as well.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

@@ -7,6 +7,10 @@ node_id=DODWAN_TEST ./bin/dodwan.sh start
 
 cat /run/shm/$USER/dodwan/var/node/DODWAN_TEST/ports
 node_id=DODWAN_TEST ./bin/dodwan.sh console 
+
+node_id=N00 ./bin/dodwan.sh console 
+"d g st" pour afficher les peers connus
+
 node_id=DODWAN_TEST ./bin/dodwan.sh stop 
 
 ## Lancement d'instance DoDWAN-NAPI puis commandes de base

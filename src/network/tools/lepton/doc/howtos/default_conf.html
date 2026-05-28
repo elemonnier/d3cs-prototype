@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>The default configuration properties</h1>
+
+<h2>Properties for the startup scripts</h2>
+
+<p>The log directory</p>
+
+<pre><code class="prettyprint">log_dir=/dev/shm/${USER}/lepton
+</code></pre>
+
+<p>The name of the host where LEPTON is supposed to run, if several
+hosts are used to run LEPTON and the emulated nodes</p>
+
+<pre><code class="prettyprint">lepton_host=localhost
+</code></pre>
+
+<p>A ',' separated list of hosts where the emulated nodes run. The
+nodes are launched on the hosts in a round-robin way.</p>
+
+<pre><code class="prettyprint">nodes_hosts=
+</code></pre>
+
+<p>A jitter value for starting nodes (in s), used to avoid that all
+nodes start exactly at the same time. If the jitter is defined,
+then a node can determine its actual start time as: <code>start_time +
+(1000 * rand(seed) * jitter)</code>. Thus, the jitter is the maximum
+delay, in s, between the lepton and the node start times</p>
+
+<pre><code class="prettyprint">jitter=10
+</code></pre>
+
+<p>How long we should start emulated nodes before they actually start
+(in s)</p>
+
+<pre><code class="prettyprint">time_margin=
+</code></pre>
+
+<p>A delay value (in s) after which nodes are started</p>
+
+<pre><code class="prettyprint">nodes_deferred=0
+</code></pre>
+
+<h2>Simulation</h2>
+
+<p>The reference virtual time (in ms), i.e. the virtual time at the
+beginning of the simulation</p>
+
+<pre><code class="prettyprint">ref_time=
+</code></pre>
+
+<p>True if no mobility model is used (no walk nor dgs input file) and
+the edges are set <em>manually</em></p>
+
+<pre><code class="prettyprint">manual=
+</code></pre>
+
+<p>The name of the file that contains an history, composed of lines
+in the form: <code>start_step end_step duration node_id</code>, where start
+and end steps are in ms</p>
+
+<pre><code class="prettyprint">in_hist=
+</code></pre>
+
+<p>Acceleration of the simulation. <code>accel=1</code> means realtime simulation,
+<code>accel&gt;1</code> means faster simulation, <code>accel&lt;1</code> means slower, <code>accel=0</code>
+means full speed (no wait between steps)</p>
+
+<pre><code class="prettyprint">accel=1
+</code></pre>
+
+<p>The simulation area in the form
+<code>car:x,y,width,height:reflat,reflon</code> or
+<code>geo:minlat,minlon,maxlat,maxlon:reflat,reflon</code> (<code>:reflat,reflon</code>
+is optional)</p>
+
+<pre><code class="prettyprint">simul_area=car:0,0,200,200
+</code></pre>
+
+<p>The class that extends casa.lepton.OppNetRules and defines the
+network rules (@see casa.lepton.OppNetRules)</p>
+
+<pre><code class="prettyprint">oppnet_rules=
+</code></pre>
+
+<p>The default status of a edge if no status is supplied when it is
+created</p>
+
+<pre><code class="prettyprint">edge_default_status=DISCONNECTED
+</code></pre>
+
+<p>The default status of a node if no status is supplied when it is
+created</p>
+
+<pre><code class="prettyprint">node_default_status=NONE
+</code></pre>
+
+<h2>Connectivity</h2>
+
+<p>The file that contains the connectivity types and their
+characteristics. File format: each connectivity type is introduced
+by its name between <code>[</code> and <code>]</code> followed by its
+configuration. Configuration values before the first profile name
+are common to all profiles. The connectivity configuration
+attribute is <code>range</code></p>
+
+<pre><code class="prettyprint">connectivity_profiles=
+</code></pre>
+
+<p>The default connectivity type of a edge if no type is supplied
+when it is created</p>
+
+<pre><code class="prettyprint">default_connectivity_type=DEFAULT
+</code></pre>
+
+<p>The default radio range of nodes (in m)</p>
+
+<pre><code class="prettyprint">range=30
+</code></pre>
+
+<h2>Hub</h2>
+
+<p>TODO document</p>
+
+<p>casa.lepton.hub.DTN_SystemAdapter</p>
+
+<pre><code class="prettyprint">oppnet_adapter_classname=
+</code></pre>
+
+<p>lepton_host=localhost</p>
+
+<pre><code class="prettyprint">lepton_hub_port=4500
+
+
+hub_latency=60
+
+
+hub_period=10
+</code></pre>
+
+<h2>Console</h2>
+
+<p>Console port to access the network graph. If this value is not
+defined, no console is opened</p>
+
+<pre><code class="prettyprint">lepton_console_port=5000
+</code></pre>
+
+<h2>DGS Graph configuration</h2>
+
+<p>The DGS input file that defines the nodes mobility [and contacts]</p>
+
+<pre><code class="prettyprint">in_dgs=
+</code></pre>
+
+<p>True if the nodes mobility is read from an input DGS (given by the
+in_dgs property) and the edges representing the contacts must be
+computed during the simulation</p>
+
+<pre><code class="prettyprint">make_edges=false
+</code></pre>
+
+<h2>Walk graph or manual configuration</h2>
+
+<p>The number of nodes or a ',' separated list of 'profile:nb' giving
+the number of nodes for each profile (in that case, the profiles
+refer to those listed in the file designed by the nodes_profiles
+property)</p>
+
+<pre><code class="prettyprint">nodes=20
+</code></pre>
+
+<p>Network refresh period (s), i.e. the period between the simulation
+steps</p>
+
+<pre><code class="prettyprint">period=1.0
+</code></pre>
+
+<p>The duration of the simulation (in s). If the value is -1, the
+duration of the simulation is unlimited</p>
+
+<pre><code class="prettyprint">duration=-1
+</code></pre>
+
+<h2>DGS output</h2>
+
+<p>The output DGS file to log the dynamic graph produced during the
+simulation</p>
+
+<pre><code class="prettyprint">out_dgs=${log_dir}/lepton.dgs
+</code></pre>
+
+<h2>Vizualisation</h2>
+
+<p>True if the graph should be displayed during the simulation</p>
+
+<pre><code class="prettyprint">show=true
+</code></pre>
+
+<p>The file containing the stylesheet that defines the appearance of
+the graph</p>
+
+<pre><code class="prettyprint">stylesheet_file=
+</code></pre>
+
+<p>The stylesheet that defines the appearance of the graph</p>
+
+<pre><code class="prettyprint">stylesheet="graph {fill-mode : none;} \
+node {fill-mode: plain; text-alignment: above; size: 8px; fill-color: black;} \
+node.TAG {stroke-mode: plain; stroke-color: green; stroke-width: 2;} \
+node.OFFLINE {fill-color: #808080;} \
+edge {shape: line; fill-mode: dyn-plain; size: 1px; fill-color: blue;} \
+edge.CONNECTED {size: 2px; fill-color: red;} \
+edge.TAG {stroke-mode: plain; stroke-color: green; stroke-width: 2;}"
+</code></pre>
+
+<p>The connectivity types and/or status for which the edges are hidden
+(',' separated list).</p>
+
+<pre><code class="prettyprint">hidden_edges=
+</code></pre>
+
+<h2>Background</h2>
+
+<p>The DGS file that defines a graph to be displayed as background</p>
+
+<pre><code class="prettyprint">background_graph=
+</code></pre>
+
+<p>The file of the image to be displayed as background</p>
+
+<pre><code class="prettyprint">background_image=
+</code></pre>
+
+<p>The background area in the form "car:x,y,width,height" or
+"geo:minlat,minlon,maxlat,maxlon:reflat,reflon"</p>
+
+<pre><code class="prettyprint">background_area=
+</code></pre>
+
+<p>The location of the block that contains the time in the frame
+(NORTH<em>WEST, NORTH</em>EAST, SOUTH<em>WEST, SOUTH</em>EAST)</p>
+
+<pre><code class="prettyprint">time_corner=NORTH_WEST
+</code></pre>
+
+<p>The font of the time: fontname-style-size</p>
+
+<pre><code class="prettyprint">time_font=Sans-BOLD-18
+</code></pre>
+
+<p>Foreground and background colors of the time: rgb integer values</p>
+
+<pre><code class="prettyprint">time_fgcolor=0x000000
+time_bgcolor=0xffffff
+</code></pre>
+
+<h2>Video output</h2>
+
+<p>The directory where output images will be stored</p>
+
+<pre><code class="prettyprint">video_img_dir=
+</code></pre>
+
+<p>The prefix of the output images filenames</p>
+
+<pre><code class="prettyprint">video_img_prefix=
+</code></pre>
+
+<p>If true, avoid superposition of images if the background is
+transparent</p>
+
+<pre><code class="prettyprint">stack_images=false
+</code></pre>
+
+<p>The resolution of the output images</p>
+
+<pre><code class="prettyprint">resolution=
+</code></pre>
+
+<h2>Nodes configuration</h2>
+
+<p>The file that contains the nodes profiles and their configuration.
+File format: each node profile is introduced by its name between
+'[' and ']' followed by its configuration. Configuration values
+before the first profile name are common to all profiles. The
+configuration attributes are those of the network node
+configuration</p>
+
+<pre><code class="prettyprint">nodes_profiles=
+</code></pre>
+
+<p>The connectivity types supported by the node (',' separated
+list). If no connectivity type is supplied, the node supports the
+default connectivity type</p>
+
+<pre><code class="prettyprint">supported_connectivity=
+</code></pre>
+
+<p>The file that defines associations between node ids and labels,
+having line in the form: nodeid=label</p>
+
+<pre><code class="prettyprint">node_labels=
+</code></pre>
+
+<p>The label of the node</p>
+
+<pre><code class="prettyprint">label=
+</code></pre>
+
+<p>The tag for the node</p>
+
+<pre><code class="prettyprint">tag=
+</code></pre>
+
+<p>The connectivity type for which the node status is shown</p>
+
+<pre><code class="prettyprint">show_node_status=DEFAULT
+</code></pre>
+
+<p>True if the node is mobile</p>
+
+<pre><code class="prettyprint">mobile=true
+</code></pre>
+
+<h2>Nodes mobility (nodes of walk graph only)</h2>
+
+<p>The class used to define the mobility model of the node</p>
+
+<pre><code class="prettyprint">walk_class=casa.lepton.walk.LevyWalk
+</code></pre>
+
+<p>The walk area of the node in the form "car:x,y,width,height" or
+"geo:minlat,minlon,maxlat,maxlon:reflat,reflon".</p>
+
+<pre><code class="prettyprint">walk_area=${simul_area}
+</code></pre>
+
+<p>The initial location of the node in the form "car:x,y" or
+"geo:lat,lon:reflat,reflon"</p>
+
+<pre><code class="prettyprint">coord=
+</code></pre>
+
+<p>The seed to initialize the random values generator</p>
+
+<pre><code class="prettyprint">seed=
+</code></pre>
+
+<h2>GraphWalk &amp; RandomWayPoint &amp; LevyWalk</h2>
+
+<p>The minimum and maximum speeds of the node (in m/s)</p>
+
+<pre><code class="prettyprint">min_speed=1
+max_speed=2
+</code></pre>
+
+<p>The minimum and maximum wait durations of the node after each
+flight (in s)</p>
+
+<pre><code class="prettyprint">min_wait=0
+max_wait=10
+</code></pre>
+
+<h2>LevyWalk</h2>
+
+<p>The minimum and maximum distances of a flight (in m)</p>
+
+<pre><code class="prettyprint">min_dist=0
+max_dist=100
+</code></pre>
+
+<p>The Levy Alpha, Beta, K and Rho parameters</p>
+
+<pre><code class="prettyprint">alpha=1.8
+beta=${alpha}
+k=30.55
+rho=0.89
+</code></pre>
+
+<h2>GraphWalk</h2>
+
+<p>String representation of the pause type (???)</p>
+
+<pre><code class="prettyprint">pause_type=
+</code></pre>
+
+<p>The geo-referenced graph along which the node walks</p>
+
+<pre><code class="prettyprint">graph=
+</code></pre>
+
+<h2>BusWalk</h2>
+
+<p>The directory that contains the journeys file and the paths files</p>
+
+<pre><code class="prettyprint">journeys_dir=
+</code></pre>
+
+<p>The name of the journeys file</p>
+
+<pre><code class="prettyprint">journeys_file=
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

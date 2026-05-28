@@ -219,7 +219,7 @@ Login u1 / mdp u1 – il possède la clearance FR-S M1 (document format json pos
 Login u2 / mdp u2 – il possède la clearance FR-DR M1
 Login u3 / mdp u3 – il possède la clearance FR-S M2
 Login u4 / mdp u4 – il possède la clearance FR-DR M2 
-Login admin / mdp admin
+Login authority / mdp authority
 Osef de stocker les mdp en dur, ce n’est pas le but de la démo de faire ça bien.
 
 Sign up (visible si non connecté)
@@ -227,20 +227,20 @@ Fenêtre login / mot de passe (points noirs) / clearance / bouton « sign in »
 Fournir une clearance au format JSON 
 Lors de l’appui sur le bouton « sign in », si login/mdp/clearance ont été renseignés, on appelle KeyGen dans crypto/mod.rs. L’utilisateur pourra accéder au panel utilisateur.
 
-Labelling (visible admin/user)
-Fenêtre avec un textarea pour écrire le message (String), avec 2 menus déroulants (un pour la classification, un autre pour la mission). Les valeurs affichées correspondent à la clearance de l’utilisateur et en fonction des presets dans src/config/blpbiba.toml. Si c’est l’admin qui est connecté, il voit tout.
+Labelling (visible authority/user)
+Fenêtre avec un textarea pour écrire le message (String), avec 2 menus déroulants (un pour la classification, un autre pour la mission). Les valeurs affichées correspondent à la clearance de l’utilisateur et en fonction des presets dans src/config/blpbiba.toml. Si c’est l’authority qui est connecté, il voit tout.
 Juste après, il y a un bouton « chiffrer » qui permet de lancer la fonction Encrypt dans crypto/mod.rs. Si la fonction cryptographique réussit, le document chiffré se stocke dans les runtime/tm/ct/. Sinon, un message rouge pop en dessous du bouton : « encryption failed ». 
 
 
-Documents (visible admin/user)
-Fenêtre qui affiche l’ensemble des chiffrés situés dans runtime/tm/ct/. En fonction de la clearance de l’utilisateur, il ne pourra voir que les messages au niveau de son habilitation et des presets src/config/blpbiba.toml. Si c’est l’admin qui est connecté, il voit tout.
+Documents (visible authority/user)
+Fenêtre qui affiche l’ensemble des chiffrés situés dans runtime/tm/ct/. En fonction de la clearance de l’utilisateur, il ne pourra voir que les messages au niveau de son habilitation et des presets src/config/blpbiba.toml. Si c’est l’authority qui est connecté, il voit tout.
 Sur chaque document, l’utilisateur peut cliquer sur « consulter », ce qui appellera « Decrypt » de crypto/mod.rs. Le résultat de Decrypt (le contenu du fichier) s’affichera sous le nom du fichier. 
 
-Revocation (visible admin seulement)
-Fenêtre d’admin, qui pourra cocher soit M1 ou M2 (via checkboxes), puis appuyer sur « revoke ». Une alerte s’ouvre (en anglais) « do you want to revoke this/these mission(s)? ». Faire oui viendra appeler Revoke de crypto/mod.rs.
+Revocation (visible authority seulement)
+Fenêtre d’authority, qui pourra cocher soit M1 ou M2 (via checkboxes), puis appuyer sur « revoke ». Une alerte s’ouvre (en anglais) « do you want to revoke this/these mission(s)? ». Faire oui viendra appeler Revoke de crypto/mod.rs.
 
-Presets (visible admin seulement)
-Fenêtre d’admin, où l’on peut cocher les 4 presets BLP/Biba (checkboxes). Un appui sur le bouton « Update » mettra directement à jour le fichier src/config/blpbiba.toml.
+Presets (visible authority seulement)
+Fenêtre d’authority, où l’on peut cocher les 4 presets BLP/Biba (checkboxes). Un appui sur le bouton « Update » mettra directement à jour le fichier src/config/blpbiba.toml.
 Par défaut NRU/NWU sont cochés.
 
 Log out si on est connecté pour se déconnecter, tout à droite du nav
@@ -261,14 +261,14 @@ C Encrypt
 1.	Si un utilisateur tente de chiffrer un document avec une classification supérieure à la sienne, un message d’erreur explicite doit être affiché.
 2.	Si la mission choisie est présente dans l’ARL, l’encryption doit être bloquée avec message d’erreur.
 3.	Si ABS.Sign réussit mais que ABS.Verify échoue, l’encryption doit être abandonnée et un message précis doit être affiché.
-4.	L’admin peut chiffrer avec n’importe quel label, sauf si les presets dans blpbiba.toml l’en empêchent.
+4.	L’authority peut chiffrer avec n’importe quel label, sauf si les presets dans blpbiba.toml l’en empêchent.
 5.	En cas d’échec, aucun fichier partiellement chiffré ne doit rester dans runtime/tm/ct/.
 
 D Affichage des documents
 1.	Un utilisateur FR-S peut voir les documents FR-DR uniquement si NRD=false.
 2.	Un utilisateur FR-DR peut voir les documents FR-S uniquement si NRU=false.
 3.	Si un document est inaccessible en raison des presets BLP/Biba, il ne doit pas apparaître dans la liste.
-4.	L’admin voit tous les documents sauf si les presets BLP/Biba l’en empêchent explicitement.
+4.	L’authority voit tous les documents sauf si les presets BLP/Biba l’en empêchent explicitement.
 
 E Decrypt
 1.	Si CPABE.TM_Decrypt échoue, un message d’erreur doit être affiché.
@@ -278,7 +278,7 @@ o	Les documents déjà chiffrés restent lisibles.
 o	Seuls les nouveaux documents utilisant cette mission deviennent inaccessibles.
 
 F Revocation
-1.	Lorsqu’un admin révoque une mission :
+1.	Lorsqu’un authority révoque une mission :
 o	Tous les documents utilisant cette mission deviennent invisibles immédiatement.
 2.	La dé-révocation n’est plus supportée.
 3.	La gestion d’un ARL corrompu est hors scope du démonstrateur.

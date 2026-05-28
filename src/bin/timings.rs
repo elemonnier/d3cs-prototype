@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use anyhow::{Context, Result};
+use chrono::Local;
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct Clearance {
@@ -18,7 +19,7 @@ pub struct Clearance {
 pub struct UserRecord {
     pub password: String,
     pub clearance: Clearance,
-    pub is_admin: bool,
+    pub is_authority_user: bool,
 }
 
 pub struct UserDb {
@@ -37,6 +38,9 @@ pub enum RunMode {
     Local,
     Network,
 }
+
+pub const AUTHORITY_LOGIN: &str = "authority";
+pub const AUTHORITY_PASSWORD: &str = "authority";
 
 pub mod network {
     #[derive(Clone)]
@@ -109,14 +113,14 @@ fn default_gui_dir(base_dir: &Path) -> String {
 fn build_default_users() -> HashMap<String, UserRecord> {
     let mut users = HashMap::new();
     users.insert(
-        "admin".to_string(),
+        AUTHORITY_LOGIN.to_string(),
         UserRecord {
-            password: "minad".to_string(),
+            password: AUTHORITY_PASSWORD.to_string(),
             clearance: Clearance {
                 classification: "FR-S".to_string(),
                 mission: "M1".to_string(),
             },
-            is_admin: true,
+            is_authority_user: true,
         },
     );
     users
@@ -168,27 +172,47 @@ where
     let started_at = Instant::now();
     let out = f()?;
     let elapsed_us = started_at.elapsed().as_micros();
-    println!("{name} : executed in {elapsed_us} us");
+    console_log(format!("{name} : executed in {elapsed_us} us"));
     Ok(out)
 }
 
+fn console_log(message: impl AsRef<str>) {
+    println!(
+        "{} {}",
+        Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+        message.as_ref()
+    );
+}
+
 fn seed_empty_arl(state: &Arc<AppState>) -> Result<Option<String>> {
-    let arl_path = PathBuf::from(&state.tm_dir).join("arl.json");
+    let arl_path = PathBuf::from(&state.tm_dir)
+        .join("nodes")
+        .join("authority")
+        .join("arl.json");
     let previous = fs::read_to_string(&arl_path).ok();
 
     let arl = crypto::RevocationList {
-        version: 1,
+        version: 0,
         items: Vec::new(),
     };
     let content = serde_json::to_string(&arl)?;
+    if let Some(parent) = arl_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
     fs::write(&arl_path, content)?;
 
     Ok(previous)
 }
 
 fn restore_arl(state: &Arc<AppState>, previous: Option<String>) -> Result<()> {
-    let arl_path = PathBuf::from(&state.tm_dir).join("arl.json");
+    let arl_path = PathBuf::from(&state.tm_dir)
+        .join("nodes")
+        .join("authority")
+        .join("arl.json");
     if let Some(content) = previous {
+        if let Some(parent) = arl_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
         fs::write(&arl_path, content)?;
     } else if arl_path.exists() {
         fs::remove_file(&arl_path)?;

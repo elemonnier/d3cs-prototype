@@ -1,0 +1,90 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto%20Mono);
+@import url(http://fonts.googleapis.com/css?family=Roboto);
+@import url(http://fonts.googleapis.com/css?family=Noticia%20Text);
+
+body {
+    background-color: #fefefe;
+    color: #222;
+    font-family:  Roboto, Helvetica, Sans;
+    font-weight: 400;
+}
+
+html {
+    font-size: 15px;
+}
+
+b, strong {
+    font-weight: 700;
+}
+
+p {
+    margin-top: 0;
+    text-align:justified;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1;
+    font-family: 'Noticia Text', Helvetica, Sans;
+    color: #434fa1;
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+}
+
+h1 {
+    font-size: 2rem;
+}
+h2 {
+    font-size: 1.6rem;
+}
+h3 {
+    font-size: 1.2rem;
+}
+h4 {
+    font-size: 1rem;
+}
+h5 {
+    font-size: 1rem;
+}
+h6 {
+    font-size: 1rem;
+}
+
+code {
+    padding:1px 5px;
+    background-color: #fff8ff;
+    color: #7a4881;
+    font-weight: 500;
+    font-size:97%;
+    font-family : 'Roboto Mono', monospace;
+}
+
+pre code {
+    display:block;
+    overflow-x: auto;
+    border-left-style:  solid;
+    border-color: #7a4881;
+    border-width: 0px 0px 0px 6px;
+    padding:10px;
+    color: #2f2f2f;
+    background-color: #f2f2f2;
+}
+
+
+a,
+a:visited {
+    font-weight: 700;
+    color: #7a4881;
+    text-decoration: none;
+}
+
+a:hover,
+a:focus,
+a:active {
+  color: #c574cf;
+}
+
+
+hr {
+    color: #7a4881;
+}

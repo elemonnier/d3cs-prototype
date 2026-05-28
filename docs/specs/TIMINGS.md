@@ -21,7 +21,7 @@ Fonctions où le temps doit être mesuré :
   - authority_dir : D3CS_AUTHORITY_DIR
   - ihm_dir : D3CS_IHM_DIR
   - mode : Local
-  - user_db : admin (voir s'il faut préciser minad / FR-S/M1 / is_admin=true)
+  - user_db : authority (voir s'il faut préciser authority / FR-S/M1 / is_authority_user=true)
   - sessions : map vide
   - pending_revocations : liste vide
   - network_runtime : None

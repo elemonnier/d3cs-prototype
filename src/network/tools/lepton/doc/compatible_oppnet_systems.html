@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>List of OppNet systems LEPTON can currently operate with</h1>
+
+<p>In order for an OppNet system to run in emulation mode with LEPTON, a
+specific "adapter" must be developed for this system. An adapter is
+composed of Java code (not much: sometimes two small Java classes may
+be enough), and a couple of bash scripts.</p>
+
+<h2>Compatible OppNet systems</h2>
+
+<p>Adapters are currently available for the following OppNet
+systems. Others may be developed over time.</p>
+
+<h3>DoDWAN</h3>
+
+<p><a href="https://www-casa.irisa.fr/dodwan/">DoDWAN</a> is an OppNet system that
+supports content-based communication in partially or intermittently
+connected environments.</p>
+
+<p>If you wish to run LEPTON with DoDWAN nodes, please refer to the
+corresponding <a href="howtos/lepton_with_dodwan.html">howto</a>.</p>
+
+<h3>IBRDTN</h3>
+
+<p><a href="https://github.com/ibrdtn/ibrdtn">IBRDTN</a> is an OppNet system that
+implements the Bundle Protocol, as defined in
+<a href="https://tools.ietf.org/html/rfc5050">RFC 5050</a>).</p>
+
+<p>If you wish to run LEPTON with IBRDTN nodes, please refer to the
+corresponding <a href="howtos/lepton_with_ibrdtn.html">howto</a>.</p>
+
+<h3>aDTN (coming soon)</h3>
+
+<p><a href="https://github.com/SeNDA-UAB/aDTN-platform">aDTN</a> (a.k.a. Active DTN)
+is another OppNet system that implements the Bundle
+Protocol. Additionally, it uses bundles as a means to propagate
+routing software code all over the network. </p>
+
+<p>The development of an adapter for aDTN is in progress, so this adapter
+should be available soon.</p>
+
+<h2>How about interfacing your own system with LEPTON?</h2>
+
+<p>If you are developing your own OppNet system and would like this
+system to run with LEPTON, you will have to develop a specific
+adapter. Please follow the <a href="howtos/emulated_nodes.html">instructions</a>
+we provide.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

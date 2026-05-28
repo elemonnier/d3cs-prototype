@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>How to define the LEPTON configuration</h1>
+
+<p>The configuration of LEPTON influences its comportement in various domains:</p>
+
+<ul>
+<li>the mobility patterns of the nodes</li>
+<li>the connectivity between nodes</li>
+<li>the way emulated platforms run with LEPTON</li>
+<li>the graphical vizualisation during a LEPTON execution</li>
+<li>the DGS logs and/or video productions of a LEPTON execution</li>
+</ul>
+
+<p>A default configuration is provided that allows to use LEPTON without
+any extra parameters. Moreover, the comportement of LEPTON can be
+customized by changing its configuration</p>
+
+<h2>Understanding configuration properties, files and profiles</h2>
+
+<h3>Configuration properties</h3>
+
+<p>The configuration of LEPTON is defined by configuration properties. A
+configuration property is represented by a <code>key=value</code> pair where
+<code>key</code> is a predefined unique name and <code>value</code> is a string
+representation of a typed value (file or directory name, integer or
+float value, textual value,...). Examples:</p>
+
+<pre><code class="prettyprint">simul_area=car:0,0,1500,1500
+min_speed=0.5
+show=true
+</code></pre>
+
+<p>Variables represented by their names between <code>${</code> and <code>}</code> can be used
+in the values of configuration properties.  Examples:</p>
+
+<pre><code class="prettyprint">out_dgs=${log_dir}/simul.dgs
+beta=${alpha}
+</code></pre>
+
+<p>The variables can be:</p>
+
+<ul>
+<li>configuration properties passed as arguments or in configuration files</li>
+<li>the following system properties: <code>${HOME}</code>, <code>${USER}</code>, <code>${HOSTNAME}</code></li>
+<li>the following properties initialized in the shell script:
+<code>${lepton_home}</code>, <code>${log_dir}</code></li>
+</ul>
+
+<p>More informations about some properties are provided in specific
+<em>how-tos</em> (see <a href="index.html">the how-tos list</a>). All available
+configuration properties and their default values are described
+<a href="default_conf.html">here</a>.</p>
+
+<h3>Configuration files</h3>
+
+<p>A configuration file contains lines composed of <code>key=value</code> pairs
+defining configuration properties. Each line contains at most one
+property. Empty lines or comment lines starting with the <code>#</code>
+character are ignored.</p>
+
+<p>Properties representing textual values composed of multiple lines
+have their values delimited by <code>" "</code> and each line ending with
+<code>\</code>. Example:</p>
+
+<pre><code class="prettyprint">stylesheet="graph {fill-mode : none;} \
+node {fill-mode: plain; text-alignment: above; size: 8px; fill-color: black;} \
+edge {shape: line; fill-mode: dyn-plain; size: 2px; fill-color: red;}"
+</code></pre>
+
+<h3>Configuration profiles</h3>
+
+<p>A profile is a set of configuration properties and their values
+together with a profile name. Several profiles related or not to the
+same set of properties are defined in a profile file having the
+following format: each profile is introduced by its name between
+<code>[</code> and <code>]</code> followed by its configuration. Configuration values
+before the first profile name are common to all profiles. In the
+following example, two profiles <code>road_vehicle</code> and <code>fast_pedestrian</code>
+have each specific values for the <code>min_speed</code> and <code>max_speed</code>
+properties, and the same values for the <code>min_wait</code> and <code>max_wait</code>
+properties:</p>
+
+<pre><code class="prettyprint">min_wait=0
+max_wait=0
+
+[road_vehicle]
+prefix=RV
+min_speed=2
+max_speed=5
+
+[fast_pedestrian]
+prefix=FP
+min_speed=1
+max_speed=2
+</code></pre>
+
+<p>Each profile should have a <code>prefix</code> property that represents a prefix for the
+names of the nodes having this profile.</p>
+
+<h2>How to set LEPTON configuration properties</h2>
+
+<p>While running LEPTON, the default configuration file is always loaded
+first. This configuration can be changed by overwritting some or all
+of its properties by passing them as command line arguments, either
+individually or grouped in configuration files:</p>
+
+<pre><code class="prettyprint">lepton.sh start [&lt;key&gt;=&lt;value&gt;]* [conf=&lt;config_file&gt;]*
+</code></pre>
+
+<p>with:</p>
+
+<ul>
+<li><code>&lt;key&gt;=&lt;value&gt;</code> : an individual custom property</li>
+<li><code>&lt;config_file&gt;</code>: a configuration file that contains <code>&lt;key&gt;=&lt;value&gt;</code> pairs
+(<code>conf</code> is a predefined property key)</li>
+</ul>
+
+<p>Properties defined first are overwritten by the properties defined
+after having the same keys. The default properties are loaded
+first. The <code>conf</code> properties are not overwritten: the configuration
+files are loaded in the same order as their apparition in the command
+line.</p>
+
+<p>Default configuration properties can be unset by giving them an
+empty value (<code>&lt;key&gt;=</code>)</p>
+
+<p>To display the actual configuration properties having non empty values:</p>
+
+<pre><code class="prettyprint">lepton.sh info [&lt;key&gt;=&lt;value&gt;]* [conf=&lt;config_file&gt;]*
+</code></pre>
+
+<h2>How to define nodes with different configuration properties</h2>
+
+<p>Some of the LEPTON configuration properties are related to the nodes
+(simulated or emulated): mobility pattern, graphical
+representation,... If all nodes have the same configuration, their
+properties are defined in the same ways as all other LEPTON
+properties.  It is possible to define nodes having different
+configuration properties by associating different configuration
+profiles to each node or group of nodes.</p>
+
+<h4>Defining the nodes profiles</h4>
+
+<p>To do so, a profile file is used to define the specific properties
+related to each node profile (see above the format of a profile
+file). This profile file is designed by the <code>nodes_profiles</code>
+property in the LEPTON configuration (its default value is empty).</p>
+
+<h4>Associating profiles to simulated or emulated nodes</h4>
+
+<p>There are two ways to define which nodes participate in a LEPTON
+execution:</p>
+
+<ul>
+<li><p>by setting the <code>nodes</code> property, if the nodes mobility is defined
+by the <code>walk</code> or <code>manual</code> properties</p></li>
+<li><p>by using an input DGS file that contains events related to the
+creation of the nodes, and also their mobility and removal.</p></li>
+</ul>
+
+<p>In both cases, profiles may be associated to the nodes when they are created:</p>
+
+<ul>
+<li><p>by setting the <code>nodes</code> property: if all nodes have the same
+configuration, the <code>nodes</code> property value is an integer
+representing the total number of nodes. To define groups of nodes
+having different profiles (and thus different configurations), the
+value of the <code>nodes</code> property is a <code>,</code> separated list of
+<code>prefix:nb</code> giving the number of nodes for each profile prefix. For
+example, <code>nodes=RV:20,FP:30</code> defines 20 nodes having the <code>road_vehicle</code> profile
+(prefix: <code>RV</code>) and 30 nodes having the <code>fast_pedestrian</code> profile (prefix: <code>FP</code>).</p></li>
+<li><p>by using an input DGS file: at each event representing a node
+creation (<code>an</code> event), a profile name can be associated to the
+node: <code>an &lt;node_id&gt; profile=&lt;profile_name&gt;</code></p></li>
+</ul>
+
+<h4>Associating profiles to real nodes</h4>
+
+<p>Another way to add nodes to a LEPTON execution is to use real nodes,
+connected through the LEPTON hub. For such nodes, a profile should be
+associated to a node if this node is given a name starting with
+the value of the prefix property of the profile.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>How to run LEPTON with DodwanDroid (on Android devices)</h1>
+
+<h2>Preamble</h2>
+
+<ul>
+<li><p><a href="http://www-casa.irisa.fr/dodwan">DoDWAN</a> is an opportunistic
+networking middleware system that allows mobile devices to exchange
+information using the publish/subscribe model.</p></li>
+<li><p><a href="https://www-casa.irisa.fr/dodwan/dodwanapps-android/">DodwanDroid</a> is
+a communication application suite for Android smartphones or
+tablets, based on DoDWAN.</p></li>
+</ul>
+
+<p><img src="lepton-with-smartphones.svg" alt="lepton-with-smartphones.svg" title="" /></p>
+
+<p>LEPTON can orchestrate communications between Android devices running
+DodwanDroid, thus simulating the mobility of these devices. This mode
+of operation can be useful during demo sessions, as each participant
+can use DodwanDroid on a smartphone or tablet, while a display screen
+shows how LEPTON simulates the mobility of all devices involved in the
+demo, and thus allows or prevents radio contacts between these
+devices.</p>
+
+<h2>Requirements</h2>
+
+<ul>
+<li><p>LEPTON and DoDWAN's adapter must be installed on a desktop
+workstation or on a laptop. Please refer to the corresponding
+installation instructions (for <a href="../lepton_installation.html">LEPTON</a>, and for <a href="lepton_with_dodwan.html">DoDWAN adapter</a>).</p></li>
+<li><p>DodwanDroid can be download as an
+<a href="http://casa-irisa.univ-ubs.fr/download/dodwandroid.apk">APK package</a>,
+and it must be installed on each smartphone or tablet you plan to
+use. On some devices this may require allowing the installation of
+applications from "unknown sources" (in the <code>Settings/Security</code>
+sub-menu).</p></li>
+<li><p>The host running LEPTON and all Android devices must belong to the
+same local area network (LAN). Typically, a Wi-Fi access point is
+deployed. The Android devices associate with this access point, and
+obtain an IP address from a DHCP server. The host running LEPTON is
+on the wired (Ethernet) part of the LAN, on a statically assigned
+(or at least stable) IP address. <br />
+Alternatively, the host running LEPTON can also serve as a Software
+Access Point (Soft AP), so Android devices associate directly with
+that host.</p></li>
+</ul>
+
+<h2>Running LEPTON with DodwanDroid: a short tutorial</h2>
+
+<p>Before starting LEPTON, please note down the IP address of the
+workstation or laptop it will run on. This address will be required to
+configure DodwanDroid on the Android devices.</p>
+
+<h3>Starting LEPTON</h3>
+
+<p>When starting LEPTON a reference to DoDWAN's adapter must be provided,
+so LEPTON knows how to process the traffic it will receive from the
+Android devices. This is obtained by defining argument
+<code>oppnet_adapter</code> when starting LEPTON:</p>
+
+<pre><code class="prettyprint">lepton.sh start oppnet_adapter=${DODWAN_ADAPTER_HOME}/bin/adapter.sh \
+                nodes=0
+</code></pre>
+
+<p>In this example, LEPTON is started with argument <code>nodes=0</code>, which
+means that LEPTON will not attempt to create virtual nodes at
+startup. Instead it will simply wait to receive beacons from real
+devices, thus discovering these devices at runtime.</p>
+
+<h3>Starting DodwanDroid on a smarpthone or tablet</h3>
+
+<p>Before starting DodwanDroid on an Android device, make sure this
+device is connected to the Wi-Fi access point, and thus belongs to the
+same LAN as the host running LEPTON.</p>
+
+<p>Also make sure that the clock of the device is set correctly. This is
+important for DodwanDroid to run as expected.</p>
+
+<p>When starting DodwanDroid for the first time, you will be asked to
+enter a pseudo. This pseudo should be unique.</p>
+
+<p>DodwanDroid supports several modes of operation. In "Direct mode"
+Android devices interact directly with one another, using UDP
+multicast for neighbor discovery, and TCP unicast for peer-to-peer
+interaction. In "Hub mode", all traffic is sent to --and received
+from-- a software hub. This is the mode we need for DodwanDroid to run
+with LEPTON: all traffic must be controlled by LEPTON's hub.</p>
+
+<p>By default DodwanDroid runs in "Direct mode". In order to switch to
+"Hub mode", click on tab "More" on the screen, then enter the
+"Settings" menu, and then the "DoDWAN Network Config" submenu. You
+should see that the Network mode is presently set to "direct". Change
+this mode to "hub", and replace the IP address registered under
+"Hub/Remote address" by the address of the host running LEPTON. <br />
+These changes will be effective as soon as you leave the "Settings"
+sub-menu.</p>
+
+<h3>What happens on the display screen?</h3>
+
+<p>As soon as LEPTON starts receiving beacons from Android devices, you
+should see blips appear on the screen. Each blip is labeled with the
+corresponding device's id (in DodwanDroid you can find this id at the
+bottom of the "Settings" sub-menu).</p>
+
+<p>If you'd like the displayed labels to be more user-friendly, you can
+create a file containing a list of <code>nodeid=label</code> pairs, and use this
+file when starting LEPTON:</p>
+
+<pre><code class="prettyprint">cat &lt;&lt; EOF &gt; labels.txt
+# nodeid=label
+TA3956AW=Alice
+BI4698FA=Bob
+EOF
+
+lepton.sh stop
+lepton.sh start oppnet_adapter=${DODWAN_ADAPTER_HOME}/bin/adapter.sh \
+          nodes=0 node_labels=labels.txt
+</code></pre>
+
+<h3>Running LEPTON in "manual mode"</h3>
+
+<p>By default LEPTON simulates the mobility of nodes according to the
+<a href="http://dl.acm.org/citation.cfm?id=2042974">Levy Walk</a> mobility
+pattern. During a demo session it may sometimes be more convenient to
+control the connectivity between nodes manually:</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+lepton.sh start oppnet_adapter=${DODWAN_ADAPTER_HOME}/bin/adapter.sh \
+          nodes=0 node_labels=labels.txt manual=true
+</code></pre>
+
+<p>With argument <code>manual=true</code>, no mobility pattern is applied to move
+the nodes discovered at runtime. Instead LEPTON applies an
+"auto-layout" pattern, which means that it tries to distribute the
+nodes evenly in the window. In that case the distance between nodes in
+the window has no incidence on their being connected or not: <strong>you</strong>
+are the one who can decide which pairs of nodes should be connected or
+disconnected.</p>
+
+<p>To connect two nodes together, first select the <code>edge editing</code> option
+(button in the bottom-right side of the window). Then select a node,
+and with a drag-and-drop action, connect this node to another node. A
+blue vertex should appear to show that these nodes are now
+connected. This vertex will turn red as soon as the nodes have
+discovered one another, and have reacted accordingly by establishing a
+TCP connection.</p>
+
+<p>To disconnect two nodes, select the edge between these nodes and press
+the delete key on your keyboard.</p>
+
+<h3>Stopping LEPTON</h3>
+
+<p>Do not forget to stop LEPTON after your demo session.</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

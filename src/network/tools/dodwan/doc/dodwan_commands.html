@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="dodwan.css">
+    <title>
+      DoDWAN: Document Dissemination in Wireless Ad hoc Networks
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>Running DoDWAN on a Linux host</h1>
+
+<p>DoDWAN's source code is 100% Java code. It can therefore run on any
+platform featuring a standard JRE (Java Runtime Environment).</p>
+
+<p>This code is however distributed with a bash script <code>dodwan.sh</code>
+(located in <code>$DODWAN_HOME/bin</code>) that makes it easy to start and stop
+DoDWAN on a Linux host, and to publish and receive files on this host.</p>
+
+<pre><code class="prettyprint">Usage: dodwan.sh start
+               | stop
+               | status
+               | clear
+               | publish &lt;desc&gt; &lt;fname&gt;
+               | subscribe &lt;key&gt; &lt;pattern&gt; {-d dir | -e cmd}
+               | unsubscribe &lt;key&gt;
+               | console (for experts)
+</code></pre>
+
+<h2>Starting or stopping a DoDWAN node</h2>
+
+<pre><code class="prettyprint">dodwan.sh start
+dodwan.sh stop
+</code></pre>
+
+<p>Note that although several DoDWAN instances could run concurrently on
+the same host, the bash script <code>dodwan.sh</code> has been designed so
+that only one instance shall run on each host. So if you want to test
+DoDWAN you will need to install it on at least two hosts.</p>
+
+<h2>Checking if DoDWAN is running</h2>
+
+<pre><code class="prettyprint">dodwan.sh status
+</code></pre>
+
+<h2>Interacting with DoDWAN nodes at runtime</h2>
+
+<h3>Publishing content</h3>
+
+<p>Once DoDWAN is running on the local host it can be used to publish
+content. The transmission data unit for this content is a
+message. Each message combines a descriptor (i.e. a collection of
+<code>name=value</code> pairs) and a payload.</p>
+
+<p>The script makes it easy to publish the content of a file as the
+payload of a message:</p>
+
+<pre><code class="prettyprint">dodwan.sh publish [desc] [fname]
+</code></pre>
+
+<p>where:</p>
+
+<ul>
+<li><code>desc</code>: descriptor for the message (comma-separated list of <code>name=value</code> pairs)</li>
+<li><code>fname</code>: path to the file whose content will constitute the payload of the message</li>
+</ul>
+
+<h3>Setting a subscription</h3>
+
+<p>A DoDWAN node can only receive messages from other nodes once a
+<strong>subscription</strong> has been set on that node:</p>
+
+<pre><code class="prettyprint">dodwan.sh subscribe [key] [pattern] {options}
+</code></pre>
+
+<p>where:</p>
+
+<ul>
+<li><code>key</code>: subscription key (must be unique and will be used to remove the subscription if needed)</li>
+<li><code>pattern</code>: interest pattern (comma-separated list of <code>name=value</code> pairs, where values can be regular expressions)</li>
+<li><code>options</code>: determine what to do with messages that match the pattern (optional)</li>
+</ul>
+
+<p>Possible options are:</p>
+
+<ul>
+<li><code>-d [dir]</code>: save a copy of the message's payload in that directory</li>
+<li><code>-e [cmd]</code>: execute that external command</li>
+</ul>
+
+<p>When an external command must be executed to process a message (option
+<code>-e</code>), the attributes of the message's descriptor are passed as
+arguments to that command, and the payload of the message is piped to
+the command's input stream.</p>
+
+<h3>Removing subscriptions</h3>
+
+<pre><code class="prettyprint">dodwan.sh unsubscribe [key]+
+</code></pre>
+
+<p>where:</p>
+
+<ul>
+<li><code>key</code>: key of each subscription to be deleted</li>
+</ul>
+
+<h3>Flushing the local cache</h3>
+
+<pre><code class="prettyprint">dodwan.sh clear
+</code></pre>
+
+<h3>Accessing the console (for experts)</h3>
+
+<p>Many features in DoDWAN can be controlled using its builtin
+console. In fact the bash script <code>dodwan.sh</code> is just a front-end
+to that console, and the set of commands it provides (start,
+stop, publish, subscribe, etc.) is only a subset of the
+possibilities offered by the console.</p>
+
+<p>The full console can be accessed with:</p>
+
+<pre><code class="prettyprint">dodwan.sh console
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

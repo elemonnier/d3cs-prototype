@@ -12,8 +12,7 @@ pub fn ensure_directories(state: &Arc<AppState>) -> Result<()> {
     fs::create_dir_all(&state.tm_dir)?;
     fs::create_dir_all(&state.authority_dir)?;
     fs::create_dir_all(&state.ihm_dir)?;
-
-    fs::create_dir_all(format!("{}/pska", state.tm_dir))?;
+    fs::create_dir_all(format!("{}/nodes", state.tm_dir))?;
 
     Ok(())
 }

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="dodwan.css">
+    <title>
+      DoDWAN: Document Dissemination in Wireless Ad hoc Networks
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>DoDWAN plugins</h1>
+
+<p>DoDWAN can be extended with so called plugins that offer new
+functionalities to DoDWAN or modify the standard behavior of DoDWAN.  A plugin
+should be installed in the installation tree of DoDWAN (so after the
+installation of DoDWAN itself), and in order to use a plugin, the command that
+launches DoDWAN should be complemented with plugin information.</p>
+
+<p>A plugin may depends on another plugin. Hence when installing a plugin, you
+should take care of dependencies, that is, potentially install other plugins
+beforehand. To date, information on plugin dependencies are found only in the documentation
+of each plugin.</p>
+
+<p>Currently, the following plugins are available:</p>
+
+<ul>
+<li><code>dodwan-napi</code> the generic DoDWAN network API. </li>
+<li><code>dodwan-napi-tcp</code> the implementation of the DoDWAN network API based on TCP (depends on dodwan-napi)</li>
+<li><code>dodwan-napi-ws</code> the implementation of the DoDWAN network API based on WebSockets (depends on dodwan-napi)</li>
+</ul>
+
+<p>In the following we assume that you have already installed DoDWAN on your system and that you know how to launch DoDWAN. </p>
+
+<h2>Installing plugins</h2>
+
+<p>A plugin comes in the form of a ZIP archive that can be downloaded from the <a href="http://casa-irisa.univ-ubs.fr/download/">DoDWAN download page</a></p>
+
+<p>In order to install a plugin, simply unzip the ZIP archive in the <code>$DODWAN_HOME/plugins</code> directory.</p>
+
+<p>After all the plugins you need have been installed, run the following command to download all the external libraries:</p>
+
+<pre><code class="prettyprint">dodwan.sh load
+</code></pre>
+
+<h2>Launching DoDWAN with plugins</h2>
+
+<p>When launching DoDWAN, you should put in the shell variable <code>dodwan_plugins</code> the short names of the needed plugins, separated with commas. The list should be ordered so that the first name is the one of the deepest plugin in the dependency hierarchy.</p>
+
+<p>For example, the following command starts DoDWAN with the Websocket Network API plugin (dodwan-napi-ws), and its dependency, the Network API plugin (dodwan-napi):</p>
+
+<pre><code class="prettyprint">dodwan_plugins=dodwan-napi,dodwan-napi-ws  dodwan.sh start
+</code></pre>
+
+<p>Note that no plugin specification is needed when stopping DoDWAN</p>
+
+<h2>Adding parameters to plugins</h2>
+
+<p>When launched, a plugin may accept parameters to modify its behavior. The list of valid parameters is given in the documentation of the plugin. 
+Plugin parameters are included in the command line that starts DoDWAN, as Java property definitions specified in the <code>jvm_opts</code> shell variable. </p>
+
+<p>For example, the following command starts DoDWAN with two plugins, and specifies two parameters for the second plugin:</p>
+
+<pre><code class="prettyprint">dodwan_plugins=dodwan-napi,dodwan-napi-ws  jvm_opts="-Ddodwan_napi_ws.port=80 -Ddodwan_napi_ws.serial_method=bson" dodwan.sh start
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

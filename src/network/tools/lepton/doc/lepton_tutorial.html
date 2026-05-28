@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>Using LEPTON: a step by step tutorial</h1>
+
+<h2>Preamble</h2>
+
+<p>LEPTON is a Lightweight Emulation PlatTform for Opportunistic
+Networking. It has been primarily designed to allow the developers of
+real opportunistic networking software (i.e., middleware and/or
+applications) to run their software systems with simulated mobility.</p>
+
+<p>Unlike other emulation platforms, LEPTON does not require exotic
+networking equipment, and it does not even require deploying virtual
+machines on one or several hosts. A simple laptop or desktop
+workstation running Linux can easily support emulation-based
+experiments involving up to a couple hundred nodes, and larger
+experiments can be run on any cluster of Linux machines.</p>
+
+<p>Being an emulator rather than a simulator, LEPTON is meant to drive
+the communication between full-featured instances of an opportunistic
+networking system (a.k.a. OppNet system), each instance determining
+the behavior of one system node (SN) during the simulation. To date
+only a few existing OppNet systems are openly distributed, but LEPTON
+can currently operate with
+<a href="compatible_oppnet_systems.html">several of these systems</a>.</p>
+
+<p>In the following we assume that LEPTON has been installed on your
+laptop or desktop workstation. If that is not the case yet, please
+refer to the <a href="lepton_installation.html">installation procedure</a>.</p>
+
+<h3>Getting started</h3>
+
+<p>Start LEPTON on your host:</p>
+
+<pre><code class="prettyprint">lepton.sh start
+</code></pre>
+
+<p>This command starts LEPTON with default configuration parameters. With
+this configuration (which is defined in <code>conf/lepton.conf</code>) the
+display window represents a 200 m. x 200 m. area, in which 20 nodes
+are created automatically at startup. These nodes move according to
+the <a href="http://dl.acm.org/citation.cfm?id=2042974">Levy Walk</a> mobility
+pattern. A blue vertex between two nodes means that these nodes are
+"within radio range", that is, the distance between them does not
+exceed 30 meters.</p>
+
+<p>In this example the nodes you observe are just blips on the display
+screen: they are otherwise non-existent, and have no set
+behavior. This is because LEPTON is just simulating the mobility of
+purely virtual nodes. Things will change when actual nodes (e.g.,
+instances of an OppNet system) are running concurrently with LEPTON,
+which will then drive communications between these nodes.</p>
+
+<p>Buttons in the display window allow you to change the speed at which
+time is running, and thus the speed at which the nodes are
+moving. Again this is possible because LEPTON is currently running in
+plain simulation mode. When running with instances of an OppNet
+system, the only possible speed will be "real time".</p>
+
+<p>You can check if LEPTON is running at any time:</p>
+
+<pre><code class="prettyprint">lepton.sh status
+</code></pre>
+
+<p>And the parameters used in the current execution can likewise be displayed:</p>
+
+<pre><code class="prettyprint">lepton.sh info
+</code></pre>
+
+<p>At runtime LEPTON produces a number of file, which by default are
+saved in <code>/dev/shm/${USER}/lepton</code>. Among these files is a
+<a href="http://graphstream-project.org/doc/Advanced-Concepts/The-DGS-File-Format">DGS</a>
+(Dynamic Graph Stream) file, which represents the evolution of the
+dynamic graph you can see in the display window:</p>
+
+<pre><code class="prettyprint">tail -f /dev/shm/${USER}/lepton/lepton.dgs
+(Use Ctrl-C to terminate)
+</code></pre>
+
+<p>Now let us stop LEPTON:</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+</code></pre>
+
+<h3>Replaying a DGS scenario</h3>
+
+<p>Let us make a copy of the DGS file we've just produced in <code>/tmp</code>, and let us start LEPTON again, but this time with an option specifying that it should replay that file:</p>
+
+<pre><code class="prettyprint">cp /dev/shm/${USER}/lepton/lepton.dgs /tmp/myTuto.dgs
+lepton.sh start in_dgs=/tmp/myTuto.dgs
+</code></pre>
+
+<p>This time LEPTON does not determine the mobility of each node
+according to the Levy Walk mobility pattern: it simply replays the movements
+recorded earlier in the DGS file. Radio contacts (visualized as
+vertices in the graph) are likewise determined by the DGS file.</p>
+
+<h3>Adjusting parameters</h3>
+
+<p>Let us assume we would like to start LEPTON again, but this time with
+40 nodes moving in the display window:</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+lepton.sh start nodes=40
+</code></pre>
+
+<p>As you can see, any parameter defined in the default configuration
+file can be overwritten in the command line.</p>
+
+<h3>Running in "manual mode"</h3>
+
+<p>It may sometimes be useful to control the connectivity between mobile
+nodes, as this connectivity determines whether these nodes can
+communicate together or not. This can be obtained by setting LEPTON's
+mobility simulator to "manual mode":</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+lepton.sh start nodes=5 manual=true
+</code></pre>
+
+<p>With the last command, only 5 nodes are created in the display window,
+and no mobility pattern is applied to move these nodes. LEPTON applies
+an "auto-layout" pattern, which means that it tries to distribute the
+nodes evenly in the window. Besides the distance between nodes in the
+window has no incidence on their being connected or not: <strong>you</strong> are
+the one who can decide which pairs of nodes should be connected or
+disconnected.</p>
+
+<p>To connect two nodes together, first select the <code>edge editing</code> option
+(button in the bottom-right side of the window). Then select a node,
+and with a drag-and-drop action, connect this node to another node. A
+blue vertex should appear to show that these nodes are now connected.</p>
+
+<p>To disconnect two nodes, select the edge between these nodes and press
+the delete key on your keyboard.</p>
+
+<p>This manual mode is mostly useful when each node on the screen
+corresponds to an instance of an OppNet system that is actually
+running in the background. In such a case the manual mode comes
+handly, as it makes it possible to run tests easily with a couple of
+nodes, before starting to run experiments involving dozens or hundreds
+of nodes.</p>
+
+<p>Now let us stop LEPTON again, before proceeding with this tutorial.</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+</code></pre>
+
+<h3>Loading pre-defined scenarios</h3>
+
+<p>Examples of mobility and/or contact scenarios can be found in the
+<code>examples</code> directory. After the first installation of LEPTON, this
+directory is initially empty, but it can be populated by downloading
+pre-defined scenarios.</p>
+
+<p>The following command displays the list of available scenarios:</p>
+
+<pre><code class="prettyprint">bin/util/load_example.sh
+</code></pre>
+
+<p>Let assume you would like to download the scenario entitled <code>vannes_tohannic</code>:</p>
+
+<pre><code class="prettyprint">bin/util/load_example.sh vannes_tohannic
+</code></pre>
+
+<p>This scenario defines the mobility of 50 vehicles and 30 pedestrians
+in a residential area, in the city of Vannes (France), assuming a
+radio range of 50 meters. To run LEPTON with this scenario, just
+type:</p>
+
+<pre><code class="prettyprint">lepton.sh start conf=examples/vannes_tohannic/lepton.conf
+</code></pre>
+
+<p>You will see that vehicles are depicted as (fast) red nodes, and pedestrians
+as (slow) blue nodes. All the parameters required to run this
+mobility scenario are defined in the files saved in
+<code>examples/vannes_tohannic</code>.</p>
+
+<p>Do not forget to stop DoDWAN when you are done watching blips moving
+on the screen:</p>
+
+<pre><code class="prettyprint">lepton.sh stop
+</code></pre>
+
+<h3>Running in emulation mode (i.e., with actual system nodes)</h3>
+
+<p>So far all you have done is using LEPTON as a mobility simulator: the
+nodes displayed on the screen are nothing but blips on a screen. Now
+if you have gone this far reading this tutorial, you are probably
+ready --and maybe eager-- to try running LEPTON wih "real nodes".</p>
+
+<p>To date LEPTON can operate with a number of
+<a href="compatible_oppnet_systems.html">compatible OppNet systems</a>.</p>
+
+<p>You may now select one of these systems, and install the selected
+system on your host platform, together with the corresponding adapter.</p>
+
+<p>Once both the OppNet system you have selected and its adapter have
+been installed, you are ready to start LEPTON again, but this time
+each mobile node displayed on the screen will correspond to a system
+node running in the background:</p>
+
+<pre><code class="prettyprint">lepton.sh start oppnet_adapter=&lt;path/to/oppnet/adapter.sh&gt;
+</code></pre>
+
+<p>... where the last argument must of course indicate where is the
+adapter to the OppNet system you have installed.</p>
+
+<p>Please refer to the documentation provided with each adapter for
+details about how to install and use this adapter.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

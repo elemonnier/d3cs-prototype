@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>How to interface an OppNet system with LEPTON</h1>
+
+<h2>Overview</h2>
+
+<p>LEPTON's prime function is to simulate the mobility of nodes in an
+opportunistic networking (OppNet) system, while conducting
+transmissions between these nodes based on their relative positions.</p>
+
+<p>Being an emulator rather than a simulator, LEPTON is meant to drive
+the communication between full-featured instances of an OppNet system,
+each instance determining the behavior of one node during the
+simulation. In the remainder of this document we will use the term
+System Node (SN) to refer to an instance of the OppNet system. A SN is
+typically composed of application code combined with communication
+middleware, which itself requires to run on top of a standard protocol
+stack.</p>
+
+<h2>General architecture</h2>
+
+<p>The whole emulation system in LEPTON is composed of System Nodes
+(SNs), and the network emulator.  The emulator is itself structured in
+two main parts: a simulation engine and a software hub. The simulation
+engine determines if any pair of nodes should be considered as
+neighbors at any specific time of the experiment. The software hub
+plays approximately the same role as a switched hub in an Ethernet
+LAN: it forwards every message it receives from a SN to its
+destination, and to that destination only. Yet this forwarding only
+takes place if the simulation engine confirms that the source SN is
+currently a neighbor to the destination SN.</p>
+
+<p><img src="lepton-and-nodes.svg" alt="lepton-and-nodes.svg" title="" /></p>
+
+<p>Communication between SNs can rely on a variety of protocols, but many
+OppNet systems implement a neighbor discovery mechanism based on UDP
+multicast or broadcast, while the gossiping (i.e., the exchange of
+control and data messages) between neighbor nodes is based either on
+unicast UDP or TCP sessions.</p>
+
+<p>LEPTON implements a generic hub that can process UDP-based beaconing
+traffic, and UDP or TCP-based gossiping traffic. Yet since all OppNet
+systems do not use the same message formats, a specific adapter must
+be developed for each type of OppNet system, so the hub can process
+the messages received from SNs. The development of this adapter is
+detailed below.</p>
+
+<h2>Interfacing an OppNet system with LEPTON: a step by step procedure</h2>
+
+<p>Interfacing an existing OppNet system with LEPTON requires:</p>
+
+<ol>
+<li>Making sure that all SNs can run in emulation mode.</li>
+<li>Making sure that traffic received by the hub can be processed.</li>
+<li>Making sure that LEPTON can start and stop SNs during an experiment.</li>
+</ol>
+
+<h3>Step 1: preparing the OppNet system for emulation</h3>
+
+<p>This step may involve modifying the OppNet system, so it
+can operate in emulation mode.</p>
+
+<ul>
+<li><p>Instead of sending beacons to a multicast group, and gossiping with
+peers through unicast communication, each SN should be able to
+address its transmissions explicitly to the software hub. For
+example, beacons should be sent to a UDP port the hub listens to,
+rather than being sent to a multicast group. Gossiping traffic
+should likewise be redirected to the hub, rather than being sent
+directly to the destination SN. Depending on the OppNet system
+considered, this may require changing slightly the source code of
+the OppNet system considered, or simply changing a parameter in a
+configuration file.</p></li>
+<li><p>Whenever receiving traffic from a SN, the hub will have to discover
+the identity of the source of this traffic. This identity should
+therefore be embedded in any UDP datagram or TCP session initiated
+by a SN. With many OppNet systems this is already the case, but for
+others their source code should be modified along that line.</p></li>
+<li><p>Several SNs should be able to run concurrently on the same host
+platform. This makes it possible to run experiments involving large
+numbers of SNs on a single host, or on a small cluster of hosts,
+thus testing the scalability of the OppNet system considered. In
+order to support concurrent execution, SNs must be able to open UDP
+and/or TCP sockets on dynamically assigned ports. Besides, access to
+the filesystem (to read configuration files or produce log files for
+example) should not yield any conflict between concurrent SNs.</p></li>
+<li><p>When running an experiment LEPTON should be able to drive the
+creation and termination of SNs. In order to ensure a timely
+execution of concurrent SNs, following a precise (and repeatable)
+scenario, LEPTON must be able to pass a number of parameters when
+creating a SN. More specifically, each SN should be able to read
+parameters <code>node_start_time</code>, <code>node_stop_time</code>, and <code>node_seed</code>,
+defining respectively the exact time when the SN should start
+running (LEPTON will initiate the creation of a SN a couple of
+seconds <em>before</em> this SN must actually start running), the exact
+time when it should terminate, and the seed value for any random
+generator it may use at runtime. When a SN is created, these
+parameters should be passed either as arguments in the command line,
+or as properties in a configuration file. This is discussed further
+in Step 3 below.</p></li>
+</ul>
+
+<h3>Step 2: developing an adapter for the hub</h3>
+
+<p>Developing a dedicated adapter capable of processing transmissions the
+hub will receive from SNs may require a little more work, but since
+most existing systems rely on UDP and TCP for their transmissions,
+Basically, LEPTON's software development kit defines two interfaces
+for which implementations must be provided:</p>
+
+<ul>
+<li><code>casa.lepton.hub.OppNetAdapter</code></li>
+<li><code>casa.lepton.hub.Beacon</code></li>
+</ul>
+
+<p>Assume an OppNet system called XXX must be interfaced with
+LEPTON. This requires developing two Java classes (<code>XXX_Adapter</code> and
+<code>XXX_Beacon</code>), each class implementing one of the two above-mentioned
+interfaces.</p>
+
+<p>Interface <code>OppNetAdapter</code> simply defines three methods, which will be
+invoked by the hub whenever needed:</p>
+
+<ul>
+<li><code>Beacon getBeacon(DatagramPacket)</code>: will be invoked when the hub
+receives a UDP packet that is assumed to be a beacon, and must be
+processed accordingly. In class <code>XXX_Adapter</code> this methods should be
+implemented so as to return an <code>XXX_Beacon</code>.</li>
+<li><code>StreamHeader getStreamHeader(InputStream)</code>: will be invoked by the
+hub when a TCP session has just been established between a SN and
+the hub. In class <code>XXX_Adapter</code> this method should be implemented so
+as to decode the first sequence of bytes received from the caller,
+until the identity of this caller has been identified, and return in
+a <code>StreamHeader</code> object this identity, as well as the sequence of
+bytes that has been read from the input stream.</li>
+<li><code>String getSource(DatagramPacket)</code>: will be invoked by the hub when
+a UDP datagram (other than a beacon) has been received from a SN. In
+class <code>XXX_Adapter</code> this method should be implemented so as to parse
+the packet, and return the identity of the sender of that datagram.</li>
+</ul>
+
+<h4>Beacon processing</h4>
+
+<p>The methods defined in interface <code>Beacon</code> are meant to decode the
+payload of a UDP packet as a beacon and, conversely, to encode a beacon
+into a UDP packet. The encoding format of course depends on the kind
+of OppNet system considered, and that is why a specific
+implementation of interface <code>Beacon</code> is required for each
+system. Whatever the encoding format, once a beacon has been decoded
+the identity of its source should be known, as well as additional
+information such as the type(s) of gossiping protocol(s) admitted by
+this source (i.e., TCP, UDP, or both), and about the port number(s)
+the source is listening to. Further information, such as the beacon
+type or its destination (if specified), may be available as
+well. Accessors defined in <code>Beacon</code> should be implemented in
+<code>XXX_Beacon</code> so as to return such elements of information. Accessor
+<code>getGossipingAddress(Beacon.GossipingType)</code> should return an
+<code>InetSocketAddress</code>, indicating the address and port number the source
+is listening to, for the specified gossiping type (<code>GossipingType</code> is
+an enum type which takes only two values: <code>TCP</code> and <code>UDP</code>). If the
+address of the source is not specified in the beacon, then the address
+field of the <code>InetSocketAddress</code> should be a wildcard value (i.e.,
+0.0.0.0).</p>
+
+<p>Example: assume a beacon received from a source contains indication
+that this source is listening to UDP port #8628 (with no indication of
+the address). Then once this beacon has been decoded an invocation of
+<code>getGossipingAddress(GossipingType.UDP)</code> should return
+<code>InetSocketAddress(0.0.0.0, 8628)</code>. If the beacon specifies that the
+address of the source is 192.168.1.10, then the result should be
+<code>InetSocketAddress(192.168.1.10, 8628)</code>. The same goes for TCP of
+course.</p>
+
+<p>The core of the hub (defined in class <code>casa.lepton.hub.Hub</code>) is
+designed to rely on <code>XXX_Beacon</code> whenever a beacon received from an
+XXX instance must be processed. Basically, upon receiving a UDP packet
+that is assumed to contain a beacon, the hub invokes
+<code>XXX_Adapter.getBeacon(...)</code>, and thus tries to decode the packet's
+payload as an <code>XXX_Beacon</code>. If this operation succeeds, the hub then
+processes the beacon, based on the information obtained via its
+accessors. Upon receiving a beacon from a SN for the first time, and
+depending of the results returned by <code>getGossipingAddress()</code> for both
+TCP and UDP, the hub may create a TCP proxy, a UDP proxy, or both
+types of proxies, depending on information found in the beacon. In any
+case, the beacon is modified with method <code>setGossipingAddress(...)</code>,
+so the address and port numbers embedded in the beacon are now those
+of the proxies instead of those of the sender node. The beacon is then
+re-encoded as a UDP packet, and forwarded to any SN that is considered
+as a neighbor of the sender SN (information about neighborhood is
+provided by LEPTON's simulation engine). Instead of addressing
+gossiping traffic directly to the beacon's source, any SN will thus
+address this traffic to one of the proxies maintained by the hub. This
+proxy will in turn forward the traffic to the actual destination SN,
+but only after checking that the source and destination are considered
+as neighbors by the simulation engine at that specific time.</p>
+
+<h4>TCP and/or UDP proxies for gossiping traffic</h4>
+
+<p>As mentioned above, when a beacon indicates that a SN accepts
+gossiping traffic by UDP or TCP (or both), the hub creates proxy
+sockets accordingly, and makes sure (by modifying the beacon) that
+subsequent traffic will actually be sent to these proxy sockets rather
+than directly to the SN. A UDP proxy is thus created in the hub for
+any SN that accepts UDP traffic, and a TCP proxy is likewise created
+for any SN that accepts TCP traffic. Note that all proxies are created
+on dynamically assigned ports, so the port number a SN is listening to
+and the port number the corresponding proxy is listening to may be
+different. </p>
+
+<p>Remember that a dedicated <code>TCP_Proxy</code> or <code>UDP_Proxy</code> (or both) is
+created by the hub for each SN from which it receives beacons. Thus
+when one of these proxies receives traffic from a source SN, there is
+no ambiguity about the identity of the destination SN: this is the SN
+this proxy is associated with. Yet there is a question about the
+identity of the source SN, and this identity must be discovered in
+order to decide if traffic forwarding should be allowed between both
+SNs, or if any gossiping data received from the source SN should be
+discarded. Taking this decision is the responsability of the
+simulation engine, but before solliciting the simulation engine the
+hub must determine the identity of the source SN.</p>
+
+<p>Fortunately, in most OppNet systems the identity of the SN that is the
+source of a UDP packet or TCP session is usually embedded as
+meta-information in the data contained in the datagram or stream. If
+this is not the case, then the code of the OppNet system considered
+should be modified accordingly, as defined in Step 1.</p>
+
+<p>Methods <code>getSource(DatagramPacket)</code> and <code>getStreamHeader(InputStream)</code>
+(both defined in interface <code>OppNetAdapter</code>) are meant to examine the
+payload of a UDP datagram, or the first bytes received from a TCP
+session, and extract the identify of the source of these data.</p>
+
+<p>Consider again system XXX, assuming this system must be interfaced
+with LEPTON. If this system uses TCP for the gossiping between SNs,
+then method <code>getStreamHeader(InputStream)</code> must be implemented in
+class <code>XXX_Adapter</code> (which implements interface <code>OppNetAdapter</code>). This
+method should parse the first bytes received from the InputStream,
+until the identity of the source of this stream has been
+discovered. This method should then return a <code>StreamHeader</code> object
+(<code>StreamHeader</code> is a sub-class defined in <code>OppNetAdapter</code>), containing
+both the identity of the source and the sequence of bytes that has
+been read from the stream in order to discover this identity. When
+LEPTON is running, whenever a SN opens a TCP session with one of the
+TCP proxies maintained by the hub, this proxy invokes method
+<code>getStreamHeader()</code>, as defined in class <code>XXX_Adapter</code>, in order to
+determine the identity of the source of this session. It will then
+check with LEPTON's simulation engine that this source is allowed to
+connect to the destination (which is the SN the proxy has been created
+for), and if so the sequence of bytes will then be forwarded to that
+destination, as well as the rest of the traffic exchanged between both
+nodes within that TCP session.</p>
+
+<p>If system XXX uses UDP for the gossiping between SNs, then method
+<code>getSource(DatagramPacket)</code> must be implemented in class
+<code>XXX_Adapter</code>. This method should parse a UDP datagram received from a
+SN, and return the identity of its source.</p>
+
+<p>The UDP and/or TCP proxies maintained by the hub will automatically
+invoke <code>XXX_Adapter.getStreamHeader(InputStream)</code> or
+<code>XXX_Adapter.getSource(DatagramPacket)</code>, in order to determine the
+identity of the source of any kind of traffic they receive.</p>
+
+<p>If system XXX does not rely on both kinds of gossiping protocols,
+there is no need to implement both methods. One of the methods may be
+defined as doing nothing, since no proxy will ever invoke it.</p>
+
+<h3>Step 3: define the bash functions required to start and stop a SN</h3>
+
+<p>As explained above, LEPTON must be able to start and stop SNs while
+running an experiment. This is especially important when the scenario
+considered involves a population of SNs that varies over time, for
+in that case all SNs cannot be created at the same time at the
+beginning of the experiment.</p>
+
+<p>The procedures for creating and terminating a SN depend on the OppNet
+system considered. These procedures must therefore be implemented as
+functions in a bash file, so they can be called by LEPTON whenever
+needed to either create or terminate a SN. Likewise, variables must be
+defined in that bash file so as to identify the adapter that will be
+required for the hub to process transmissions received from SNs.</p>
+
+<p>In order to interface system XXX with LEPTON, a bash file named
+<code>XXX_adapter.sh</code> should be defined, based on the following model:</p>
+
+<pre><code class="prettyprint">#!/bin/bash
+
+oppnet_adapter_classname=TO_BE_DEFINED
+oppnet_adapter_classpath=TO_BE_DEFINED
+node_process_tag=TO_BE_DEFINED
+
+#---------------------------------------------------------------------
+#  Start an emulated node
+#
+#  Available variables
+#  node_id        : id of the node
+#  node_start_time: time when the node should start (EPOCH in ms, optional)
+#  node_end_time  : time when the node should stop, (EPOCH in ms, optional)
+#  node_seed      : seed value for the node's random generator
+#  lepton_host    : name or address of the host that runs LEPTON
+#  lepton_hub_port: TCP port number LEPTON's hub is listening to
+#---------------------------------------------------------------------
+start_node() {
+
+# TO BE IMPLEMENTED (USING THE ABOVE-MENTIONED VARIABLES)
+}
+
+#---------------------------------------------------------------------
+#  Stop an emulated node
+#
+#  node_id: id of the node
+#---------------------------------------------------------------------
+stop_node() {
+
+# TO BE IMPLEMENTED
+}
+
+#---------------------------------------------------------------------
+#  Exec command on an emulated node
+#
+#  node_id: the id of the node
+#  $*     : command (with arguments) to be executed on that node
+#---------------------------------------------------------------------
+#exec_on_node() {
+#
+# TO BE IMPLEMENTED IF NEEDED (WHAT COMMANDS CAN BE EXECUTED ON A NODE
+# DEPENDS ON THE OPPNET SYSTEM CONSIDERED)
+#
+#}
+</code></pre>
+
+<p>where:</p>
+
+<ul>
+<li><code>oppnet_adapter_classname</code>: full classname of the Java class that
+implements our <code>OppNetAdapter</code> (e.g. <code>XXX_Adapter</code>).</li>
+<li><code>oppnet_adapter_classpath</code>: classpath to the Jar file containing this adapter.</li>
+<li><code>node_process_tag</code>: tag that should distinguish Linux processes
+pertaining to SNs when running command 'ps ax'. This will be used by
+LEPTON to terminate all these processes simultaneously.</li>
+<li><code>node_id</code>: id of the node to be started or stopped.</li>
+<li><code>node_start_time</code>: time when the node should start (EPOCH in ms, optional).</li>
+<li><code>node_end_time</code>: time when the node should stop (EPOCH in ms, optional).</li>
+<li><code>node_seed</code>: seed value for the node's random generator.</li>
+<li><code>lepton_host</code>: name or address of the host that runs LEPTON</li>
+<li><code>lepton_hub_port</code>: TCP port number LEPTON's hub is listening to (waiting for beacons)</li>
+</ul>
+
+<p>Note that among the above-mentioned parameters, variables
+<code>node_start_time</code>, <code>node_end_time</code> and <code>node_seed</code> are meant to
+maximize the repeatability of experiments conducted with
+LEPTON. Indeed, when many SNs must be created at the same time during
+an experiment, the creation of these many SNs (i.e., loading code,
+opening files, etc.) can yield a transient congestion of the host
+platform. This phenomenon can notably be observed in scenarios where
+hundreds of SNs must be created simultaneously at the beginning of an
+experiment. In order to the reason why LEPTON can be configured so as
+to create SNs slightly in advance (typically, a few seconds), while
+passing each SN a parameter <code>node_start_time</code> that specifies when this
+SN should actually start running. The code of the SN is therefore
+expected to prepare for running (for example, open files and sockets),
+but to wait until the specified start time before doing anything else.
+The exact time for a node to terminate gracefully can likewise be
+specified by <code>node_end_time</code>. Finally, each SN can be passed a seed
+value to initialize any random generator it may use internally.</p>
+
+<h2>Using our new adapter with LEPTON</h2>
+
+<p>Once a new adapter <code>XXX_adapter.sh</code> has been developed, running LEPTON
+with this adapter should be straightforward:</p>
+
+<pre><code class="prettyprint">bin/lepton.sh start oppnet_adapter=&lt;full/path/to/XXX_Adapter.sh&gt;
+</code></pre>
+
+<p>When started with option <code>oppnet_adapter</code>, LEPTON instantiates a hub,
+together with the specified adapter, based on the variables defined in
+<code>XXX_Adapter.sh</code>. Besides, if LEPTON is started with configuration
+parameters that imply that it must create SNs at runtime according to
+a set scenario, these SNs are created --and later deleted-- using the
+functions defined in <code>XXX_Adapter.sh</code>.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="dodwan.css">
+    <title>
+      DoDWAN: Document Dissemination in Wireless Ad hoc Networks
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>Using DoDWAN: a step by step tutorial</h1>
+
+<h2>Preamble</h2>
+
+<p>DoDWAN implements a content-based epidemic dissemination model. This
+means that content disseminates among DoDWAN nodes <em>epidemic-wise</em>,
+but each node can however determine what kind of content it is willing
+to receive from other nodes.</p>
+
+<p>Content is sent in the network by being <em>published</em>, and content is
+received selectively from the network according to <em>subscriptions</em>.</p>
+
+<p>This short tutorial shows how DoDWAN can be used on a couple of Linux
+hosts to share content between these hosts.</p>
+
+<p>In the following we assume that:</p>
+
+<ol>
+<li>you have at least two Linux hosts (<code>host1</code>and <code>host2</code>) at your
+disposal;</li>
+<li>these hosts belong to the same wired or wireless LAN;</li>
+<li>multicast traffic is enabled on these hosts.</li>
+</ol>
+
+<p>We also assume that DoDWAN has been installed on each of these
+hosts. If that is not the case yet, please refer to the
+<a href="dodwan_installation.html">installation procedure</a>.</p>
+
+<h2>Starting DoDWAN nodes</h2>
+
+<p>Start DoDWAN on each Linux device you plan to use:</p>
+
+<pre><code class="prettyprint">host1$ dodwan.sh start
+
+host2$ dodwan.sh start
+</code></pre>
+
+<p>If you're wondering if DoDWAN is running on a host, just check its status. For example on <code>host1</code>:</p>
+
+<pre><code class="prettyprint">host1$ dodwan.sh status
+</code></pre>
+
+<p>If you're curious about what's happening once DoDWAN is running on a
+host, you can have a look at the log file it produces. By default log
+files are saved in directory
+<code>/dev/shm/${USER}/dodwan/var/node/${HOSTNAME}/log</code>, and a new log file is
+created every time DoDWAN is (re)started on a host.</p>
+
+<p>The command below allows you to display the log events produced by the
+current execution on <code>host1</code>:</p>
+
+<pre><code class="prettyprint">host1$ tail -f /dev/shm/${USER}/dodwan/var/node/${HOSTNAME}/log/*
+       (Use Ctrl-C to terminate)
+</code></pre>
+
+<h2>Publishing content (on <code>host1</code>)</h2>
+
+<p>Publishing content is straightforward::</p>
+
+<pre><code class="prettyprint">host1$ echo "Let us pretend this is jazz music" &gt; /tmp/file1.mp3
+host1$ dodwan.sh publish type=music,style=jazz /tmp/file1.mp3
+</code></pre>
+
+<p>With this command <code>host1</code> publishes a message whose payload is the
+content of <code>file.mp3</code>. This message includes a descriptor that
+characterizes its content, based on a sequence of attributes expressed
+as <code>name=value</code> pairs. In that case the descriptor indicates that the
+payload if of <code>type=music</code>, and this music is of <code>style=jazz</code>.</p>
+
+<p>Note that in this example there is no indication about what user --or
+what host-- is the destination of this content. This is because the
+epidemic dissemination model is inherently appropriate to push content
+toward whoever --or whatever-- is interested.</p>
+
+<p>When a message is published on a DoDWAN node, it is first saved in a
+local cache maintained by this node. It will only be transferred to
+other nodes when these nodes indicate that they are interested in this
+type of content. </p>
+
+<h2>Receiving content (on <code>host2</code>)</h2>
+
+<p>By default, a DoDWAN node is not willing to receive any content from
+any other node. In other words, its <em>interest profile</em> is empty.</p>
+
+<p>In order to update the interest profile of a host, you must set a
+subscription on this host. A subscription is identified by a <code>key</code>,
+that can be used to remove the subscription after a while. It defines
+an <em>interest pattern</em>, and optionally an action to perform when
+content matching this pattern is received.</p>
+
+<pre><code class="prettyprint">host2$ mkdir /tmp/myMusic
+host2$ dodwan.sh subscribe myMusicPrefs "type=music,style=(jazz|classical)" -d /tmp/myMusic
+</code></pre>
+
+<p>In this example a subscription is set on <code>host2</code>. This subscription is
+identified by key <code>myMusicPrefs</code>. Its pattern indicates that <code>host2</code>is
+willing to receive any message whose descriptor contains attribute
+<code>type=music</code> AND attribute <code>style=jazz</code> OR <code>style=classical</code>. As you
+can see a pattern is basically a sequence of <code>name=value</code> pairs, just
+like a descriptor, except that the value field can contain regular
+expressions. The action to be performed when <code>host2</code> receives content
+that matches this pattern is that the payload of the message should be
+saved in directory <code>/tmp/myMusic</code>.</p>
+
+<p>Since the content published earlier by <code>host1</code> matches the new
+interest profile of <code>host2</code>, this content should be transferred
+between both hosts as soon as the subscription is set. You can observe
+the result of this transfer by having a look at directory
+<code>/tmp/myMusic</code> on <code>host2</code>:</p>
+
+<pre><code class="prettyprint">host2$ ls /tmp/myMusic
+host1_file1.mp3
+</code></pre>
+
+<p>Note that the name of the file created on <code>host2</code> is slightly
+different from that of the original file: a prefix has been appended
+in the file name, indicating which DoDWAN node has published this
+content.</p>
+
+<p>By running the command below in a terminal, you'll be able to see new files appear in directory <code>/tmp/myMusic</code>:</p>
+
+<pre><code class="prettyprint">host2$ watch -n 1 ls /tmp/myMusic
+</code></pre>
+
+<p>You can now publish other files on <code>host1</code>, and see if they are
+received by <code>host2</code>:</p>
+
+<pre><code class="prettyprint">host1$ echo "Let us pretend this is classical music" &gt; /tmp/file2.mp3
+host1$ dodwan.sh publish type=music,style=classical /tmp/file2.mp3
+host1$ echo "Let us pretend this is Rock\'n Roll music" &gt; /tmp/file3.mp3
+host1$ dodwan.sh publish type=music,style=rocknroll /tmp/file2.mp3
+</code></pre>
+
+<p>You should observe that <code>file2</code> is received by <code>host2</code>, and deposited
+in <code>/tmp/myMusic</code>, but <code>file3</code> is not. This is because, according to
+the subscription set on <code>host2</code>, this host is willing to receive jazz
+or classical music, but not Rock'n roll music.</p>
+
+<h2>Altruistic behavior</h2>
+
+<p>With the subscription set on <code>host2</code>, this host can so far only
+receive and store in its local cache content that matches the pattern
+defined in subscription <code>myMusicPrefs</code>. In other words <code>host2</code> can
+only receive content it --or rather its user-- is interested in.</p>
+
+<p>But a DoDWAN node can also behave as an opportunistic carrier for
+content it is not directly interested in, but that it is however
+willing to receive, store, and later forward to other nodes:</p>
+
+<pre><code class="prettyprint">host2$ dodwan.sh subscribe anyMusic "type=music"
+</code></pre>
+
+<p>With this new subscription set on <code>host2</code>, this host can receive any
+kind of music. Note that this subscription does not replace the first
+one: it comes as an addition to <code>myMusicPrefs</code>. Besides, in this
+additional subscription there is no indication of an action to perform
+when content matching its pattern is received. This content will
+therefore be simply stored in the local cache.</p>
+
+<p>With the combination of both subscriptions, <code>host2</code> is now willing to
+receive any music file. This content will in any case be stored in the
+local cache, but jazz or classical music will additionally be
+deposited in directory <code>/tmp/myMusic</code>, as requested by
+<code>myMusicPrefs</code>. Any music content stored by <code>host2</code> in its cache can
+be transferred to other interested nodes, hence the notion of
+<strong>altruistic behavior</strong>: <code>host2</code> becomes an altruistic carrier for any
+kind of music content, even though its user only wishes to listen to
+jazz or classical music.</p>
+
+<p>When subscription patterns overlap partially (as is the case with
+<code>myMusicPrefs</code> and <code>anyMusic</code> that both pertain to music), this does
+not mean that the same content will be received several times by a
+DoDWAN node. DoDWAN ensures that content is delivered once and once
+only to a node, even if several subscriptions on that node pertain
+to that content.</p>
+
+<h2>Content persistency</h2>
+
+<p>By default the local cache maintained by each DoDWAN node is saved in
+the filesystem. If you wish to have a look, this should be in
+<code>/dev/shm/${USER}/dodwan/var/node/${HOSTNAME}/cache</code>. Please do not delete
+files manually from this directory while DoDWAN is running.</p>
+
+<p>When a node is stopped for a while, and then started again, its cache
+is re-initialized based on what is stored in the filesystem, so the node
+does not have to reacquire from other nodes some content it has
+already acquired in the past.</p>
+
+<h2>Removing subscriptions</h2>
+
+<p>Assume <code>host2</code> does not wish to have jazz and classical music
+deposited in <code>/tmp/myMusic</code> anymore. Subscription <code>myMusicPrefs</code> can
+easily be removed:</p>
+
+<pre><code class="prettyprint">host2$ dodwan.sh unsubscribe myMusicPrefs
+</code></pre>
+
+<p>With <code>myMusicPrefs</code> removed, <code>host2</code> will continue to receive music
+files (because of subscription <code>anyMusic</code>), but these files will not
+be deposited in <code>/tmp/myMusic</code>).</p>
+
+<p>In order not to receive any music on <code>host2</code>, subscription <code>anyMusic</code>
+should be removed as well:</p>
+
+<pre><code class="prettyprint">host2$ dodwan.sh unsubscribe anyMusic
+</code></pre>
+
+<p>Once both subscriptions have been removed on <code>host2</code>, this host may
+still contain in its local cache some music it has received earlier
+because of these subscriptions. This content is still available on
+<code>host2</code>, which can therefore transfer it to other interested nodes.</p>
+
+<h2>Stopping DoDWAN nodes (and flushing their cache)</h2>
+
+<pre><code class="prettyprint">host1$ dodwan.sh stop ; dodwan.sh clear
+
+host2$ dodwan.sh stop ; dodwan.sh clear
+</code></pre>
+
+<p>Flushing the cache of a node is only necessary if you want to start a
+node with a "clean slate". By default DoDWAN maintains a persistent
+cache, so any content stored in the filesystem is still available when
+you re-start a DoDWAN node.</p>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

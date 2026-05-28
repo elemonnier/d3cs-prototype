@@ -1,0 +1,36 @@
+/* *****************************************************************************
+ * Copyright (c) IRISA Laboratory, 
+ * Universite Bretagne Sud, France
+ * <http://www-casa.irisa.fr/lepton>
+ *
+ * This file is part of LEPTON.
+ * 
+ * LEPTON is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software 
+ * Foundation, either version 3 of the License, or any later
+ * version.
+ * 
+ * LEPTON is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Lepton.  If not, see <http://www.gnu.org/licenses/>.
+ * ****************************************************************************/
+
+paramètres à donner à la JVM de mobsim pour le serveur RMI :
+
+-Djava.security.policy=pathname_du_fichier/java.policy 
+-Djava.rmi.server.hostname=hostname_de_la_machine 
+-Djava.rmi.server.codebase=file:pathname_du_fichier/dynwalk.jar 
+
+paramètre à donner à la JVM des clients du serveur RMI :
+
+-cp pathname_du_fichier/dynwalk.jar:. 
+
+contenu du fichier java.policy :
+
+grant  {
+    permission java.security.AllPermission;
+};

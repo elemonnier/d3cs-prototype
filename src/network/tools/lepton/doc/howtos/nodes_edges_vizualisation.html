@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+     <meta charset="utf-8">
+    <link rel="stylesheet" href="../lepton.css">
+    <title>
+      LEPTON: a Lightweight Emulation PlaTform for Opportunistic Networking
+    </title>
+  </head>
+  <body>
+<div class=mddoc>
+<h1>How to customize the appearance of the nodes and edges</h1>
+
+<p>To customize the appearance of the nodes and edges on the LEPTON GUI,
+custom configuration properties must be
+provided. <a href="configuration.html">This tutorial</a> explains how to define
+the LEPTON configuration.</p>
+
+<h2>Stylesheets</h2>
+
+<p>The LEPTON underlying graph representation and visualization relies
+on the <a href="http://graphstream-project.org/doc">GraphStream API</a>. The way
+GraphStream allows to customize the appearance of the nodes and edges
+on a GUI is described in the
+<a href="http://graphstream-project.org/doc/Advanced-Concepts/GraphStream-CSS-Reference/">GraphStream documentation</a>.
+It relies on CSS-like stylesheets.</p>
+
+<p>In LEPTON, a default stylesheet is provided that can be overwritten by
+providing a custom stylesheet, through the <code>stylesheet</code> or
+<code>stylesheet_file</code> properties. Those stylesheets should define the
+appearance of nodes or edges according to:</p>
+
+<ul>
+<li>the status of nodes or edges</li>
+<li>the tags associated to nodes or edges</li>
+</ul>
+
+<p>The CSS selectors available in this stylesheet are in the form:</p>
+
+<ul>
+<li><code>edge</code>, <code>edge.&lt;edge_status&gt;</code>, <code>edge.&lt;edge_tag&gt;</code>, with:
+<ul>
+<li><code>&lt;edge_status&gt;</code>: <code>CONNECTED</code>, <code>DISCONNECTED</code></li>
+<li><code>&lt;edge_tag&gt;</code>: <code>TAG</code>, ...</li>
+</ul></li>
+<li><code>node</code>, <code>node.&lt;node_status&gt;</code>, <code>node.&lt;node_tag&gt;</code>, with:
+<ul>
+<li><code>&lt;node_status&gt;</code>: <code>ONLINE</code>, <code>OFFLINE</code></li>
+<li><code>&lt;node_tag&gt;</code>: <code>TAG</code>, ...</li>
+</ul></li>
+</ul>
+
+<p>Example:</p>
+
+<pre><code class="prettyprint">stylesheet_file=&lt;path/to/the/stylesheet_file&gt;
+</code></pre>
+
+<p>with the <code>stylesheet_file</code> containing:</p>
+
+<pre><code class="prettyprint">graph {
+   fill-mode : none;
+}
+
+/* Default representation of nodes */
+node {
+   fill-mode: plain; 
+   text-alignment: above; 
+   size: 8px; 
+   fill-color: black;
+}
+
+/* Representation of nodes with the tag "TAG" */
+node.TAG {
+   stroke-mode: plain; 
+   stroke-color: green; 
+   stroke-width: 2;
+}
+
+/* Representation of OFFLINE nodes */
+node.OFFLINE {
+   fill-color: #808080;
+}
+
+/* Default representation of edges */
+edge {
+   shape: line; 
+   fill-mode: dyn-plain; 
+   size: 1px; 
+   fill-color: blue;
+}
+
+/* Representation of CONNECTED edges */
+edge.CONNECTED {
+   size: 2px; 
+   fill-color: red;
+} 
+
+/* Representation of edges with the tag "TAG" */
+edge.TAG {
+   stroke-mode: plain; 
+   stroke-color: green; 
+   stroke-width: 2;
+}
+</code></pre>
+
+<h2>Customize node labels</h2>
+
+<p>Each node is displayed with a label, that contains the id of the
+node. In order to customize the labels that appear aside each node, a
+file containing lines in the form <code>&lt;node_id&gt;=&lt;label&gt;</code> should be
+provided, to define associations between node ids and labels. The
+name of this file is given through the <code>node_labels</code> property. Example:</p>
+
+<pre><code class="prettyprint">node_labels=&lt;path/to/the/nodes_labels_file&gt;
+</code></pre>
+
+<p>with the <code>nodes_labels_file</code> containing:</p>
+
+<pre><code class="prettyprint">N00=Alice
+N01=Bob
+N02=Carol
+</code></pre>
+
+<h2>Hide/show edges according to their status</h2>
+
+<p>The <code>hidden_edges</code> configuration property allows to define which
+edges should be displayed or hidden on the LEPTON GUI. It contains a
+',' separated list of status for which the edges are
+hidden. Example:</p>
+
+<pre><code class="prettyprint">hidden_edges=DISCONNECTED        # display only CONNECTED edges
+</code></pre>
+</div>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  </body>
+</html>

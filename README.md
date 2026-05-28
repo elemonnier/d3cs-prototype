@@ -33,8 +33,8 @@ cargo run
 Then open:
 - `http://127.0.0.1:18080` (port currently set in `.env`)
 
-Default admin credentials at startup:
-- login: `admin` / password: `minad`
+Default authority credentials at startup:
+- login: `authority` / password: `authority`
 
 Or as user:
 - login: `u1` / password: `u1`
@@ -106,10 +106,10 @@ Loaded via `.env` if present:
 ## Demo Example
 
 1. Run local execution (cargo run)
-2. Sign in as admin (`admin` / `minad`)
+2. Sign in as authority (`authority` / `authority`)
 3. Encrypt a document (`classification` + `mission`)
 4. Browse/decrypt documents from the list
-5. Test revocation/presets as admin
+5. Test revocation/presets as authority
 
 ## Structure
 

@@ -1,14 +1,14 @@
-use std::collections::{HashMap, HashSet, VecDeque};
-use std::fs::{self, OpenOptions};
-use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::collections::{HashSet, VecDeque};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Result};
 
-use super::dodwan::{self, DodwanWs};
+use super::dodwan::{self, DodwanEvents, DodwanWs, PeerEvent};
 use super::packets::{D3csFrame, D3csRequest};
+
+const PEER_REFRESH_INTERVAL: Duration = Duration::from_secs(1);
 
 #[derive(Clone)]
 pub struct NetworkManager {
@@ -18,16 +18,16 @@ pub struct NetworkManager {
 struct NetworkManagerInner {
     node_id: String,
     dodwan_config: dodwan::DodwanConfig,
-    runtime_dir: PathBuf,
     joined: AtomicBool,
     subscriptions: Mutex<HashSet<String>>,
-    offsets: Mutex<HashMap<String, u64>>,
     dodwan_ws: Mutex<Option<DodwanWs>>,
+    peers: Mutex<HashSet<String>>,
+    last_peer_refresh: Mutex<Instant>,
     pending_payloads: Mutex<VecDeque<String>>,
 }
 
 impl NetworkManager {
-    pub fn new(node_id: &str, runtime_dir: &str) -> Result<Self> {
+    pub fn new(node_id: &str, _runtime_dir: &str) -> Result<Self> {
         if node_id.trim().is_empty() {
             return Err(anyhow!("node_id is empty"));
         }
@@ -36,11 +36,11 @@ impl NetworkManager {
             inner: Arc::new(NetworkManagerInner {
                 node_id: node_id.to_string(),
                 dodwan_config,
-                runtime_dir: PathBuf::from(runtime_dir),
                 joined: AtomicBool::new(false),
                 subscriptions: Mutex::new(HashSet::new()),
-                offsets: Mutex::new(HashMap::new()),
                 dodwan_ws: Mutex::new(None),
+                peers: Mutex::new(HashSet::new()),
+                last_peer_refresh: Mutex::new(Instant::now()),
                 pending_payloads: Mutex::new(VecDeque::new()),
             }),
         })
@@ -66,6 +66,9 @@ impl NetworkManager {
             }
             let mut ws = dodwan::connect(&self.inner.dodwan_config)?;
             dodwan::ping(&mut ws)?;
+            let events = dodwan::get_peers(&mut ws)?;
+            self.handle_dodwan_events(events)?;
+            self.mark_peer_refresh()?;
 
             let mut slot = self
                 .inner
@@ -75,16 +78,7 @@ impl NetworkManager {
             *slot = Some(ws);
         }
 
-        fs::create_dir_all(self.inner.runtime_dir.join("topics"))?;
-        fs::create_dir_all(self.inner.runtime_dir.join("nodes"))?;
-        let presence = self
-            .inner
-            .runtime_dir
-            .join("nodes")
-            .join(format!("{}.presence", self.inner.node_id));
-        self.write_line(&presence, "JOIN")?;
         self.inner.joined.store(true, Ordering::SeqCst);
-        self.reset_offsets_to_end()?;
         Ok(())
     }
 
@@ -112,24 +106,10 @@ impl NetworkManager {
             let ws = slot
                 .as_mut()
                 .ok_or_else(|| anyhow!("DoDWAN websocket unavailable"))?;
-            let payloads = dodwan::subscribe(ws, topic)?;
-            self.enqueue_payloads(payloads)?;
+            let events = dodwan::subscribe(ws, topic)?;
+            self.handle_dodwan_events(events)?;
         }
 
-        let path = self.topic_path(topic);
-        if !path.exists() {
-            if let Some(parent) = path.parent() {
-                fs::create_dir_all(parent)?;
-            }
-            OpenOptions::new().create(true).append(true).open(&path)?;
-        }
-        let len = file_len_or_zero(&path)?;
-        let mut offsets = self
-            .inner
-            .offsets
-            .lock()
-            .map_err(|_| anyhow!("lock poisoned"))?;
-        offsets.insert(topic.to_string(), len);
         Ok(())
     }
 
@@ -154,6 +134,15 @@ impl NetworkManager {
         self.publish_frame(&secured)
     }
 
+    pub fn publish_on_topic(&self, topic: &str, frame: &D3csFrame) -> Result<()> {
+        self.publish_frame_on_topics(frame, &[topic])
+    }
+
+    pub fn publish_secured_on_topic(&self, topic: &str, frame: &D3csFrame) -> Result<()> {
+        let secured = frame.clone().with_secured(true);
+        self.publish_frame_on_topics(&secured, &[topic])
+    }
+
     pub fn on_rcv(&self, raw: &str) -> Result<D3csFrame> {
         D3csFrame::from_wire(raw)
     }
@@ -164,7 +153,7 @@ impl NetworkManager {
         }
 
         let mut payloads = self.drain_pending_payloads()?;
-        let live_payloads = {
+        let (live_events, refresh_events) = {
             let mut slot = self
                 .inner
                 .dodwan_ws
@@ -173,9 +162,19 @@ impl NetworkManager {
             let ws = slot
                 .as_mut()
                 .ok_or_else(|| anyhow!("DoDWAN websocket unavailable"))?;
-            dodwan::poll_payloads(ws)?
+            let live_events = dodwan::poll_payloads(ws)?;
+            let refresh_events = if self.should_refresh_peers()? {
+                Some(dodwan::get_peers(ws)?)
+            } else {
+                None
+            };
+            (live_events, refresh_events)
         };
-        payloads.extend(live_payloads);
+        self.handle_dodwan_events(live_events)?;
+        if let Some(events) = refresh_events {
+            self.handle_dodwan_events(events)?;
+        }
+        payloads.extend(self.drain_pending_payloads()?);
 
         let mut out = Vec::new();
         for payload in payloads {
@@ -203,20 +202,27 @@ impl NetworkManager {
         }
     }
 
-    pub fn is_node_present(&self, node_id: &str) -> Result<bool> {
-        let path = self
-            .inner
-            .runtime_dir
-            .join("nodes")
-            .join(format!("{}.presence", node_id));
-        Ok(path.exists())
+    pub fn peers(&self) -> Vec<String> {
+        let peers = self.inner.peers.lock();
+        match peers {
+            Ok(v) => {
+                let mut out = v.iter().cloned().collect::<Vec<_>>();
+                out.sort();
+                out
+            }
+            Err(_) => Vec::new(),
+        }
     }
 
     fn publish_frame(&self, frame: &D3csFrame) -> Result<()> {
+        let topics = target_topics(&frame.dst);
+        self.publish_frame_on_topics(frame, &topics)
+    }
+
+    fn publish_frame_on_topics(&self, frame: &D3csFrame, topics: &[&str]) -> Result<()> {
         if !self.inner.joined.load(Ordering::SeqCst) {
             self.join()?;
         }
-        let topics = target_topics(&frame.dst);
         let wire = frame.to_transport_wire();
 
         {
@@ -228,60 +234,13 @@ impl NetworkManager {
             let ws = slot
                 .as_mut()
                 .ok_or_else(|| anyhow!("DoDWAN websocket unavailable"))?;
-            for topic in &topics {
-                let payloads = dodwan::publish(ws, topic, &frame.src, &wire)?;
-                self.enqueue_payloads(payloads)?;
+            for topic in topics {
+                let events = dodwan::publish(ws, topic, &frame.src, &wire)?;
+                self.handle_dodwan_events(events)?;
             }
         }
 
-        for topic in topics {
-            let path = self.topic_path(topic);
-            self.write_line(&path, &wire)?;
-        }
-
         Ok(())
-    }
-
-    fn write_line(&self, path: &Path, line: &str) -> Result<()> {
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        let mut f = OpenOptions::new().create(true).append(true).open(path)?;
-        f.write_all(line.as_bytes())?;
-        f.write_all(b"\n")?;
-        f.flush()?;
-        Ok(())
-    }
-
-    fn reset_offsets_to_end(&self) -> Result<()> {
-        let subs = {
-            let s = self
-                .inner
-                .subscriptions
-                .lock()
-                .map_err(|_| anyhow!("lock poisoned"))?;
-            s.iter().cloned().collect::<Vec<_>>()
-        };
-
-        let mut offsets = self
-            .inner
-            .offsets
-            .lock()
-            .map_err(|_| anyhow!("lock poisoned"))?;
-        for topic in subs {
-            let path = self.topic_path(&topic);
-            let len = file_len_or_zero(&path)?;
-            offsets.insert(topic, len);
-        }
-
-        Ok(())
-    }
-
-    fn topic_path(&self, topic: &str) -> PathBuf {
-        self.inner
-            .runtime_dir
-            .join("topics")
-            .join(format!("{}.log", sanitize_topic(topic)))
     }
 
     fn enqueue_payloads(&self, payloads: Vec<String>) -> Result<()> {
@@ -294,6 +253,65 @@ impl NetworkManager {
             .lock()
             .map_err(|_| anyhow!("lock poisoned"))?;
         pending.extend(payloads);
+        Ok(())
+    }
+
+    fn handle_dodwan_events(&self, events: DodwanEvents) -> Result<()> {
+        self.apply_peer_events(events.peer_events)?;
+        self.enqueue_payloads(events.payloads)
+    }
+
+    fn apply_peer_events(&self, events: Vec<PeerEvent>) -> Result<()> {
+        if events.is_empty() {
+            return Ok(());
+        }
+
+        let mut peers = self
+            .inner
+            .peers
+            .lock()
+            .map_err(|_| anyhow!("lock poisoned"))?;
+        for event in events {
+            match event {
+                PeerEvent::Snapshot(items) => {
+                    peers.clear();
+                    peers.extend(items.into_iter().filter(|pid| !pid.trim().is_empty()));
+                }
+                PeerEvent::Add(pid) => {
+                    if !pid.trim().is_empty() {
+                        peers.insert(pid);
+                    }
+                }
+                PeerEvent::Remove(pid) => {
+                    peers.remove(&pid);
+                }
+                PeerEvent::Clear => peers.clear(),
+            }
+        }
+
+        Ok(())
+    }
+
+    fn should_refresh_peers(&self) -> Result<bool> {
+        let mut last_refresh = self
+            .inner
+            .last_peer_refresh
+            .lock()
+            .map_err(|_| anyhow!("lock poisoned"))?;
+        if last_refresh.elapsed() < PEER_REFRESH_INTERVAL {
+            return Ok(false);
+        }
+        *last_refresh = Instant::now();
+        Ok(true)
+    }
+
+    fn mark_peer_refresh(&self) -> Result<()> {
+        let mut last_refresh = self
+            .inner
+            .last_peer_refresh
+            .lock()
+            .map_err(|_| anyhow!("lock poisoned"))?;
+        *last_refresh = Instant::now();
         Ok(())
     }
 
@@ -313,30 +331,10 @@ fn dodwan_is_external() -> bool {
         .unwrap_or(false)
 }
 
-fn sanitize_topic(topic: &str) -> String {
-    topic
-        .chars()
-        .map(|c| {
-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect::<String>()
-}
-
 fn target_topics(dst: &str) -> Vec<&str> {
     if dst == "TM" {
         vec!["TM"]
     } else {
         vec![dst]
     }
-}
-
-fn file_len_or_zero(path: &Path) -> Result<u64> {
-    if !path.exists() {
-        return Ok(0);
-    }
-    Ok(fs::metadata(path)?.len())
 }

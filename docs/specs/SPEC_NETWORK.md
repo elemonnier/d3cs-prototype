@@ -1,64 +1,6 @@
 ﻿Récit implémentation D3CS en réseau
 
 
-Prompt : 
-You must implement the network mode of the D3CS prototype.
-
-The implementation must follow the specifications contained in the following files:
-
-- specs/SPEC_NETWORK.md (main specification to implement)
-- specs/SPEC_LOCAL.md (previous specification, the new implementation must remain compatible with it)
-- specs/SLIDES_LAYOUT.md (contains acceptance criteria for the demo)
-- the 8 sequence diagrams describing protocol flows (in diagrams/)
-
-The system already contains a cryptographic implementation.
-You must NOT reimplement the crypto primitives.
-Instead, adapt the protocol requests so they correctly call the existing crypto code.
-
-The project also relies on DoDWAN for opportunistic networking.
-You must integrate with the existing DoDWAN code and respect its API and behavior.
-
-Important constraints:
-
-1. Do not break existing functionality implemented for SPEC_LOCAL.
-2. Reuse the existing crypto modules instead of rewriting them.
-3. Implement the protocol messages defined in SPEC_NETWORK:
-   KEY_REQUEST
-   DELEGATE_ACCEPT
-   ASK_DELEGATION
-   KEY_RESPONSE
-   CT_SHARE
-   REVOKE
-   ARL_UPDATE
-   SYNCHRONIZE
-   PSKA_SYNC
-4. Respect the message format defined in the spec:
-   D3CS | src | dst | request | args...
-5. Integrate the Network Manager functions:
-   join
-   subscribe
-   send
-   sendSecured
-   publish
-   publishSecured
-   onRcv
-6. Respect the opportunistic connectivity model provided by the Lepton simulation.
-7. Ensure the acceptance criteria described in SLIDES_LAYOUT.md are satisfied.
-
-Before writing code:
-- analyze the repository structure
-- identify existing crypto modules
-- identify DoDWAN integration points
-- determine which components are missing
-
-Then implement only the missing parts required for network mode.
-
-Do not simplify the architecture.
-Do not remove existing code.
-Only extend the system to support the new specification.
-
-
-
 Arborescence
 Reprendre l'arborescence actuelle et ajouter dans le dossier src/ : 
 src/network/
@@ -79,9 +21,9 @@ Changements majeurs :
 Changements mineurs Ã  réaliser sur le projet : 
 - Changer les fonctions Rust de démarrage de programme. SPEC1.md (déjÃ  codé) en "cargo run -- local" et SPEC2.md en "cargo run -- network" 
 - Pour les 4 objectifs, rendre l'affichage de l'IHM plus Â« grand » pour un enregistrement vidéo (je suis sur un navigateur 1920x1080. )
-- Enlever l'interface de révocation pour l'objectif 2 sur le panel admin : l'admin recevra une notification de délégation 
+- Enlever l'interface de révocation pour l'objectif 2 sur le panel authority : l'authority recevra une notification de délégation 
 - Dans tout le code, refactor le Â« LK11 » en Â« LK10 » pour le papier de Li-Kim car je m'étais trompé d'année.
-- Changer le mot de passe admin en Â« minad » 
+- Changer le mot de passe authority en Â« authority » 
 - Renommer ihm/ par gui/
 - Renommer le projet racine en d3cs-prototype
 - Déplacer le fichier d3cs-prototype/src/authority/mod.rs dans d3cs-prototype/authority/. Supprimer le dossier d3cs-prototype/src/authority/ également.
@@ -98,20 +40,22 @@ Trames D3CS (de la forme 1|2|3|4|5...) :
 - Encapsulation possible dans une trame TLS
 
 
-Liste des fonctions protocolaires ou "messages", Ã  coder dans src/network/packets.rs : 
-- KEY_REQUEST. Input: liste d'attributs de classification et de mission. Est émis d'un nouvel utilisateur souhaitant récupérer ses clés, et Ã  destination de l'autorité ou d'un autre tuple TM-user en cas de délégation.
+Liste des fonctions protocolaires ou "messages", à coder dans src/network/packets.rs : 
+- KEY_REQUEST. Input: liste d'attributs de classification et de mission. Est émis d'un nouvel utilisateur souhaitant récupérer ses clés, et à destination de l'autorité ou d'un autre tuple TM-user en cas de délégation.
 - DELEGATE_ACCEPT. Input: aucun. Est émis d'un TM acceptant d'émettre une délégation (delegator) vers un TM souhaitant recevoir une délégation (delegatee). 
 - ASK_DELEGATION. Input: attributs. Est émis du nouvel utilisateur/TM vers l'utilisateur/TM délégateurs. 
-- KEY_RESPONSE. Input: dépend du destinataire et de la fonction utilisée. A destination d'un TM, les clés transmises sont la clé privée PM23 cÃ´té autorité (PSKA) et les paramÃ¨tres publics ABS (params). A destination d'un utilisateur lors de KeyGen, la clé privée PM23 utilisateur (PSKS), le paramÃ¨tre public PM23 (PP) et la clé privée ABS (skw) sont transmises. Lors d'une délégation, skw n'est pas transmise.
-- CT_SHARE. Input: chiffré CT. Emis par un TM Ã  destination de tous les autres TMs accessibles (dans le mÃªme réseau de connectivité)
-- REVOKE. Input: attribut de mission. Emis par un TM vers TM0.
-- ARL_UPDATE. Input: ARL. Emis par TM0 Ã  destination de tous les TMs accessibles.
+- KEY_RESPONSE. Input: dépend du destinataire et de la fonction utilisée. A destination d'un TM, les clés transmises sont la clé privée PM23 côté autorité (PSKA) et les paramètres publics ABS (params). A destination d'un utilisateur lors de KeyGen, la clé privée PM23 utilisateur (PSKS), le paramètre public PM23 (PP) et la clé privée ABS (skw) sont transmises. Lors d'une délégation, skw n'est pas transmise. Il y a plusieurs variantes de ce message : USER_KEYGEN (contient PM23.PP, PM23.PSKS et LK10.skw), USER_DELEGATION (contient PM23.PP et PM23.PSKS), TM_KEY (contient LK10.params et PM23.PSKA)
+- CT_SHARE. Input: chiffré CT. Emis par un TM à destination de tous les autres TMs accessibles
+- ASK_REVOCATION. Input: attribut de mission. Emis par un TM vers tous les autres TM.
+- ARL_UPDATE. Input: ARL. Emis par TM0 à destination de tous les TMs accessibles.
+
+Fonctions abandonnées, car gérées grâce à la dissémination de DoDWAN et les versions de message :
 - SYNCHRONIZE. Input: liste de PSKA et liste de CT. Emis d'un TM vers l'ensemble des autres TMs, dans le but de synchroniser les deux listes.
 - PSKA_SYNC. Input: PSKA_diff. Emis d'un TM possédant une liste de PSKA différente de celle transmise dans le SYNCHRONIZE. Le destinataire est l'émetteur du SYNCHRONIZE.
 
 
-Fonctions de TM/utilisateur/autorité, Ã  coder dans src/network/main.rs : 
-- checkARL(attribute) -> bool. Vérification de l'ARL avant chiffrement/déchiffrement. Envoie True si l'attribut figure l'ARL (et envoyer message d'erreur Ã  l'utilisateur), sinon renvoyer False et continuer le process.
+Fonctions de TM/utilisateur/autorité, à coder dans src/network/main.rs : 
+- checkARL(attribute) -> bool. Vérification de l'ARL avant chiffrement/déchiffrement. Envoie True si l'attribut figure l'ARL (et envoyer message d'erreur à l'utilisateur), sinon renvoyer False et continuer le process.
 - delegationCheck(PSKA[], attributes) -> bool. Vérification si les attributs demandés constituent un subset de ce qu'il y a dans les PSKA[].
 - store(data) -> void. Stockage sécurisé de la donnée. Dans la démo, stocker simplement la data dans le répertoire correspondant selon SPEC_LOCAL (e.g., clé, chiffré, etc.).
 - write() -> message. Ecriture d'un message (String) par l'utilisateur. 
@@ -122,7 +66,7 @@ Fonctions de TM/utilisateur/autorité, Ã  coder dans src/network/main.rs :
 - setupARL() -> void. Initialisation de la structure de l'ARL.
 - setupStorage() -> void. Initialisation du stockage du TM (structure pour accueillir PSKA, ARL, chiffrés).
 - setupPresets() -> void. Initialisation des 4 presets Bell-LaPadula et Biba.
-- updatePSKA(PSKA_diff, storage) -> void. Mise Ã  jour du stockage des PSKA en fonction de PSKA_diff.
+- updatePSKA(PSKA_diff, storage) -> void. Mise à jour du stockage des PSKA en fonction de PSKA_diff.
 - getClassificationAttribute(PSKA) -> attribute. Récupération de l'attribut de classification en fonction d'une PSKA associée.
 
 
@@ -154,11 +98,68 @@ Fonctions réseau autour du Network Manager, Ã  coder dans main/netmanager.rs 
 
 
 
+Prompt : 
+You must implement the network mode of the D3CS prototype.
+
+The implementation must follow the specifications contained in the following files:
+
+- specs/SPEC_NETWORK.md (main specification to implement)
+- specs/SPEC_LOCAL.md (previous specification, the new implementation must remain compatible with it)
+- specs/SLIDES_LAYOUT.md (contains acceptance criteria for the demo)
+- the 8 sequence diagrams describing protocol flows (in diagrams/)
+
+The system already contains a cryptographic implementation.
+You must NOT reimplement the crypto primitives.
+Instead, adapt the protocol requests so they correctly call the existing crypto code.
+
+The project also relies on DoDWAN for opportunistic networking.
+You must integrate with the existing DoDWAN code and respect its API and behavior.
+
+Important constraints:
+
+1. Do not break existing functionality implemented for SPEC_LOCAL.
+2. Reuse the existing crypto modules instead of rewriting them.
+3. Implement the protocol messages defined in SPEC_NETWORK:
+   KEY_REQUEST
+   DELEGATE_ACCEPT
+   ASK_DELEGATION
+   KEY_RESPONSE
+   CT_SHARE
+   ARL_UPDATE
+   SYNCHRONIZE
+   PSKA_SYNC
+4. Respect the message format defined in the spec:
+   D3CS | src | dst | request | args...
+5. Integrate the Network Manager functions:
+   join
+   subscribe
+   send
+   sendSecured
+   publish
+   publishSecured
+   onRcv
+6. Respect the opportunistic connectivity model provided by the Lepton simulation.
+7. Ensure the acceptance criteria described in SLIDES_LAYOUT.md are satisfied.
+
+Before writing code:
+- analyze the repository structure
+- identify existing crypto modules
+- identify DoDWAN integration points
+- determine which components are missing
+
+Then implement only the missing parts required for network mode.
+
+Do not simplify the architecture.
+Do not remove existing code.
+Only extend the system to support the new specification.
+
+
+
 
 
 CritÃ¨res d'acceptation :
 - Doit respecter le fichier SLIDES_LAYOUT.md dans le répertoire courant
-- on peut voir les noeuds voisins fournis par Lepton sur le panel (admin ou user).
+- on peut voir les noeuds voisins fournis par Lepton sur le panel (authority ou user).
 
 ## CritÃ¨res d'acceptation â€” mode `network`
 
@@ -166,7 +167,7 @@ CritÃ¨res d'acceptation :
 >
 > Méthode de validation : chaque item doit Ãªtre vérifiable par effet observable cÃ´té IHM et/ou par observation des trames D3CS, sans dépendre de logs applicatifs.
 >
-> Hors périmÃ¨tre de cette checklist : renommages internes, mot de passe admin, refactors de nommage, déplacements de fichiers purement structurels.
+> Hors périmÃ¨tre de cette checklist : renommages internes, mot de passe authority, refactors de nommage, déplacements de fichiers purement structurels.
 
 ### Compatibilité et lancement
 
@@ -185,7 +186,7 @@ CritÃ¨res d'acceptation :
 
 - [ ] Sur une fenÃªtre navigateur en `1920x1080`, les écrans utiles Ã  la démo sont lisibles sans scroll vertical ni horizontal.
 - [ ] L'IHM maximise la surface utile visible pour permettre de suivre clairement les actions pendant l'enregistrement.
-- [ ] Les noeuds voisins fournis par Lepton sont visibles directement sur le panel utilisateur et sur le panel admin.
+- [ ] Les noeuds voisins fournis par Lepton sont visibles directement sur le panel utilisateur et sur le panel authority.
 - [ ] Les changements de voisinage Lepton sont refletes automatiquement sur le panel.
 - [ ] Les éléments non autorisés ou révoqués peuvent Ãªtre simplement non visibles ; un affichage grisé n'est pas exigé sauf cas explicitement demandé.
 - [ ] Aucun texte d'erreur exact n'est imposé ; seul le refus backend effectif est obligatoire.
@@ -293,11 +294,11 @@ CritÃ¨res d'acceptation :
 
 ### Scénarios de démo issus de `SLIDES_LAYOUT.md`
 
-- [ ] Le panel admin permet de montrer les presets.
+- [ ] Le panel authority permet de montrer les presets.
 - [ ] Lors d'un `Sign up`, l'utilisateur voit un état d'attente du type `waiting for key generation or delegation process`.
 - [ ] Un `Sign up` déclenche un `KEY_REQUEST` sur le réseau.
-- [ ] Le panel admin reÃ§oit une notification lorsqu'un nouvel utilisateur attend une génération de clés ou une décision associée.
-- [ ] AprÃ¨s acceptation cÃ´té admin, le transfert de clés vers l'utilisateur concerné s'effectue correctement.
+- [ ] Le panel authority reÃ§oit une notification lorsqu'un nouvel utilisateur attend une génération de clés ou une décision associée.
+- [ ] AprÃ¨s acceptation cÃ´té authority, le transfert de clés vers l'utilisateur concerné s'effectue correctement.
 - [ ] L'utilisateur issu d'un `KeyGen` voit ses clés directement sur son panel connecté.
 
 ### Scénario U1 / U5 avec connectivité intermittente
@@ -337,8 +338,8 @@ CritÃ¨res d'acceptation :
 
 ### Révocation
 
-- [ ] L'interface de révocation disparaÃ®t du panel admin pour l'objectif 2.
-- [ ] La révocation cÃ´té admin apparaÃ®t uniquement sous forme de popup.
+- [ ] L'interface de révocation disparaÃ®t du panel authority pour l'objectif 2.
+- [ ] La révocation cÃ´té authority apparaÃ®t uniquement sous forme de popup.
 - [ ] Le contenu minimal de la popup est de la forme : `U1 veut révoquer M2 - oui/non`.
 - [ ] Le chemin de révocation retenu est : `Ux -> TMx -> Authority -> TM0 -> ARL_UPDATE vers les TMs accessibles`.
 - [ ] `TM0` met Ã  jour l'ARL aprÃ¨s décision de révocation.

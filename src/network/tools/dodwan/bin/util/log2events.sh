@@ -1,0 +1,10 @@
+#!/bin/sh 
+
+version=4.1
+
+dir=$(realpath $(dirname $(realpath $0))/../..)
+
+classpath="${dir}/libs/dodwan-${version}.jar"
+
+java -cp $classpath \
+     casa.dodwan.util.Log2Events $*

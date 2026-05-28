@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, Clearance};
+use crate::{AppState, Clearance, RunMode};
 
 pub mod abs;
 pub mod cpabe;
@@ -34,9 +34,11 @@ pub struct RevocationEntry {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RevocationList {
-    pub version: u8,
+    pub version: u64,
     pub items: Vec<RevocationEntry>,
 }
+
+const INITIAL_ARL_VERSION: u64 = 0;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DocumentLabel {
@@ -44,10 +46,19 @@ pub struct DocumentLabel {
     pub mission: String,
 }
 
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DocumentStatus {
+    Viewable,
+    Revoked,
+    Inaccessible,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DocumentDescriptor {
     pub id: u64,
     pub label: DocumentLabel,
+    pub status: DocumentStatus,
 }
 
 // récupération des presets Bell-La Padula et Biba dans le fichier de config
@@ -69,8 +80,16 @@ fn write_blpbiba(state: &Arc<AppState>, cfg: &BlpBibaConfig) -> Result<()> {
 
 // lecture de la liste de révocation de missions
 
+fn current_arl_path(state: &Arc<AppState>) -> PathBuf {
+    Path::new(&state.tm_dir)
+        .join("nodes")
+        .join(storage_component(&current_node_id()))
+        .join("arl.json")
+}
+
 fn read_arl(state: &Arc<AppState>) -> Result<RevocationList> {
-    let p = format!("{}/arl.json", state.tm_dir);
+    ensure_default_arl(state)?;
+    let p = current_arl_path(state);
     let content = fs::read_to_string(&p)?;
     let arl: RevocationList = serde_json::from_str(&content)?;
     Ok(arl)
@@ -79,9 +98,20 @@ fn read_arl(state: &Arc<AppState>) -> Result<RevocationList> {
 // écriture sur la liste de révocation de missions
 
 fn write_arl(state: &Arc<AppState>, arl: &RevocationList) -> Result<()> {
-    let p = format!("{}/arl.json", state.tm_dir);
+    let p = current_arl_path(state);
+    if let Some(parent) = p.parent() {
+        fs::create_dir_all(parent)?;
+    }
     let s = serde_json::to_string(arl)?;
-    write_atomic(&p, s.as_bytes())
+    write_atomic(p.to_string_lossy().as_ref(), s.as_bytes())
+}
+
+fn bump_arl_version(arl: &mut RevocationList) {
+    arl.version = arl.version.saturating_add(1);
+}
+
+fn should_apply_arl_update(current: &RevocationList, incoming: &RevocationList) -> bool {
+    incoming.version > current.version
 }
 
 // lecture d'une mission particulière sur l'ARL
@@ -135,12 +165,12 @@ fn ensure_default_attributes(state: &Arc<AppState>) -> Result<()> {
 // initialisation de l'ARL si elle n'existe pas
 
 fn ensure_default_arl(state: &Arc<AppState>) -> Result<()> {
-    let p = format!("{}/arl.json", state.tm_dir);
-    if Path::new(&p).exists() {
+    let p = current_arl_path(state);
+    if p.exists() {
         return Ok(());
     }
     let arl = RevocationList {
-        version: 1,
+        version: INITIAL_ARL_VERSION,
         items: Vec::new(),
     };
     write_arl(state, &arl)
@@ -381,6 +411,53 @@ fn current_node_id() -> String {
         .unwrap_or_else(|| "authority".to_string())
 }
 
+fn can_provision_user_keys_from_local_secrets(state: &Arc<AppState>) -> bool {
+    state.mode == RunMode::Local || current_node_id().eq_ignore_ascii_case("Authority")
+}
+
+fn pska_node_component(login: &str) -> String {
+    if login.eq_ignore_ascii_case(crate::AUTHORITY_LOGIN) {
+        "authority".to_string()
+    } else {
+        storage_component(login)
+    }
+}
+
+fn pska_login_component(login: &str) -> String {
+    storage_component(login)
+}
+
+pub(crate) fn pska_path_for_login(state: &Arc<AppState>, login: &str) -> PathBuf {
+    Path::new(&state.tm_dir)
+        .join("nodes")
+        .join(pska_node_component(login))
+        .join(format!("pska{}.bin", pska_login_component(login)))
+}
+
+pub(crate) fn read_pska_for_login(state: &Arc<AppState>, login: &str) -> Result<String> {
+    Ok(fs::read_to_string(pska_path_for_login(state, login))?)
+}
+
+pub(crate) fn write_pska_for_login(
+    state: &Arc<AppState>,
+    login: &str,
+    content: &str,
+) -> Result<()> {
+    let path = pska_path_for_login(state, login);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    write_atomic(path.to_string_lossy().as_ref(), content.as_bytes())
+}
+
+pub(crate) fn remove_pska_for_login(state: &Arc<AppState>, login: &str) -> Result<()> {
+    match fs::remove_file(pska_path_for_login(state, login)) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e.into()),
+    }
+}
+
 fn document_storage_for_node(state: &Arc<AppState>, node_id: &str) -> DocumentStorage {
     let root = Path::new(&state.tm_dir)
         .join("nodes")
@@ -460,15 +537,14 @@ pub(crate) fn get_document_payload(
     state: &Arc<AppState>,
     id: u64,
 ) -> Result<Option<StoredDocument>> {
-    for storage in document_id_storages(state)? {
-        let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
-        let sig_path = format!("{}/{}.sign", storage.signatures_dir, id);
-        if Path::new(&ct_path).exists() && Path::new(&sig_path).exists() {
-            return Ok(Some(StoredDocument {
-                ciphertext: fs::read_to_string(ct_path)?,
-                signature: fs::read_to_string(sig_path)?,
-            }));
-        }
+    let storage = current_document_storage(state);
+    let ct_path = format!("{}/{}.ct", storage.ct_dir, id);
+    let sig_path = format!("{}/{}.sign", storage.signatures_dir, id);
+    if Path::new(&ct_path).exists() && Path::new(&sig_path).exists() {
+        return Ok(Some(StoredDocument {
+            ciphertext: fs::read_to_string(ct_path)?,
+            signature: fs::read_to_string(sig_path)?,
+        }));
     }
     Ok(None)
 }
@@ -498,10 +574,8 @@ pub(crate) fn document_payload_entries(
     state: &Arc<AppState>,
 ) -> Result<Vec<(u64, StoredDocument)>> {
     let mut out = Vec::new();
-    for storage in document_id_storages(state)? {
-        if !Path::new(&storage.ct_dir).exists() {
-            continue;
-        }
+    let storage = current_document_storage(state);
+    if Path::new(&storage.ct_dir).exists() {
         for entry in fs::read_dir(&storage.ct_dir)? {
             let entry = entry?;
             if !entry.file_type()?.is_file() {
@@ -530,6 +604,47 @@ pub(crate) fn document_payload_entries(
     out.sort_by_key(|(id, _)| *id);
     out.dedup_by_key(|(id, _)| *id);
     Ok(out)
+}
+
+pub(crate) fn document_label_accessible(
+    state: &Arc<AppState>,
+    user_clearance: &Clearance,
+    user_is_authority_user: bool,
+    label: &DocumentLabel,
+) -> Result<bool> {
+    let cfg = read_blpbiba(state)?;
+    let arl = read_arl(state)?;
+    Ok(
+        document_status_for_label(&cfg, &arl, user_clearance, user_is_authority_user, label)?
+            == DocumentStatus::Viewable,
+    )
+}
+
+fn document_status_for_label(
+    cfg: &BlpBibaConfig,
+    arl: &RevocationList,
+    user_clearance: &Clearance,
+    user_is_authority_user: bool,
+    label: &DocumentLabel,
+) -> Result<DocumentStatus> {
+    let user_level = classification_level(&user_clearance.classification)?;
+    let doc_level = classification_level(&label.classification)?;
+    if is_mission_revoked(arl, &label.mission) {
+        return Ok(DocumentStatus::Revoked);
+    }
+
+    let classification_allowed = is_read_allowed(&cfg, user_level, doc_level);
+    if user_is_authority_user {
+        if classification_allowed {
+            Ok(DocumentStatus::Viewable)
+        } else {
+            Ok(DocumentStatus::Inaccessible)
+        }
+    } else if classification_allowed && label.mission == user_clearance.mission {
+        Ok(DocumentStatus::Viewable)
+    } else {
+        Ok(DocumentStatus::Inaccessible)
+    }
 }
 
 // initialisation de la crypto (presets, attributs, ARL, ABE.Setup, ABS.Setup)
@@ -573,7 +688,7 @@ pub fn ensure_user_keys(
     state: &Arc<AppState>,
     login: &str,
     clearance: &Clearance,
-    user_is_admin: bool,
+    user_is_authority_user: bool,
 ) -> Result<()> {
     let _lock = acquire_file_lock(format!(
         "{}/keygen_{}.lock",
@@ -586,13 +701,13 @@ pub fn ensure_user_keys(
 
     let psks_path = format!("{}/psks{}.bin", user_dir, login);
     let skw_path = format!("{}/skw{}.bin", user_dir, login);
-    let pska_path = format!("{}/pska{}.bin", format!("{}/pska", state.tm_dir), login);
+    let pska_path = pska_path_for_login(state, login);
 
     let pp_path = format!("{}/pp.bin", state.tm_dir);
 
     let mut need = !file_has_non_empty_content(&psks_path)
         || !file_has_non_empty_content(&skw_path)
-        || !file_has_non_empty_content(&pska_path);
+        || !file_has_non_empty_content(pska_path.to_string_lossy().as_ref());
     if !need {
         let keys_match = (|| -> Result<bool> {
             let pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(&pp_path)?)?;
@@ -618,7 +733,7 @@ pub fn ensure_user_keys(
     let abs_msk: abs::AbsMasterKeyV1 = serde_json::from_str(&fs::read_to_string(&abs_sk_path)?)?;
 
     let mut attrs = user_attribute_set(clearance);
-    if user_is_admin {
+    if user_is_authority_user {
         attrs.push("M1".to_string());
         attrs.push("M2".to_string());
     } else {
@@ -630,7 +745,7 @@ pub fn ensure_user_keys(
     let (pska, psks) = cpabe::keygen(&pp, &msk, &attrs)?;
     let pska_s = serde_json::to_string(&pska)?;
     let psks_s = serde_json::to_string(&psks)?;
-    write_atomic(&pska_path, pska_s.as_bytes())?;
+    write_pska_for_login(state, login, &pska_s)?;
     write_atomic(&psks_path, psks_s.as_bytes())?;
 
     let skw = abs::extract(&abs_params, &abs_msk, &clearance.classification)?;
@@ -661,9 +776,22 @@ pub fn get_arl(state: &Arc<AppState>) -> Result<RevocationList> {
     read_arl(state)
 }
 
+pub fn mission_revoked(state: &Arc<AppState>, mission: &str) -> Result<bool> {
+    let arl = read_arl(state)?;
+    Ok(is_mission_revoked(&arl, mission))
+}
+
+pub fn update_arl(state: &Arc<AppState>, arl: &RevocationList) -> Result<()> {
+    let current = read_arl(state)?;
+    if should_apply_arl_update(&current, arl) {
+        write_arl(state, arl)?;
+    }
+    Ok(())
+}
+
 pub fn clear_arl(state: &Arc<AppState>) -> Result<()> {
     let arl = RevocationList {
-        version: 1,
+        version: INITIAL_ARL_VERSION,
         items: Vec::new(),
     };
     write_arl(state, &arl)
@@ -671,6 +799,7 @@ pub fn clear_arl(state: &Arc<AppState>) -> Result<()> {
 
 pub fn revoke_missions(state: &Arc<AppState>, missions: &[String]) -> Result<RevocationList> {
     let mut arl = read_arl(state)?;
+    let old_len = arl.items.len();
     for m in missions {
         if !arl
             .items
@@ -683,6 +812,22 @@ pub fn revoke_missions(state: &Arc<AppState>, missions: &[String]) -> Result<Rev
             });
         }
     }
+    if arl.items.len() != old_len {
+        bump_arl_version(&mut arl);
+    }
+    write_arl(state, &arl)?;
+    Ok(arl)
+}
+
+pub fn unrevoke_missions(state: &Arc<AppState>, missions: &[String]) -> Result<RevocationList> {
+    let mut arl = read_arl(state)?;
+    let old_len = arl.items.len();
+    arl.items.retain(|e| {
+        !(e.attribute_type == "mission" && missions.iter().any(|m| e.attribute_value == *m))
+    });
+    if arl.items.len() != old_len {
+        bump_arl_version(&mut arl);
+    }
     write_arl(state, &arl)?;
     Ok(arl)
 }
@@ -692,12 +837,11 @@ pub fn revoke_missions(state: &Arc<AppState>, missions: &[String]) -> Result<Rev
 pub fn list_documents(
     state: &Arc<AppState>,
     user_clearance: &Clearance,
-    user_is_admin: bool,
+    user_is_authority_user: bool,
 ) -> Result<Vec<DocumentDescriptor>> {
     let cfg = read_blpbiba(state)?;
     let arl = read_arl(state)?;
 
-    let user_level = classification_level(&user_clearance.classification)?;
     let mut out = BTreeMap::new();
 
     for (id, document) in document_payload_entries(state)? {
@@ -709,33 +853,23 @@ pub fn list_documents(
             continue;
         }
 
-        if is_mission_revoked(&arl, &ct.label.mission) {
-            continue;
-        }
-
-        let doc_level = match classification_level(&ct.label.classification) {
+        let label = DocumentLabel {
+            classification: ct.label.classification,
+            mission: ct.label.mission,
+        };
+        let status = match document_status_for_label(
+            &cfg,
+            &arl,
+            user_clearance,
+            user_is_authority_user,
+            &label,
+        ) {
             Ok(v) => v,
             Err(_) => continue,
         };
 
-        let accessible = if user_is_admin {
-            is_read_allowed(&cfg, user_level, doc_level)
-        } else {
-            is_read_allowed(&cfg, user_level, doc_level)
-                && ct.label.mission == user_clearance.mission
-        };
-
-        if !accessible {
-            continue;
-        }
-
-        out.entry(id).or_insert_with(|| DocumentDescriptor {
-            id,
-            label: DocumentLabel {
-                classification: ct.label.classification,
-                mission: ct.label.mission,
-            },
-        });
+        out.entry(id)
+            .or_insert_with(|| DocumentDescriptor { id, label, status });
     }
 
     Ok(out.into_values().collect())
@@ -747,7 +881,7 @@ pub fn encrypt_document(
     state: &Arc<AppState>,
     login: &str,
     user_clearance: &Clearance,
-    user_is_admin: bool,
+    user_is_authority_user: bool,
     label: &DocumentLabel,
     message: &str,
 ) -> Result<u64> {
@@ -758,7 +892,7 @@ pub fn encrypt_document(
         return Err(anyhow!("Mission revoked in ARL"));
     }
 
-    if !user_is_admin && label.mission != user_clearance.mission {
+    if !user_is_authority_user && label.mission != user_clearance.mission {
         return Err(anyhow!("Mission not allowed for this user"));
     }
 
@@ -797,15 +931,17 @@ pub fn encrypt_document(
 // fonction qui déchiffre un document depuis le panel Documents
 
 pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<String> {
-    let (clearance, user_is_admin) = {
+    let (clearance, user_is_authority_user) = {
         let db = state.user_db.lock().map_err(|_| anyhow!("DB error"))?;
         let record = db
             .users
             .get(login)
             .ok_or_else(|| anyhow!("User not found"))?;
-        (record.clearance.clone(), record.is_admin)
+        (record.clearance.clone(), record.is_authority_user)
     };
-    ensure_user_keys(state, login, &clearance, user_is_admin)?;
+    if can_provision_user_keys_from_local_secrets(state) {
+        ensure_user_keys(state, login, &clearance, user_is_authority_user)?;
+    }
 
     let document = get_document_payload(state, id)?.ok_or_else(|| anyhow!("Document not found"))?;
     let ct_s = document.ciphertext;
@@ -813,6 +949,16 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
 
     let ct: cpabe::CiphertextV1 = serde_json::from_str(&ct_s)?;
     let sig: abs::AbsSignatureV1 = serde_json::from_str(&sig_s)?;
+
+    let cfg = read_blpbiba(state)?;
+    let arl = read_arl(state)?;
+    match document_status_for_label(&cfg, &arl, &clearance, user_is_authority_user, &ct.label)? {
+        DocumentStatus::Viewable => {}
+        DocumentStatus::Revoked => return Err(anyhow!("Mission revoked in ARL")),
+        DocumentStatus::Inaccessible => {
+            return Err(anyhow!("Document not accessible for this user"));
+        }
+    }
 
     let params_path = format!("{}/params.bin", state.tm_dir);
     let abs_params: abs::AbsParamsV1 = serde_json::from_str(&fs::read_to_string(&params_path)?)?;
@@ -828,10 +974,8 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
 
     let user_dir = format!("{}/{}", state.users_dir, login);
     let psks_path = format!("{}/psks{}.bin", user_dir, login);
-    let pska_path = format!("{}/pska/pska{}.bin", state.tm_dir, login);
-
-    let pska_s = fs::read_to_string(&pska_path)
-        .map_err(|_| anyhow!("Missing PSKA file (runtime/tm/pska)"))?;
+    let pska_s =
+        read_pska_for_login(state, login).map_err(|_| anyhow!("Missing PSKA file (tm/nodes)"))?;
     let psks_s =
         fs::read_to_string(&psks_path).map_err(|_| anyhow!("Missing PSKS file (users)"))?;
     let pska: cpabe::PskaV1 = serde_json::from_str(&pska_s)?;
@@ -848,6 +992,55 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{PendingRevocation, UserDb, UserRecord};
+    use std::collections::HashMap;
+    use std::sync::Mutex;
+
+    #[test]
+    fn arl_update_accepts_only_newer_versions() {
+        let current = RevocationList {
+            version: 4,
+            items: Vec::new(),
+        };
+        let older = RevocationList {
+            version: 3,
+            items: vec![RevocationEntry {
+                attribute_type: "mission".to_string(),
+                attribute_value: "M1".to_string(),
+            }],
+        };
+        let same = RevocationList {
+            version: 4,
+            items: vec![RevocationEntry {
+                attribute_type: "mission".to_string(),
+                attribute_value: "M1".to_string(),
+            }],
+        };
+        let newer = RevocationList {
+            version: 5,
+            items: vec![RevocationEntry {
+                attribute_type: "mission".to_string(),
+                attribute_value: "M1".to_string(),
+            }],
+        };
+
+        assert!(!should_apply_arl_update(&current, &older));
+        assert!(!should_apply_arl_update(&current, &same));
+        assert!(should_apply_arl_update(&current, &newer));
+    }
+
+    #[test]
+    fn arl_version_bump_is_monotone() {
+        let mut arl = RevocationList {
+            version: 0,
+            items: Vec::new(),
+        };
+
+        bump_arl_version(&mut arl);
+        assert_eq!(arl.version, 1);
+        bump_arl_version(&mut arl);
+        assert_eq!(arl.version, 2);
+    }
 
     #[test]
     fn key_material_check_rejects_mismatched_pska_psks() -> Result<()> {
@@ -863,6 +1056,119 @@ mod tests {
         assert!(key_material_matches(&pp, &pska_a, &psks_a, &clearance));
         assert!(!key_material_matches(&pp, &pska_b, &psks_a, &clearance));
 
+        Ok(())
+    }
+
+    #[test]
+    fn network_decrypt_with_delegated_keys_does_not_create_abs_key() -> Result<()> {
+        let base = std::env::temp_dir().join(format!(
+            "d3cs-network-decrypt-test-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+        ));
+        let users_dir = base.join("users");
+        let tm_dir = base.join("tm");
+        let authority_dir = base.join("authority");
+        let config_dir = base.join("config");
+        let ihm_dir = base.join("ihm");
+
+        fs::create_dir_all(&users_dir)?;
+        fs::create_dir_all(&tm_dir)?;
+        fs::create_dir_all(&authority_dir)?;
+        fs::create_dir_all(&config_dir)?;
+        fs::create_dir_all(&ihm_dir)?;
+
+        std::env::set_var("D3CS_NODE_ID", "U7");
+
+        let u7_clearance = Clearance {
+            classification: "FR-DR".to_string(),
+            mission: "M2".to_string(),
+        };
+        let u8_clearance = Clearance {
+            classification: "FR-S".to_string(),
+            mission: "M2".to_string(),
+        };
+
+        let mut users = HashMap::new();
+        users.insert(
+            "u7".to_string(),
+            UserRecord {
+                password: "pw".to_string(),
+                clearance: u7_clearance.clone(),
+                is_authority_user: false,
+            },
+        );
+        users.insert(
+            "u8".to_string(),
+            UserRecord {
+                password: "pw".to_string(),
+                clearance: u8_clearance.clone(),
+                is_authority_user: false,
+            },
+        );
+
+        let state = Arc::new(AppState {
+            host: "127.0.0.1".to_string(),
+            port: 18087,
+            config_dir: path_to_string(config_dir),
+            users_dir: path_to_string(users_dir.clone()),
+            tm_dir: path_to_string(tm_dir),
+            authority_dir: path_to_string(authority_dir),
+            ihm_dir: path_to_string(ihm_dir),
+            mode: RunMode::Network,
+            user_db: Mutex::new(UserDb { users }),
+            sessions: Mutex::new(HashMap::new()),
+            pending_revocations: Mutex::new(Vec::<PendingRevocation>::new()),
+            network_runtime: Mutex::new(None),
+        });
+
+        setup_if_needed(&state)?;
+        ensure_user_keys(&state, "u8", &u8_clearance, false)?;
+
+        let pp: cpabe::PublicParamsV1 =
+            serde_json::from_str(&fs::read_to_string(format!("{}/pp.bin", state.tm_dir))?)?;
+        let psks_u8: cpabe::PsksV1 = serde_json::from_str(&fs::read_to_string(format!(
+            "{}/u8/psksu8.bin",
+            state.users_dir
+        ))?)?;
+        let pska_u8: cpabe::PskaV1 = serde_json::from_str(&read_pska_for_login(&state, "u8")?)?;
+        let delegated_attrs = user_attribute_set(&u7_clearance);
+        let (psks_u7, tk) = cpabe::delegate(&pp, &psks_u8, &delegated_attrs)?;
+        let pska_u7 = cpabe::tm_delegate(&pska_u8, &tk)?;
+
+        let u7_dir = users_dir.join("u7");
+        fs::create_dir_all(&u7_dir)?;
+        write_atomic(
+            u7_dir.join("pp.bin").to_string_lossy().as_ref(),
+            serde_json::to_string(&pp)?.as_bytes(),
+        )?;
+        write_atomic(
+            u7_dir.join("psksu7.bin").to_string_lossy().as_ref(),
+            serde_json::to_string(&psks_u7)?.as_bytes(),
+        )?;
+        write_pska_for_login(&state, "u7", &serde_json::to_string(&pska_u7)?)?;
+
+        let skw_u7_path = u7_dir.join("skwu7.bin");
+        assert!(!skw_u7_path.exists());
+
+        let id = encrypt_document(
+            &state,
+            "u8",
+            &u8_clearance,
+            false,
+            &DocumentLabel {
+                classification: u7_clearance.classification.clone(),
+                mission: u7_clearance.mission.clone(),
+            },
+            "hello from u8",
+        )?;
+
+        let plaintext = decrypt_document(&state, "u7", id)?;
+
+        assert_eq!(plaintext, "hello from u8");
+        assert!(!skw_u7_path.exists());
+
+        fs::remove_dir_all(base).ok();
         Ok(())
     }
 }
