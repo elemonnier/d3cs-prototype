@@ -22,6 +22,8 @@ package casa.lepton;
 
 import casa.dgs.DGSAttributes;
 import casa.util.geom.CoordCar;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.AbstractEdge;
@@ -141,13 +143,15 @@ public class OppEdge
     void setUIattribute() {
         String type = getConnectivityType();
         String status = getStatus();
-        String value = type;
-        if (status != null) {
-            value = (value == null ? status : value + "," + status);
+        List<String> classes = new ArrayList<>();
+        boolean transfer = hasTag("TRANSFER");
+        if (transfer) {
+            classes.add("TRANSFER");
         }
-        if (tag != null) {
-            value = (value == null ? status : value + "," + tag);
-        }
+        addClass(classes, type);
+        addClass(classes, status);
+        addTagClasses(classes, transfer ? "TRANSFER" : null);
+
         if (hidden != null
                 && ((status != null && hidden.contains(status))
                 || (type != null && hidden.contains(type)))) {
@@ -155,9 +159,39 @@ public class OppEdge
         } else {
             removeAttribute("ui.hide");
         }
-        if (value != null) {
-            setAttribute("ui.class", value);
+        if (!classes.isEmpty()) {
+            setAttribute("ui.class", String.join(",", classes));
         }
+    }
+
+    private void addClass(List<String> classes, String value) {
+        if (value != null && !value.trim().isEmpty() && !classes.contains(value.trim())) {
+            classes.add(value.trim());
+        }
+    }
+
+    private void addTagClasses(List<String> classes, String excludedTag) {
+        if (tag == null) {
+            return;
+        }
+        for (String value : tag.split(",")) {
+            value = value.trim();
+            if (!value.isEmpty() && !value.equals(excludedTag) && !classes.contains(value)) {
+                classes.add(value);
+            }
+        }
+    }
+
+    private boolean hasTag(String name) {
+        if (tag == null) {
+            return false;
+        }
+        for (String value : tag.split(",")) {
+            if (value.trim().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //----------------------------------------------------------------

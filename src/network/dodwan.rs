@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::net::TcpStream;
 use std::path::{Path, PathBuf};
@@ -18,6 +18,7 @@ const WS_RESPONSE_TIMEOUT: Duration = Duration::from_secs(3);
 const WS_IDLE_TIMEOUT: Duration = Duration::from_millis(500);
 pub(crate) type DodwanWs = WebSocket<MaybeTlsStream<TcpStream>>;
 static TOPICS_BY_MID: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+static DESTS_BY_MID: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
 
 #[derive(Clone, Debug, Default)]
 pub(crate) struct DodwanEvents {
@@ -37,6 +38,30 @@ pub(crate) enum PeerEvent {
 pub(crate) struct DodwanConfig {
     pub(crate) node_id: String,
     pub(crate) ws_port: u16,
+}
+
+#[derive(Clone, Debug, Default)]
+pub(crate) struct DodwanReceiveFilter {
+    destinations: HashSet<String>,
+}
+
+impl DodwanReceiveFilter {
+    pub(crate) fn from_subscriptions<'a>(subscriptions: impl IntoIterator<Item = &'a str>) -> Self {
+        let destinations = subscriptions
+            .into_iter()
+            .filter(|subscription| !subscription.trim().is_empty())
+            .map(ToOwned::to_owned)
+            .collect();
+        Self { destinations }
+    }
+
+    fn accepts_dest(&self, dest: &str) -> bool {
+        dest.eq_ignore_ascii_case("TM")
+            || self
+                .destinations
+                .iter()
+                .any(|item| item.eq_ignore_ascii_case(dest))
+    }
 }
 
 impl DodwanConfig {
@@ -152,7 +177,10 @@ pub(crate) fn ping(ws: &mut DodwanWs) -> Result<()> {
 }
 
 // fonction permettant de demander a DoDWAN la liste des peers directs.
-pub(crate) fn get_peers(ws: &mut DodwanWs) -> Result<DodwanEvents> {
+pub(crate) fn get_peers(
+    ws: &mut DodwanWs,
+    receive_filter: &DodwanReceiveFilter,
+) -> Result<DodwanEvents> {
     let request = serde_json::json!({
         "name": "get_peers",
         "tkn": "peers",
@@ -161,10 +189,19 @@ pub(crate) fn get_peers(ws: &mut DodwanWs) -> Result<DodwanEvents> {
     ws.send(Message::Binary(serde_json::to_vec(&request)?))
         .context("impossible de demander les voisins DoDWAN")?;
 
-    read_ws_responses(ws, "lecture des voisins DoDWAN", ResponseKind::Peers)
+    read_ws_responses(
+        ws,
+        "lecture des voisins DoDWAN",
+        ResponseKind::Peers,
+        receive_filter,
+    )
 }
 
-pub(crate) fn subscribe(ws: &mut DodwanWs, topic: &str) -> Result<DodwanEvents> {
+pub(crate) fn subscribe(
+    ws: &mut DodwanWs,
+    topic: &str,
+    receive_filter: &DodwanReceiveFilter,
+) -> Result<DodwanEvents> {
     let request = serde_json::json!({
         "name": "add_sub",
         "tkn": "t2",
@@ -177,7 +214,7 @@ pub(crate) fn subscribe(ws: &mut DodwanWs, topic: &str) -> Result<DodwanEvents> 
     ws.send(Message::Binary(serde_json::to_vec(&request)?))
         .context("impossible d'envoyer la souscription DoDWAN")?;
 
-    read_ws_responses(ws, "souscription", ResponseKind::Ack)
+    read_ws_responses(ws, "souscription", ResponseKind::Ack, receive_filter)
 }
 
 // fonction permettant de publier un message puis de lire la réponse websocket
@@ -185,7 +222,9 @@ pub(crate) fn publish(
     ws: &mut DodwanWs,
     topic: &str,
     src: &str,
+    dest: &str,
     payload: &str,
+    receive_filter: &DodwanReceiveFilter,
 ) -> Result<DodwanEvents> {
     let data = base64::engine::general_purpose::STANDARD.encode(payload.as_bytes());
 
@@ -195,6 +234,7 @@ pub(crate) fn publish(
         "desc": {
             "topic": topic,
             "src": src,
+            "dest": dest,
         },
         "data": data,
     });
@@ -202,13 +242,16 @@ pub(crate) fn publish(
     ws.send(Message::Binary(serde_json::to_vec(&request)?))
         .context("impossible d'envoyer la publication DoDWAN")?;
 
-    read_ws_responses(ws, "publication", ResponseKind::Ack)
+    read_ws_responses(ws, "publication", ResponseKind::Ack, receive_filter)
 }
 
 // lit et affiche toutes les reponses websocket déjà produites par DoDWAN
 // prend en paramètre "action", permettant de savoir si c'est au moment d'une souscription ou publication
 // lit les notifications DoDWAN disponibles et renvoie les payloads applicatifs D3CS
-pub(crate) fn poll_payloads(ws: &mut DodwanWs) -> Result<DodwanEvents> {
+pub(crate) fn poll_payloads(
+    ws: &mut DodwanWs,
+    receive_filter: &DodwanReceiveFilter,
+) -> Result<DodwanEvents> {
     let previous_timeout = set_ws_read_timeout(ws, Some(WS_IDLE_TIMEOUT))?;
     let mut events = DodwanEvents::default();
 
@@ -218,6 +261,9 @@ pub(crate) fn poll_payloads(ws: &mut DodwanWs) -> Result<DodwanEvents> {
                 let Some(value) = message_to_json(&message)? else {
                     continue;
                 };
+                if !accepts_value_dest(&value, receive_filter) {
+                    continue;
+                }
                 print_value_with_decoded_data(&value);
                 handle_poll_pdu(ws, value, &mut events)?;
             }
@@ -373,6 +419,7 @@ fn read_ws_responses(
     ws: &mut DodwanWs,
     action: &str,
     response_kind: ResponseKind,
+    receive_filter: &DodwanReceiveFilter,
 ) -> Result<DodwanEvents> {
     let previous_timeout = set_ws_read_timeout(ws, Some(WS_IDLE_TIMEOUT))?;
     let deadline = Instant::now() + WS_RESPONSE_TIMEOUT;
@@ -386,7 +433,8 @@ fn read_ws_responses(
                     print_message(&message);
                     continue;
                 };
-                if should_log_dodwan_response(&value) {
+                let accepted = accepts_value_dest(&value, receive_filter);
+                if accepted && should_log_dodwan_response(&value) {
                     print_message(&message);
                 }
                 match value
@@ -413,7 +461,8 @@ fn read_ws_responses(
                             .unwrap_or("erreur DoDWAN sans raison");
                         return Err(anyhow!("{action} refusee par DoDWAN: {reason}"));
                     }
-                    _ => handle_poll_pdu(ws, value, &mut events)?,
+                    _ if accepted => handle_poll_pdu(ws, value, &mut events)?,
+                    _ => {}
                 }
             }
             Err(WsError::Io(err))
@@ -453,6 +502,14 @@ fn should_log_dodwan_response(value: &Value) -> bool {
     !(name == "recv_pids" && token == "peers")
 }
 
+fn accepts_value_dest(value: &Value, receive_filter: &DodwanReceiveFilter) -> bool {
+    remember_dest_from_value(value);
+    let Some(dest) = dest_from_value(value) else {
+        return true;
+    };
+    receive_filter.accepts_dest(&dest)
+}
+
 fn set_ws_read_timeout(ws: &mut DodwanWs, timeout: Option<Duration>) -> Result<Option<Duration>> {
     match ws.get_mut() {
         MaybeTlsStream::Plain(stream) => {
@@ -490,6 +547,7 @@ fn print_message(message: &Message) {
 
 fn print_value_with_decoded_data(value: &Value) {
     remember_topic_from_value(value);
+    remember_dest_from_value(value);
     if value.get("data").and_then(Value::as_str).is_none() {
         return;
     }
@@ -506,6 +564,7 @@ fn print_value_with_decoded_data(value: &Value) {
 fn decoded_data_console_json(raw: &str) -> Option<String> {
     let value = serde_json::from_str::<Value>(raw).ok()?;
     remember_topic_from_value(&value);
+    remember_dest_from_value(&value);
     let data = value.get("data").and_then(Value::as_str)?;
     let decoded = decode_dodwan_data(data).ok()?;
     let (data_start, data_end) = find_json_string_field_value_span(raw, "data")?;
@@ -521,6 +580,11 @@ fn decoded_data_console_json(raw: &str) -> Option<String> {
             decoded_json = append_json_string_field(&decoded_json, "topic", &topic)?;
         }
     }
+    if value.get("dest").is_none() {
+        if let Some(dest) = dest_from_value(&value) {
+            decoded_json = append_json_string_field(&decoded_json, "dest", &dest)?;
+        }
+    }
     Some(decoded_json)
 }
 
@@ -533,6 +597,10 @@ fn decode_dodwan_data(data: &str) -> Result<String> {
 
 fn topic_cache() -> &'static Mutex<HashMap<String, String>> {
     TOPICS_BY_MID.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn dest_cache() -> &'static Mutex<HashMap<String, String>> {
+    DESTS_BY_MID.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
 fn remember_topic_from_value(value: &Value) {
@@ -551,6 +619,22 @@ fn remember_topic_from_value(value: &Value) {
     }
 }
 
+fn remember_dest_from_value(value: &Value) {
+    let Some(mid) = message_id(value) else {
+        return;
+    };
+    let Some(dest) = value
+        .get("dest")
+        .and_then(Value::as_str)
+        .or_else(|| value.get("desc")?.get("dest")?.as_str())
+    else {
+        return;
+    };
+    if let Ok(mut dests) = dest_cache().lock() {
+        dests.insert(mid, dest.to_string());
+    }
+}
+
 fn topic_from_value(value: &Value) -> Option<String> {
     if let Some(topic) = value.get("topic").and_then(Value::as_str) {
         return Some(topic.to_string());
@@ -564,6 +648,21 @@ fn topic_from_value(value: &Value) -> Option<String> {
     }
     let mid = message_id(value)?;
     topic_cache().lock().ok()?.get(&mid).cloned()
+}
+
+fn dest_from_value(value: &Value) -> Option<String> {
+    if let Some(dest) = value.get("dest").and_then(Value::as_str) {
+        return Some(dest.to_string());
+    }
+    if let Some(dest) = value
+        .get("desc")
+        .and_then(|desc| desc.get("dest"))
+        .and_then(Value::as_str)
+    {
+        return Some(dest.to_string());
+    }
+    let mid = message_id(value)?;
+    dest_cache().lock().ok()?.get(&mid).cloned()
 }
 
 fn append_json_string_field(raw: &str, field: &str, value: &str) -> Option<String> {

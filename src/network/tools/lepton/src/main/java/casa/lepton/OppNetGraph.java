@@ -40,8 +40,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
@@ -853,6 +855,74 @@ public class OppNetGraph extends MultiGraph implements OppNet, Runnable, Closeab
             return edge.getStatus();
         }
         return null;
+    }
+
+    //-------------------------------------------------------------------------
+    public synchronized boolean setEdgeTag(String nodeId1, String nodeId2,
+            String connectivityType, String tag, boolean enabled) {
+        if (tag == null || tag.trim().isEmpty()) {
+            return false;
+        }
+
+        String edgeId = edgeFactory.makeEdgeId(nodeId1, nodeId2,
+                connectivityType);
+        OppEdge edge = getEdge(edgeId);
+        if (edge == null) {
+            return false;
+        }
+
+        String edgeTag = edge.getTag();
+        String newTag = enabled
+                ? addTag(edgeTag, tag.trim())
+                : removeTag(edgeTag, tag.trim());
+
+        if (Objects.equals(edgeTag, newTag)) {
+            return false;
+        }
+
+        edge.setTag(newTag);
+        String str = edge.toDGS(false).trim();
+        if (!str.equals(edge.getId())) {
+            logDGS("ce " + str);
+        }
+        notifyEdgeListeners(edge, EDGE_CHANGED);
+        return true;
+    }
+
+    //-------------------------------------------------------------------------
+    private String addTag(String tags, String tag) {
+        Set<String> values = splitTags(tags);
+        values.add(tag);
+        return joinTags(values);
+    }
+
+    //-------------------------------------------------------------------------
+    private String removeTag(String tags, String tag) {
+        Set<String> values = splitTags(tags);
+        values.remove(tag);
+        return joinTags(values);
+    }
+
+    //-------------------------------------------------------------------------
+    private Set<String> splitTags(String tags) {
+        Set<String> values = new LinkedHashSet<>();
+        if (tags != null) {
+            for (String value : tags.split(",")) {
+                value = value.trim();
+                if (!value.isEmpty()) {
+                    values.add(value);
+                }
+            }
+        }
+        return values;
+    }
+
+    //-------------------------------------------------------------------------
+    private String joinTags(Set<String> tags) {
+        if (tags.isEmpty()) {
+            return null;
+        }
+        return String.join(",", tags);
     }
 
     //-------------------------------------------------------------------------

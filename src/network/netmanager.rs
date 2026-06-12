@@ -66,7 +66,8 @@ impl NetworkManager {
             }
             let mut ws = dodwan::connect(&self.inner.dodwan_config)?;
             dodwan::ping(&mut ws)?;
-            let events = dodwan::get_peers(&mut ws)?;
+            let receive_filter = self.receive_filter()?;
+            let events = dodwan::get_peers(&mut ws, &receive_filter)?;
             self.handle_dodwan_events(events)?;
             self.mark_peer_refresh()?;
 
@@ -98,6 +99,7 @@ impl NetworkManager {
             subs.insert(topic.to_string())
         };
         if is_new_subscription {
+            let receive_filter = self.receive_filter()?;
             let mut slot = self
                 .inner
                 .dodwan_ws
@@ -106,7 +108,7 @@ impl NetworkManager {
             let ws = slot
                 .as_mut()
                 .ok_or_else(|| anyhow!("DoDWAN websocket unavailable"))?;
-            let events = dodwan::subscribe(ws, topic)?;
+            let events = dodwan::subscribe(ws, topic, &receive_filter)?;
             self.handle_dodwan_events(events)?;
         }
 
@@ -162,9 +164,10 @@ impl NetworkManager {
             let ws = slot
                 .as_mut()
                 .ok_or_else(|| anyhow!("DoDWAN websocket unavailable"))?;
-            let live_events = dodwan::poll_payloads(ws)?;
+            let receive_filter = self.receive_filter()?;
+            let live_events = dodwan::poll_payloads(ws, &receive_filter)?;
             let refresh_events = if self.should_refresh_peers()? {
-                Some(dodwan::get_peers(ws)?)
+                Some(dodwan::get_peers(ws, &receive_filter)?)
             } else {
                 None
             };
@@ -224,6 +227,7 @@ impl NetworkManager {
             self.join()?;
         }
         let wire = frame.to_transport_wire();
+        let receive_filter = self.receive_filter()?;
 
         {
             let mut slot = self
@@ -235,7 +239,8 @@ impl NetworkManager {
                 .as_mut()
                 .ok_or_else(|| anyhow!("DoDWAN websocket unavailable"))?;
             for topic in topics {
-                let events = dodwan::publish(ws, topic, &frame.src, &wire)?;
+                let events =
+                    dodwan::publish(ws, topic, &frame.src, &frame.dst, &wire, &receive_filter)?;
                 self.handle_dodwan_events(events)?;
             }
         }
@@ -313,6 +318,17 @@ impl NetworkManager {
             .map_err(|_| anyhow!("lock poisoned"))?;
         *last_refresh = Instant::now();
         Ok(())
+    }
+
+    fn receive_filter(&self) -> Result<dodwan::DodwanReceiveFilter> {
+        let subs = self
+            .inner
+            .subscriptions
+            .lock()
+            .map_err(|_| anyhow!("lock poisoned"))?;
+        Ok(dodwan::DodwanReceiveFilter::from_subscriptions(
+            subs.iter().map(String::as_str),
+        ))
     }
 
     fn drain_pending_payloads(&self) -> Result<Vec<String>> {

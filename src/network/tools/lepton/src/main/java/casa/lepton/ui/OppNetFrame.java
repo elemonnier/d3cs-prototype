@@ -24,14 +24,17 @@ import casa.lepton.OppNetGraph;
 import casa.lepton.OppNode;
 import casa.lepton.conf.OppNetProperties;
 import casa.dgs.DGSGraph;
+import casa.lepton.OppEdge;
 import casa.util.geom.AreaCar;
 import casa.util.geom.CoordCar;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1048,6 +1051,7 @@ public class OppNetFrame extends JFrame implements ViewerListener {
 			computeDimensions(px2Gu, widthPx, heightPx, minXGu, minYGu, maxXGu, maxYGu);
 			updateZoom();
 			drawBackground(graphics);
+			drawTransferEdges(graphics);
 			drawTime(graphics);
 		}
 
@@ -1080,6 +1084,40 @@ public class OppNetFrame extends JFrame implements ViewerListener {
 				}
 			}
 
+		}
+
+		private void drawTransferEdges(Graphics2D graphics) {
+			Stroke previousStroke = graphics.getStroke();
+			Color previousColor = graphics.getColor();
+
+			graphics.setColor(new Color(255, 176, 0, 190));
+			graphics.setStroke(new BasicStroke(12f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+			Iterator<Edge> iterator = oppNetGraph.getEdgeIterator();
+			while (iterator.hasNext()) {
+				Edge edge = iterator.next();
+				if (edge instanceof OppEdge && hasTransferTag((OppEdge) edge)) {
+					CoordCar coord0 = getCoord(edge.getNode0());
+					CoordCar coord1 = getCoord(edge.getNode1());
+					graphics.drawLine((int) coord0.x, (int) coord0.y, (int) coord1.x, (int) coord1.y);
+				}
+			}
+
+			graphics.setStroke(previousStroke);
+			graphics.setColor(previousColor);
+		}
+
+		private boolean hasTransferTag(OppEdge edge) {
+			String tag = edge.getTag();
+			if (tag == null) {
+				return false;
+			}
+			for (String value : tag.split(",")) {
+				if ("TRANSFER".equals(value.trim())) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		//---------------------------------------------------------------------

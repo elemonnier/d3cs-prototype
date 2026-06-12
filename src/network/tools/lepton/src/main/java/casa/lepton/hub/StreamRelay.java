@@ -102,6 +102,7 @@ public class StreamRelay extends Thread {
 		Logger.log("relay",
 		 	       "[" + len + "]> "
 		 	       + this);
+		EdgeTransferHighlighter.highlight(oppNet_, sdr_, rcv_);
 		out.write(buffer_, 0, len);
 		len = in.read(buffer_);
 	    }
@@ -300,4 +301,3 @@ public class StreamRelay extends Thread {
 	return (addr==null?"null:":addr.getHostAddress()) + ":" + port;
     }
 }
-

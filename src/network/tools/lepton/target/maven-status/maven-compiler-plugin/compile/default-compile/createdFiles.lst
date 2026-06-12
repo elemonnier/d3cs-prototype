@@ -13,6 +13,7 @@ casa/lepton/OppEdge.class
 casa/lepton/ui/EdgeDrawer.class
 casa/lepton/walk/BusJourney$BusPath$BusPathIterator.class
 casa/lepton/leptond.class
+casa/lepton/hub/EdgeTransferHighlighter.class
 casa/lepton/hub/EdgeSessionStatus.class
 casa/lepton/hub/Hub.class
 casa/lepton/walk/dynwalk/DynGraphClient.class

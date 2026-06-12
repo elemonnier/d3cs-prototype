@@ -122,6 +122,25 @@ function keyReceptionStatusHtml() {
   `;
 }
 
+function hasAbeKeyMaterial() {
+  if (!state.network || !state.network.enabled) return false;
+  return !!state.network.has_public_params && !!state.network.has_user_secret_key;
+}
+
+function cryptographicKeysLabel() {
+  const hasAbe = hasAbeKeyMaterial();
+  const hasAbs = !!(state.network && state.network.has_abs_key) || !!(state.me && state.me.has_abs_key);
+
+  if (hasAbe && hasAbs) return 'ABE + ABS';
+  if (hasAbe) return 'ABE';
+  return 'None';
+}
+
+function cryptographicKeysHtml() {
+  if (!state.network || !state.network.enabled) return '';
+  return `<div><strong>Cryptographic keys</strong>: ${escapeHtml(cryptographicKeysLabel())}</div>`;
+}
+
 function populateConnectedDocumentsSummary() {
   const container = document.getElementById('connected-documents-summary');
   if (!container || !state.me || !canUseDocuments()) return;
@@ -216,6 +235,18 @@ function displayUserName() {
   if (!state.me) return '';
   if (state.me.is_authority) return 'authority';
   return state.me.login;
+}
+
+function statusIdentityHtml() {
+  if (!state.me) return '';
+  const clearance = state.me.is_authority
+    ? ''
+    : `<div><strong>Clearance</strong>: ${escapeHtml(state.me.clearance.classification)} / ${escapeHtml(state.me.clearance.mission)}</div>`;
+  return `<div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>${clearance}`;
+}
+
+function statusPanelContentHtml(flush = false) {
+  return `${statusIdentityHtml()}${networkStatusHtml(flush)}`;
 }
 
 // affiche le navigateur
@@ -581,9 +612,6 @@ function connectedNodesHtml(flush = false) {
 
 function connectedNodesContentHtml() {
   if (!state.network || !state.network.enabled) return '';
-  const userLine = state.me
-    ? `${escapeHtml(state.me.login)} (${escapeHtml(state.me.clearance.classification)}, ${escapeHtml(state.me.clearance.mission)})`
-    : escapeHtml(state.network.node_id || 'guest');
   const nodes = Array.isArray(state.network.connected_nodes) ? state.network.connected_nodes : [];
   const lines = nodes.map((node) => {
     const rawName = node.name || '';
@@ -597,8 +625,7 @@ function connectedNodesContentHtml() {
   });
 
   return `
-    <div><strong>User</strong></div>
-    <div>${userLine}</div>
+    ${cryptographicKeysHtml()}
     <div class="mt-3"><strong>Connected nodes</strong></div>
     ${lines.length
       ? `<div>${lines.join('<br>')}</div>`
@@ -661,8 +688,7 @@ function renderLabelling() {
         <div class="col-lg-4">
           <h4>Status</h4>
           <div class="card"><div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div></div>
         </div>
       </div>
@@ -700,9 +726,7 @@ function renderLabelling() {
         <h4>Status</h4>
           <div class="card">
           <div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${state.me.is_authority ? '' : `<div><strong>Clearance</strong>: ${escapeHtml(state.me.clearance.classification)} / ${escapeHtml(state.me.clearance.mission)}</div>`}
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>
@@ -765,8 +789,7 @@ function renderConnectedPanel() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>
@@ -847,7 +870,7 @@ async function renderDocuments() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            ${networkStatusHtml(true)}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>
@@ -933,8 +956,7 @@ async function renderRevocation() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>
@@ -1022,8 +1044,7 @@ async function renderRevocationRequest() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>
@@ -1100,8 +1121,7 @@ async function renderPresets() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>
@@ -1165,8 +1185,7 @@ async function renderArl() {
         <h4>Status</h4>
         <div class="card">
           <div class="card-body">
-            <div><strong>User</strong>: ${escapeHtml(displayUserName())}</div>
-            ${networkStatusHtml()}
+            ${statusPanelContentHtml()}
           </div>
         </div>
       </div>

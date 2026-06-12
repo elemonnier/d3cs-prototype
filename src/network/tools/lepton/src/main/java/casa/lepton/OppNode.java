@@ -590,12 +590,17 @@ public class OppNode
         if (tag != null && !tag.equals("")) {
             value += ", " + tag;
         }
+
+        String keyClass = keyUiClass();
+        if (!keyClass.isEmpty()) {
+            value += ", " + keyClass;
+        }
         setAttribute("ui.class", value);
         setAttribute("ui.label", displayLabel());
     }
 
     public void refreshDynamicLabel() {
-        setAttribute("ui.label", displayLabel());
+        setUIattribute();
     }
 
     private String displayLabel() {
@@ -609,6 +614,22 @@ public class OppNode
             return display;
         }
         return display.endsWith("|") ? display + status : display + "|" + status;
+    }
+
+    private String keyUiClass() {
+        String display = label == null ? id : label;
+        String userNode = d3csUserNode(display);
+        if (userNode == null) {
+            return "";
+        }
+        String status = keyStatus(userNode);
+        if (status.equals("ABE+ABS")) {
+            return "KEY_ABE_ABS";
+        }
+        if (status.equals("ABE")) {
+            return "KEY_ABE";
+        }
+        return "";
     }
 
     private String d3csUserNode(String display) {

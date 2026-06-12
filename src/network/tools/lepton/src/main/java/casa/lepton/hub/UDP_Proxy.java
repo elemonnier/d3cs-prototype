@@ -103,6 +103,7 @@ public class UDP_Proxy
 	    // node 'nodeId_'
 	    if (oppNet_.areNeighbors(source, nodeId_, null, null)) {
 		    // Forwarding datagram packet to peer
+		    EdgeTransferHighlighter.highlight(oppNet_, source, nodeId_);
 		    packet.setSocketAddress(remoteAddr_);
 		    channel_.send(packet);
 		}

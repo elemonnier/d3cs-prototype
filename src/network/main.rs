@@ -100,10 +100,10 @@ impl NetworkRuntime {
 
         let manager = NetworkManager::new(&node_id, &runtime_dir)?;
         manager.join()?;
-        manager.subscribe("TM")?;
-        manager.subscribe("User")?;
         manager.subscribe(&tm_id)?;
         manager.subscribe(&node_id)?;
+        manager.subscribe("TM")?;
+        manager.subscribe("User")?;
         if is_authority {
             manager.subscribe("Authority")?;
             manager.subscribe("TM0")?;

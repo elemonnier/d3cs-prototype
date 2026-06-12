@@ -134,6 +134,7 @@ fn publish(
         "desc": {
             "topic": topic,
             "src": "cli",
+            "dest": receiver,
         },
         "data": data,
     });
