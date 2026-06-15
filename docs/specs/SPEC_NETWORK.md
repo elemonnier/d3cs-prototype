@@ -42,8 +42,8 @@ Trames D3CS (de la forme 1|2|3|4|5...) :
 
 Liste des fonctions protocolaires ou "messages", à coder dans src/network/packets.rs : 
 - KEY_REQUEST. Input: liste d'attributs de classification et de mission. Est émis d'un nouvel utilisateur souhaitant récupérer ses clés, et à destination de l'autorité ou d'un autre tuple TM-user en cas de délégation.
-- DELEGATE_ACCEPT. Input: aucun. Est émis d'un TM acceptant d'émettre une délégation (delegator) vers un TM souhaitant recevoir une délégation (delegatee). 
-- ASK_DELEGATION. Input: attributs. Est émis du nouvel utilisateur/TM vers l'utilisateur/TM délégateurs. 
+- DELEGATE_OFFER. Input: aucun. Est émis d'un TM acceptant d'émettre une délégation (delegator) vers un TM souhaitant recevoir une délégation (delegatee).
+- DELEGATE_ACCEPT. Input: attributs. Est émis du nouvel utilisateur/TM vers l'utilisateur/TM délégateurs.
 - KEY_RESPONSE. Input: dépend du destinataire et de la fonction utilisée. A destination d'un TM, les clés transmises sont la clé privée PM23 côté autorité (PSKA) et les paramètres publics ABS (params). A destination d'un utilisateur lors de KeyGen, la clé privée PM23 utilisateur (PSKS), le paramètre public PM23 (PP) et la clé privée ABS (skw) sont transmises. Lors d'une délégation, skw n'est pas transmise. Il y a plusieurs variantes de ce message : USER_KEYGEN (contient PM23.PP, PM23.PSKS et LK10.skw), USER_DELEGATION (contient PM23.PP et PM23.PSKS), TM_KEY (contient LK10.params et PM23.PSKA)
 - CT_SHARE. Input: chiffré CT. Emis par un TM à destination de tous les autres TMs accessibles
 - ASK_REVOCATION. Input: attribut de mission. Emis par un TM vers tous les autres TM.
@@ -121,8 +121,8 @@ Important constraints:
 2. Reuse the existing crypto modules instead of rewriting them.
 3. Implement the protocol messages defined in SPEC_NETWORK:
    KEY_REQUEST
+   DELEGATE_OFFER
    DELEGATE_ACCEPT
-   ASK_DELEGATION
    KEY_RESPONSE
    CT_SHARE
    ARL_UPDATE
@@ -221,8 +221,8 @@ CritÃ¨res d'acceptation :
 ### Messages protocolaires
 
 - [ ] `KEY_REQUEST` est implémenté et transporte la liste d'attributs demandés.
-- [ ] `DELEGATE_ACCEPT` est implémenté sans argument.
-- [ ] `ASK_DELEGATION` est implémenté et transporte les attributs demandés.
+- [ ] `DELEGATE_OFFER` est implémenté sans argument.
+- [ ] `DELEGATE_ACCEPT` est implémenté et transporte les attributs demandés.
 - [ ] `KEY_RESPONSE` est implémenté avec contenu variable selon le destinataire :
   - vers un utilisateur lors d'un `KeyGen` : `PP`, `PSKS`, `skw`
   - vers un utilisateur lors d'une délégation : `PP`, `PSKS`
@@ -237,7 +237,7 @@ CritÃ¨res d'acceptation :
 ### RÃ¨gles de sécurisation des échanges
 
 - [ ] Tout échange contenant des clés, dérivés de clés, `PSKA`, `PSKS`, `PP`, `params`, `skw`, `ARL`, `TK`, ou toute donnée sensible équivalente passe par le transport sécurisé.
-- [ ] Les requÃªtes `KEY_REQUEST`, `DELEGATE_ACCEPT`, `ASK_DELEGATION`, `KEY_RESPONSE`, `REVOKE`, `ARL_UPDATE`, `SYNCHRONIZE` et `PSKA_SYNC` utilisent un transport sécurisé dÃ¨s lors qu'elles embarquent des données sensibles.
+- [ ] Les requÃªtes `KEY_REQUEST`, `DELEGATE_OFFER`, `DELEGATE_ACCEPT`, `KEY_RESPONSE`, `REVOKE`, `ARL_UPDATE`, `SYNCHRONIZE` et `PSKA_SYNC` utilisent un transport sécurisé dÃ¨s lors qu'elles embarquent des données sensibles.
 - [ ] `CT_SHARE` peut rester non sécurisé si le chiffré est considéré publiable dans la démo.
 
 ### Fonctions métier â€” validation unitaire observable
@@ -269,7 +269,7 @@ CritÃ¨res d'acceptation :
 
 ### Priorité autorité vs délégation
 
-- [ ] Si l'autorité est joignable et qu'un TM émet aussi `DELEGATE_ACCEPT`, la voie autorité reste prioritaire.
+- [ ] Si l'autorité est joignable et qu'un TM émet aussi `DELEGATE_OFFER`, la voie autorité reste prioritaire.
 - [ ] Dans un réseau intermittent, la voie autorité et la voie délégation peuvent néanmoins se terminer indépendamment l'une de l'autre.
 - [ ] L'arbitrage final entre réponse autorité et réponse délégation est assuré par le TM du nouvel utilisateur.
 - [ ] Une délégation peut donc réussir cÃ´té `PSKS` / `PSKA` mÃªme si `skw` n'est pas encore disponible.

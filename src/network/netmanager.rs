@@ -60,11 +60,7 @@ impl NetworkManager {
             .is_none();
 
         if needs_dodwan_connection {
-            if !dodwan_is_external() {
-                let home = dodwan::default_home()?;
-                dodwan::run_dodwan(&home, &self.inner.dodwan_config, "start")?;
-            }
-            let mut ws = dodwan::connect(&self.inner.dodwan_config)?;
+            let mut ws = self.connect_dodwan()?;
             dodwan::ping(&mut ws)?;
             let receive_filter = self.receive_filter()?;
             let events = dodwan::get_peers(&mut ws, &receive_filter)?;
@@ -81,6 +77,29 @@ impl NetworkManager {
 
         self.inner.joined.store(true, Ordering::SeqCst);
         Ok(())
+    }
+
+    fn connect_dodwan(&self) -> Result<DodwanWs> {
+        if dodwan_is_external() {
+            return dodwan::connect(&self.inner.dodwan_config);
+        }
+
+        let home = dodwan::default_home()?;
+        match dodwan::run_dodwan(&home, &self.inner.dodwan_config, "start") {
+            Ok(()) => dodwan::connect(&self.inner.dodwan_config),
+            Err(start_err) => match dodwan::connect(&self.inner.dodwan_config) {
+                Ok(ws) => {
+                    crate::console_log(format!(
+                        "DoDWAN start returned an error, reusing existing {} daemon",
+                        self.inner.dodwan_config.node_id
+                    ));
+                    Ok(ws)
+                }
+                Err(connect_err) => Err(anyhow!(
+                    "DoDWAN start failed ({start_err}) and no existing daemon could be reached ({connect_err})"
+                )),
+            },
+        }
     }
 
     pub fn subscribe(&self, topic: &str) -> Result<()> {

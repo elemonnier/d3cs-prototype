@@ -592,6 +592,7 @@ fn reset_startup_state(state: &Arc<AppState>) -> Result<()> {
 // dossiers/crypto/users, lance le serveur HTTP
 
 fn main() -> Result<()> {
+    let shell_has_port = std::env::var_os("D3CS_PORT").is_some();
     dotenvy::dotenv().ok();
     let base_dir = detect_base_dir()?;
     std::env::set_var("D3CS_BASE_DIR", base_dir.to_string_lossy().to_string());
@@ -606,6 +607,7 @@ fn main() -> Result<()> {
     }
     let mode = parse_mode(args.get(1));
     let cli_node_id = args.get(2).cloned();
+    let cli_node_provided = cli_node_id.is_some();
 
     let host = effective_bind_host(&load_env_var("D3CS_HOST", "127.0.0.1"));
     let env_port = std::env::var("D3CS_PORT")
@@ -620,7 +622,12 @@ fn main() -> Result<()> {
     } else {
         8080
     };
-    let port = env_port.unwrap_or(default_port);
+    let use_env_port = mode != RunMode::Network || shell_has_port || !cli_node_provided;
+    let port = if use_env_port {
+        env_port.unwrap_or(default_port)
+    } else {
+        default_port
+    };
     let config_dir = absolutize_path(&base_dir, load_env_var("D3CS_CONFIG_DIR", "src/config"));
     let users_dir = absolutize_path(&base_dir, load_env_var("D3CS_USERS_DIR", "runtime/users"));
     let tm_dir = absolutize_path(&base_dir, load_env_var("D3CS_TM_DIR", "runtime/tm"));

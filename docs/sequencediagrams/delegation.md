@@ -19,15 +19,15 @@ sequenceDiagram
     NM1->>TM1: onRcv(TM5, KEY_REQUEST, U5.attributes)
     TM1->>TM1: delegationCheck(PSKA, U5.attributes)
 
-    TM1->>NM1: sendSecured(TM5, DELEGATE_ACCEPT)
-    NM1->>NM1: publishSecured(D3CS, TM1, TM5, DELEGATE_ACCEPT)
-    NM1->>NM5: TLS( D3CS|TM1|TM5|DELEGATE_ACCEPT )
-    NM5->>TM5: onRcv(TM1, DELEGATE_ACCEPT)
-    
-    TM5->>NM5: sendSecured(TM1, ASK_DELEGATION, U5.attributes)
-    NM5->>NM5: publishSecured(D3CS, TM5, TM1, ASK_DELEGATION, U5.attributes)
-    NM5->>NM1: TLS( D3CS|TM5|TM1|ASK_DELEGATION|U5.attributes )
-    NM1->>TM1: onRcv(TM5, ASK_DELEGATION, U5.attributes)
+    TM1->>NM1: sendSecured(TM5, DELEGATE_OFFER)
+    NM1->>NM1: publishSecured(D3CS, TM1, TM5, DELEGATE_OFFER)
+    NM1->>NM5: TLS( D3CS|TM1|TM5|DELEGATE_OFFER )
+    NM5->>TM5: onRcv(TM1, DELEGATE_OFFER)
+
+    TM5->>NM5: sendSecured(TM1, DELEGATE_ACCEPT, U5.attributes)
+    NM5->>NM5: publishSecured(D3CS, TM5, TM1, DELEGATE_ACCEPT, U5.attributes)
+    NM5->>NM1: TLS( D3CS|TM5|TM1|DELEGATE_ACCEPT|U5.attributes )
+    NM1->>TM1: onRcv(TM5, DELEGATE_ACCEPT, U5.attributes)
     TM1->>U1: askUserDelegate(U5.attributes)
 
     U1->>U1: PSKS5, TK = PM23.Delegate(PSKS1, U5.attributes)

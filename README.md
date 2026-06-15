@@ -52,6 +52,18 @@ cargo run
 - single process
 - web UI + API on the configured port (default 127.0.0.1:18080)
 
+### 2) Network single-process
+
+```bash
+cargo run -- network Authority
+```
+
+```bash
+cargo run -- network U1
+```
+
+etc. until U9
+
 ### 2) Network (multiple processes/ports)
 
 ```bash
@@ -95,7 +107,7 @@ Allows you to start lepton simulation.
 Loaded via `.env` if present:
 
 - `D3CS_HOST` (default `127.0.0.1`)
-- `D3CS_PORT` (local default `8080`, overridden by `.env` in this repo)
+- `D3CS_PORT` (local default `8080`, overridden by `.env` in this repo; in `network <node>` mode, the node default port is used unless `D3CS_PORT` is explicitly set in the shell)
 - `D3CS_CONFIG_DIR` (default `src/config`)
 - `D3CS_USERS_DIR` (default `runtime/users`)
 - `D3CS_TM_DIR` (default `runtime/tm`)

@@ -489,7 +489,7 @@ impl NetworkRuntime {
         Ok(())
     }
 
-    // permet de traiter la trame DELEGATE_ACCEPT
+    // permet de traiter la trame DELEGATE_OFFER
     fn on_delegate_accept(&self, frame: &D3csFrame) -> Result<()> {
         if frame.args.len() < 2 {
             return Ok(());
@@ -516,7 +516,7 @@ impl NetworkRuntime {
         Ok(())
     }
 
-    // permet de traiter la trame ASK_DELEGATION
+    // permet de traiter la trame DELEGATE_ACCEPT
     fn on_ask_delegation(&self, state: &Arc<AppState>, frame: &D3csFrame) -> Result<()> {
         if frame.args.len() < 2 {
             return Ok(());

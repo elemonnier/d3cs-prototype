@@ -192,7 +192,7 @@ start_node() {
     java ${jvm_opts} ${props} \
 	 -cp $(make_dodwan_classpath) \
 	 casa.dodwan.run.dodwand ${opts} \
-	 >> ${node_dir}/out &
+	 >> ${node_dir}/out 2>&1 &
     echo $! > ${pid_file}
     
 }

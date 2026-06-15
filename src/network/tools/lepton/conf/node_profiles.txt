@@ -1,59 +1,59 @@
 [authority]
 prefix=Authority
 mobile=false
-coord=car:100,175
+coord=car:30,185
 seed=100001
 
 [u1]
 prefix=U1|
 mobile=false
-coord=car:40,125
+coord=car:-45,150
 seed=101001
 
 [u2]
 prefix=U2|
 mobile=false
-coord=car:80,125
+coord=car:5,150
 seed=102001
 
 [u3]
 prefix=U3|
 mobile=false
-coord=car:120,125
+coord=car:55,150
 seed=103001
 
 [u4]
 prefix=U4|
 mobile=false
-coord=car:160,125
+coord=car:105,150
 seed=104001
 
 [u5]
 prefix=U5|
 mobile=false
-coord=car:40,75
+coord=car:-45,115
 seed=105001
 
 [u6]
 prefix=U6|
 mobile=false
-coord=car:80,75
+coord=car:5,115
 seed=106001
 
 [u7]
 prefix=U7|
 mobile=false
-coord=car:120,75
+coord=car:55,115
 seed=107001
 
 [u8]
 prefix=U8|
 mobile=false
-coord=car:160,75
+coord=car:105,115
 seed=108001
 
 [u9]
 prefix=U9|
 mobile=false
-coord=car:100,25
+coord=car:30,80
 seed=109001

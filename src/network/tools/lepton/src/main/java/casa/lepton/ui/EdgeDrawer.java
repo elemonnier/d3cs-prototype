@@ -38,6 +38,7 @@ import java.awt.event.MouseMotionListener;
 import java.util.Collection;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
+import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
 import org.graphstream.ui.swingViewer.DefaultView;
 import org.graphstream.ui.swingViewer.LayerRenderer;
@@ -53,7 +54,7 @@ import org.graphstream.ui.swingViewer.ViewPanel;
  */
 public class EdgeDrawer implements KeyListener, MouseListener, MouseMotionListener, LayerRenderer {
 
-    private static final int MARGIN = 5;
+    private static final int MARGIN = 18;
 
     private OppNode selectedNode;        // the node currently selected while drawing an edge
     private OppEdge selectedEdge;        // the edge currently selected in order to delete it
@@ -256,7 +257,27 @@ public class EdgeDrawer implements KeyListener, MouseListener, MouseMotionListen
     }
 
     private Node getNode(Point p) {
-        // frame.pump(); // to update the nodes coords
+        if (graphPanel instanceof DefaultView) {
+            DefaultView view = (DefaultView) graphPanel;
+            GraphicElement element = view.findNodeOrSpriteAt(p.x, p.y);
+            if (element != null) {
+                Node node = graph.getNode(element.getId());
+                if (node != null) {
+                    return node;
+                }
+            }
+
+            Collection<GraphicElement> elements = view.allNodesOrSpritesIn(
+                    p.x - MARGIN, p.y - MARGIN,
+                    p.x + MARGIN, p.y + MARGIN);
+            for (GraphicElement nearby : elements) {
+                Node node = graph.getNode(nearby.getId());
+                if (node != null) {
+                    return node;
+                }
+            }
+        }
+
         CoordCar coord = new CoordCar(p.x, p.y);
         for (Node node : graph.getNodeSet()) {
             CoordCar nodeCoord = frame.getCoord(node);

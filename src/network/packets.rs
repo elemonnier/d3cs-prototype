@@ -27,8 +27,8 @@ impl D3csRequest {
     pub fn as_str(&self) -> &str {
         match self {
             D3csRequest::KeyRequest => "KEY_REQUEST",
-            D3csRequest::DelegateAccept => "DELEGATE_ACCEPT",
-            D3csRequest::AskDelegation => "ASK_DELEGATION",
+            D3csRequest::DelegateAccept => "DELEGATE_OFFER",
+            D3csRequest::AskDelegation => "DELEGATE_ACCEPT",
             D3csRequest::AskRevocation => "ASK_REVOCATION",
             D3csRequest::KeyResponse => "KEY_RESPONSE",
             D3csRequest::CtShare => "CT_SHARE",
@@ -43,8 +43,8 @@ impl D3csRequest {
     pub fn from_str(s: &str) -> Self {
         match s {
             "KEY_REQUEST" => D3csRequest::KeyRequest,
-            "DELEGATE_ACCEPT" => D3csRequest::DelegateAccept,
-            "ASK_DELEGATION" => D3csRequest::AskDelegation,
+            "DELEGATE_OFFER" => D3csRequest::DelegateAccept,
+            "DELEGATE_ACCEPT" => D3csRequest::AskDelegation,
             "ASK_REVOCATION" => D3csRequest::AskRevocation,
             "KEY_RESPONSE" => D3csRequest::KeyResponse,
             "CT_SHARE" => D3csRequest::CtShare,

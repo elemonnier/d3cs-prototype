@@ -454,11 +454,17 @@ fn read_ws_responses(
                         }
                     }
                     "error" => {
-                        let _ = set_ws_read_timeout(ws, previous_timeout);
                         let reason = value
                             .get("reason")
                             .and_then(Value::as_str)
                             .unwrap_or("erreur DoDWAN sans raison");
+                        if matches!(response_kind, ResponseKind::Ack)
+                            && is_duplicate_subscription_error(reason)
+                        {
+                            response_seen = true;
+                            continue;
+                        }
+                        let _ = set_ws_read_timeout(ws, previous_timeout);
                         return Err(anyhow!("{action} refusee par DoDWAN: {reason}"));
                     }
                     _ if accepted => handle_poll_pdu(ws, value, &mut events)?,
@@ -499,7 +505,21 @@ fn should_log_dodwan_response(value: &Value) -> bool {
         .and_then(Value::as_str)
         .unwrap_or_default();
     let token = value.get("tkn").and_then(Value::as_str).unwrap_or_default();
+    if name == "error"
+        && value
+            .get("reason")
+            .and_then(Value::as_str)
+            .map(is_duplicate_subscription_error)
+            .unwrap_or(false)
+    {
+        return false;
+    }
     !(name == "recv_pids" && token == "peers")
+}
+
+fn is_duplicate_subscription_error(reason: &str) -> bool {
+    let reason = reason.to_ascii_lowercase();
+    reason.contains("subscription") && reason.contains("already exists")
 }
 
 fn accepts_value_dest(value: &Value, receive_filter: &DodwanReceiveFilter) -> bool {

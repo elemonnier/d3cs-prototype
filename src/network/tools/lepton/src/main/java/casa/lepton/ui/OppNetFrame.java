@@ -462,8 +462,13 @@ public class OppNetFrame extends JFrame implements ViewerListener {
 		int x = 0, y = 0;
 		double[] position = GraphPosLengthUtils.nodePosition(node);
 		if (position.length > 1) {
-			x = (int) Math.round(px2Gu * position[0] + deltaX);
-			y = (int) Math.round(height - px2Gu * position[1] + deltaY);
+			if (viewportArea != null) {
+				x = (int) Math.round(px2Gu * (position[0] - viewportArea.x) + deltaX);
+				y = (int) Math.round(px2Gu * (viewportArea.y + viewportArea.height - position[1]) + deltaY);
+			} else {
+				x = (int) Math.round(px2Gu * position[0] + deltaX);
+				y = (int) Math.round(height - px2Gu * position[1] + deltaY);
+			}
 		}
 		return new CoordCar(x, y);
 	}
@@ -1091,7 +1096,7 @@ public class OppNetFrame extends JFrame implements ViewerListener {
 			Color previousColor = graphics.getColor();
 
 			graphics.setColor(new Color(255, 176, 0, 190));
-			graphics.setStroke(new BasicStroke(12f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			graphics.setStroke(new BasicStroke(28f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
 			Iterator<Edge> iterator = oppNetGraph.getEdgeIterator();
 			while (iterator.hasNext()) {
