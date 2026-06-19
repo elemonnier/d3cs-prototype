@@ -596,6 +596,7 @@ public class OppNode
             value += ", " + keyClass;
         }
         setAttribute("ui.class", value);
+        setAttribute("ui.style", "text-size: 20px;");
         setAttribute("ui.label", displayLabel());
     }
 

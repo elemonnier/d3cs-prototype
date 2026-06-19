@@ -1,13 +1,18 @@
 # d3cs-prototype
 
-Rust prototype of a dynamic and decentralized data-centric security (D3CS) demonstrator combining CP-ABE and ABS, with a local web UI and a simulated network mode (with DoDWAN = document dissemination in wireless ad-hoc networks).
+Rust prototype of a dynamic and decentralized data-centric security (D3CS) demonstrator combining CP-ABE and ABS, with a local web UI and a emulated network mode (with DoDWAN = Document Dissemination in Wireless Ad-hoc Networks and LEPTON = Lightweight Emulation PlaTform for Opportunistic Networking).
+
+## Demo
+
+A demonstration is available in this folder: d3cs.mp4
 
 ## Docs
 
 - Ciphertext-policy attribute-based encryption (CP-ABE) cryptography from: Porwal, S., Mittal, S. A fully flexible key delegation mechanism with efficient fine-grained access control in CP-ABE. J Ambient Intell Human Comput 14, 12837–12856 (2023). https://doi.org/10.1007/s12652-022-04196-y
 - Attribute-based signatures (ABS) cryptography from: Li, J., Kim, K. Hidden attribute-based signatures without anonymity revocation. Information Sciences 180(9), 1681–1689 (2010). https://doi.org/10.1016/j.ins.2010.01.008
 - DoDWAN: https://casa-irisa.univ-ubs.fr/dodwan/
-- Find workflow functionnalities in diagrams/.
+- DoDWAN-NAPI: https://casa-irisa.univ-ubs.fr/dodwan/doc/napi/dodwan_network_api_protocol.html
+- LEPTON: https://casa-irisa.univ-ubs.fr/lepton/
 
 ## Prerequisites
 
@@ -21,26 +26,6 @@ cargo --version
 rustc --version
 ```
 
-## Quick Start (Local Mode)
-
-From the project root:
-
-```bash
-cargo build
-cargo run
-```
-
-Then open:
-- `http://127.0.0.1:18080` (port currently set in `.env`)
-
-Default authority credentials at startup:
-- login: `authority` / password: `authority`
-
-Or as user:
-- login: `u1` / password: `u1`
-- login: `u2` / password: `u2`
-- etc. until `u9`
-
 ## Execution Modes
 
 ### 1) Local (default)
@@ -49,8 +34,11 @@ Or as user:
 cargo run
 ```
 
-- single process
-- web UI + API on the configured port (default 127.0.0.1:18080)
+Then open:
+- `http://127.0.0.1:18080` (port currently set in `.env`)
+
+Login: authority / password: authority
+You can create accounts on the "Sign up" menu.
 
 ### 2) Network single-process
 
@@ -71,7 +59,7 @@ cargo run -- network-all
 ```
 
 Starts `Authority` + `U1..U9` and waits for child processes to exit.
-Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089 for u9
+Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089 for u9.
 
 Clearance mapping is:
 U1 -> FR-DR:M1
@@ -84,63 +72,35 @@ U7 -> FR-DR:M2
 U8 -> FR-S:M2
 U9 -> FR-DR:M1
 
-Network is managed via GET/POST requests (defined in src/api.rs) from GUI to local server. Cookies are used to let the users be connected through HTTP pages. Polling is performed every 500ms to receive server state (instead of Websocket that uses interrupt). A simulation publish/subscribe (to simulate DoDWAN) is performed between nodes.
-
 ## Timings
+
+Allows you to measure the execution time of CP-ABE and ABS methods.
 
 ```bash
 cargo run --bin timings --release
 ```
 
-Allows you to measure the execution time of CP-ABE and ABS methods.
-
-## Lepton simulation
-
-```bash
-src/network/tools/lepton/bin/lepton.sh start
-```
-
-Allows you to start lepton simulation.
-
-## Environment Variables
-
-Loaded via `.env` if present:
-
-- `D3CS_HOST` (default `127.0.0.1`)
-- `D3CS_PORT` (local default `8080`, overridden by `.env` in this repo; in `network <node>` mode, the node default port is used unless `D3CS_PORT` is explicitly set in the shell)
-- `D3CS_CONFIG_DIR` (default `src/config`)
-- `D3CS_USERS_DIR` (default `runtime/users`)
-- `D3CS_TM_DIR` (default `runtime/tm`)
-- `D3CS_AUTHORITY_DIR` (default `runtime/authority`)
-- `D3CS_IHM_DIR` (default `src/gui` if present, otherwise `src/ihm`)
-- `D3CS_NETWORK_DIR` (default `src/network/dodwan/runtime`)
-
-## Demo Example
-
-1. Run local execution (cargo run)
-2. Sign in as authority (`authority` / `authority`)
-3. Encrypt a document (`classification` + `mission`)
-4. Browse/decrypt documents from the list
-5. Test revocation/presets as authority
-
 ## Structure
 
-- `src/`: main server + API routes + orchestration
-- `src/crypto/`: CP-ABE / ABS
-- `src/network/`: network runtime and local DoDWAN adapter
-- `src/gui/`: main web interface
-- `src/config/`: attributes + BLP/Biba presets
-- `runtime/tm/`: technical artifacts (CT, signatures, ARL, params)
-- `runtime/users/`: user data and derived keys
-- `runtime/authority/`: authority secrets
-- `specs/`: demonstrator specifications (in French)
-- `diagrams/`: operation flow diagrams
+- `src/main.rs`: application entry point, mode selection, startup orchestration, HTTP server
+- `src/api.rs`: HTTP API routes used by the web UI
+- `src/authority/`: authority setup helpers and authority-side storage initialization
+- `src/crypto/`: CP-ABE and ABS primitives (setup, keygen, encrypt, decrypt, delegate, extract, sign, verify, etc.)
+- `src/network/`: network mode runtime, DoDWAN/LEPTON integration, packet handling
+- `src/bin/`: standalone binaries such as timings and network tool tests
+- `src/gui/`: local web UI served by the Rust HTTP server
+- `src/config/`: attribute definitions and BLP/Biba presets
+- `docs/specs/`: local and network demonstrator specifications
+- `docs/sequencediagrams/`: workflow sequence diagrams
+- `docs/statediagrams/`: state diagrams
+- `docs/cmds/`: DoDWAN command/frame notes
+- `docs/papers/`: reference papers used by the prototype
 
 ## Important Notes
 
 - Demonstration project: do not use in production. Hybrid encryption is missing for demonstration purpose.
 - Avoid versioning real secrets in `.env`, `runtime/authority/`, `runtime/users/`.
-- GPT-5.3-Codex was used in this project to generate code according to the specs.
+- GPT-5.x-Codex was used in this project to generate code according to the specs.
 
 ## Paper
 

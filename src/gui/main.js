@@ -914,7 +914,10 @@ async function renderRevocation() {
   state.currentView = 'revocation';
   setAlert(null, null);
   await refreshArl();
-  await refreshRevocationQueue();
+  const showPendingRequests = state.me.mode === 'network';
+  if (showPendingRequests) {
+    await refreshRevocationQueue();
+  }
 
   const revoked = (state.arl && state.arl.items) ? state.arl.items.filter(x => x.attribute_type === 'mission').map(x => x.attribute_value) : [];
   const queueRows = state.revocationQueue.map((x) => `
@@ -928,11 +931,7 @@ async function renderRevocation() {
       </td>
     </tr>
   `).join('');
-
-  setView(`
-    <div class="row">
-      <div class="col-lg-8">
-        <h4>Revocation</h4>
+  const pendingRequestsHtml = showPendingRequests ? `
         <h5>Pending Requests</h5>
         <table class="table table-sm mb-4">
           <thead>
@@ -940,6 +939,13 @@ async function renderRevocation() {
           </thead>
           <tbody>${queueRows || '<tr><td colspan="4">No pending requests</td></tr>'}</tbody>
         </table>
+  ` : '';
+
+  setView(`
+    <div class="row">
+      <div class="col-lg-8">
+        <h4>Revocation</h4>
+        ${pendingRequestsHtml}
 
         <h5>Direct Authority Revocation</h5>
         <div class="mb-3" id="revoke-mission-options">
@@ -1018,7 +1024,9 @@ async function renderRevocation() {
     };
   });
 
-  syncRevocationRequestModal();
+  if (showPendingRequests) {
+    syncRevocationRequestModal();
+  }
 }
 
 // affiche la page révocation pour un utilisateur
@@ -1223,7 +1231,7 @@ function wireNav() {
   document.getElementById('nav-arl').onclick = () => renderArl();
 }
 
-// refresh l'état de l'application toutes les 500ms (valeur donnée dans init)
+// refresh l'état réseau toutes les 500ms uniquement en mode network
 async function backgroundRefresh() {
   await refreshNetworkStatus();
   if (!state.me) return;
@@ -1268,7 +1276,9 @@ async function init() {
   } else {
     renderDefaultAuthView();
   }
-  setInterval(backgroundRefresh, 500);
+  if (state.network && state.network.enabled) {
+    setInterval(backgroundRefresh, 500);
+  }
 }
 
 init();
