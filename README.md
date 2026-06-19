@@ -52,25 +52,15 @@ cargo run -- network U1
 
 etc. until U9
 
-### 2) Network (multiple processes/ports)
+### 3) Network multiple processes
 
 ```bash
 cargo run -- network-all
 ```
 
 Starts `Authority` + `U1..U9` and waits for child processes to exit.
-Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089 for u9.
 
-Clearance mapping is:
-U1 -> FR-DR:M1
-U2 -> FR-S:M1
-U3 -> FR-DR:M2
-U4 -> FR-S:M2
-U5 -> FR-DR:M1
-U6 -> FR-S:M1
-U7 -> FR-DR:M2
-U8 -> FR-S:M2
-U9 -> FR-DR:M1
+Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089 for u9.
 
 ## Timings
 
