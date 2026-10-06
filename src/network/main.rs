@@ -423,7 +423,7 @@ impl NetworkRuntime {
             }
         }
 
-        match frame.request {
+        let result = match frame.request {
             D3csRequest::KeyRequest => self.on_key_request(state, &frame),
             D3csRequest::DelegateAccept => self.on_delegate_accept(&frame),
             D3csRequest::AskDelegation => self.on_ask_delegation(state, &frame),
@@ -435,7 +435,12 @@ impl NetworkRuntime {
             D3csRequest::Synchronize => self.on_synchronize(state, &frame),
             D3csRequest::PskaSync => self.on_pska_sync(state, &frame),
             D3csRequest::Unknown(_) => Ok(()),
+        };
+        let event_timestamp_ns = benchmark_timestamp_ns();
+        if result.is_ok() {
+            benchmark_log_frame("receive", event_timestamp_ns, &self.node_id, &frame);
         }
+        result
     }
 
     // permet de traiter la trame KEY_REQUEST
@@ -605,6 +610,7 @@ impl NetworkRuntime {
                         &frame.args[3],
                         Some(&frame.args[4]),
                     )?;
+                    self.benchmark_log_key_latency(&login);
                     self.mark_pending(&login, &frame.src, true, false);
                 }
             }
@@ -1032,6 +1038,35 @@ impl NetworkRuntime {
     }
 
     // permet de publier une trame sur le réseau (secured ou non)
+    fn benchmark_log_key_latency(&self, login: &str) {
+        let Some(path) = std::env::var_os("D3CS_BENCHMARK_EVENT_LOG") else {
+            return;
+        };
+        let duration_ns = self
+            .pending
+            .lock()
+            .ok()
+            .and_then(|pending| pending.get(login).map(|entry| entry.asked_at.elapsed().as_nanos()));
+        let Some(duration_ns) = duration_ns else {
+            return;
+        };
+        let Ok(mut file) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+        else {
+            return;
+        };
+        let _ = writeln!(
+            file,
+            "event=key_latency timestamp_ns={} workflow=KEY_REQUEST_RESPONSE run_id={} node={} duration_ns={}",
+            benchmark_timestamp_ns(),
+            login,
+            self.node_id,
+            duration_ns
+        );
+    }
+
     fn publish(
         &self,
         src: &str,
@@ -1041,11 +1076,16 @@ impl NetworkRuntime {
         secured: bool,
     ) -> Result<()> {
         let frame = D3csFrame::new(src, dst, req, args).with_secured(secured);
-        if secured {
+        let event_timestamp_ns = benchmark_timestamp_ns();
+        let result = if secured {
             self.manager.publish_secured(&frame)
         } else {
             self.manager.publish(&frame)
+        };
+        if result.is_ok() {
+            benchmark_log_frame("send", event_timestamp_ns, &self.node_id, &frame);
         }
+        result
     }
 
     fn publish_on_topic(
@@ -1058,11 +1098,16 @@ impl NetworkRuntime {
         secured: bool,
     ) -> Result<()> {
         let frame = D3csFrame::new(src, dst, req, args).with_secured(secured);
-        if secured {
+        let event_timestamp_ns = benchmark_timestamp_ns();
+        let result = if secured {
             self.manager.publish_secured_on_topic(topic, &frame)
         } else {
             self.manager.publish_on_topic(topic, &frame)
+        };
+        if result.is_ok() {
+            benchmark_log_frame("send", event_timestamp_ns, &self.node_id, &frame);
         }
+        result
     }
 
     // permet au runtime de s'abonner aux topics essentiels (e.g., TM associé)
@@ -1418,4 +1463,59 @@ fn write_atomic_text(path: &str, data: &str) -> Result<()> {
     fs::rename(&tmp_path, path)?;
     let _ = fs::remove_file(&tmp_path);
     Ok(())
+}
+
+fn benchmark_timestamp_ns() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0)
+}
+
+fn benchmark_log_frame(event: &str, timestamp_ns: u128, node: &str, frame: &D3csFrame) {
+    let Some(path) = std::env::var_os("D3CS_BENCHMARK_EVENT_LOG") else {
+        return;
+    };
+
+    let (workflow, run_id) = match &frame.request {
+        D3csRequest::KeyRequest => ("KEY_REQUEST", frame.args.first().cloned()),
+        D3csRequest::KeyResponse
+            if frame.args.first().map(String::as_str) == Some("USER_KEYGEN") =>
+        {
+            ("KEY_RESPONSE", frame.args.get(1).cloned())
+        }
+        D3csRequest::CtShare => ("CT_SHARE", frame.args.first().cloned()),
+        D3csRequest::ArlUpdate => {
+            let version = frame
+                .args
+                .first()
+                .and_then(|raw| serde_json::from_str::<RevocationList>(raw).ok())
+                .map(|arl| arl.version.to_string());
+            ("ARL_UPDATE", version)
+        }
+        _ => return,
+    };
+
+    let Some(run_id) = run_id else {
+        return;
+    };
+    let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+    else {
+        return;
+    };
+
+    let _ = writeln!(
+        file,
+        "event={} timestamp_ns={} workflow={} run_id={} node={} source={} destination={}",
+        event,
+        timestamp_ns,
+        workflow,
+        run_id,
+        node,
+        frame.src,
+        frame.dst
+    );
 }

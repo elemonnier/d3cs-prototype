@@ -1,0 +1,5 @@
+No LEPTON_VAR set. Using "/home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791219308/hops-1/lepton"
+Redirecting outputs to /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791219308/hops-1/lepton/lepton.out and /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791219308/hops-1/lepton/lepton.err
+Writing the graph events to /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791219308/hops-1/lepton/lepton.dgs
+Waiting for the lepton daemon termination (lepton_pid=117589)
+/home/etienne/d3cs-prototype/src/network/tools/lepton/bin/start_lepton.sh: line 123: 117589 Killed                  start_lepton "$@" >> ${log_dir}/lepton.out 2> ${log_dir}/lepton.err

@@ -1,0 +1,4 @@
+No LEPTON_VAR set. Using "/home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791217491/hops-5/lepton"
+Redirecting outputs to /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791217491/hops-5/lepton/lepton.out and /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791217491/hops-5/lepton/lepton.err
+Writing the graph events to /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791217491/hops-5/lepton/lepton.dgs
+Waiting for the lepton daemon termination (lepton_pid=95000)

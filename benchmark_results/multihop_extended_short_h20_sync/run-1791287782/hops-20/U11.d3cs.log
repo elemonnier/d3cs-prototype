@@ -1,0 +1,13 @@
+2026-10-06 13:56:23.779 U11: {"tkn":"t1","name":"pong"}
+
+2026-10-06 13:56:24.290 U11: {"tkn":"t2","name":"ok"}
+
+2026-10-06 13:56:24.801 U11: {"tkn":"t2","name":"ok"}
+
+2026-10-06 13:56:25.315 U11: {"tkn":"t2","name":"ok"}
+
+2026-10-06 13:56:25.837 U11: {"tkn":"t2","name":"ok"}
+
+2026-10-06 13:56:33.356 U11: {"data":"TLS(D3CS|TM20|TM|KEY_REQUEST|bench_h20_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h20_setup|TM20)","mid":"N20_30","name":"recv_payload","tkn":"payload-N20_30","topic":"TM","dest":"TM"}
+
+2026-10-06 13:56:33.356 U11: {"data":"TLS(D3CS|TM20|TM|KEY_REQUEST|bench_h20_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h20_setup|TM20)","mid":"N20_30","name":"recv_payload","tkn":"payload-N20_30","topic":"TM","dest":"TM"}

@@ -1,0 +1,380 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,300.0,40.0"
+st 0
+an N5 x=242.19 y=-10.87
+an N4 x=242.64 y=-6.16
+an N2 x=242.67 y=-12.94
+an N0 x=248.34 y=-3.90
+an N1 x=248.37 y=-10.68
+an N3 x=248.80 y=0.81
+st 1000
+cn N5 x=242.11 y=-10.26
+cn N4 x=243.15 y=-6.25
+cn N2 x=243.01 y=-13.78
+cn N0 x=248.68 y=-3.54
+cn N1 x=247.94 y=-10.07
+cn N3 x=249.27 y=1.68
+ae N4-N5 N5 N4
+ae N2-N5 N5 N2
+ae N0-N5 N5 N0
+ae N1-N5 N5 N1
+ae N3-N5 N5 N3
+ae N2-N4 N4 N2
+ae N0-N4 N4 N0
+ae N1-N4 N4 N1
+ae N3-N4 N4 N3
+ae N0-N2 N2 N0
+ae N1-N2 N2 N1
+ae N2-N3 N2 N3
+ae N0-N1 N0 N1
+ae N0-N3 N0 N3
+ae N1-N3 N1 N3
+st 2000
+cn N5 x=242.03 y=-9.64
+cn N4 x=243.66 y=-6.35
+cn N2 x=243.34 y=-14.62
+cn N0 x=249.02 y=-3.19
+cn N1 x=247.52 y=-9.45
+cn N3 x=249.74 y=2.54
+ce N2-N5 status="CONNECTED"
+ce N3-N5 status="CONNECTED"
+ce N4-N5 status="CONNECTED"
+ce N2-N4 status="CONNECTED"
+ce N0-N4 status="CONNECTED"
+ce N1-N5 status="CONNECTED"
+ce N3-N4 status="CONNECTED"
+ce N1-N2 status="CONNECTED"
+ce N1-N4 status="CONNECTED"
+ce N0-N5 status="CONNECTED"
+ce N0-N2 status="CONNECTED"
+ce N2-N5 tag="TRANSFER"
+ce N3-N4 tag="TRANSFER"
+ce N1-N5 tag="TRANSFER"
+ce N0-N1 status="CONNECTED"
+ce N1-N2 tag="TRANSFER"
+ce N1-N3 status="CONNECTED"
+ce N3-N5 tag="TRANSFER"
+ce N0-N5 tag="TRANSFER"
+ce N1-N3 tag="TRANSFER"
+ce N0-N2 tag="TRANSFER"
+ce N4-N5 tag="TRANSFER"
+ce N0-N1 tag="TRANSFER"
+ce N1-N4 tag="TRANSFER"
+ce N2-N4 tag="TRANSFER"
+ce N0-N4 tag="TRANSFER"
+ce N0-N3 status="CONNECTED"
+ce N2-N3 status="CONNECTED"
+ce N0-N3 tag="TRANSFER"
+ce N2-N3 tag="TRANSFER"
+st 3000
+cn N5 x=241.95 y=-9.03
+cn N4 x=244.16 y=-6.44
+cn N2 x=243.68 y=-15.46
+cn N0 x=249.37 y=-2.83
+cn N1 x=247.10 y=-8.84
+cn N3 x=250.21 y=3.41
+st 4000
+cn N5 x=241.87 y=-8.41
+cn N4 x=244.67 y=-6.53
+cn N2 x=244.02 y=-16.30
+cn N0 x=249.71 y=-2.48
+cn N1 x=246.68 y=-8.22
+cn N3 x=250.69 y=4.28
+ce N2-N5 -tag
+ce N0-N2 -tag
+ce N1-N4 -tag
+ce N3-N5 -tag
+ce N4-N5 -tag
+ce N2-N4 -tag
+st 5000
+cn N5 x=241.79 y=-7.80
+cn N4 x=245.17 y=-6.62
+cn N2 x=244.35 y=-17.14
+cn N0 x=250.05 y=-2.12
+cn N1 x=246.25 y=-7.61
+cn N3 x=251.16 y=5.14
+ce N0-N4 -tag
+ce N1-N2 -tag
+ce N3-N4 -tag
+ce N1-N5 -tag
+ce N0-N5 -tag
+ce N0-N1 -tag
+ce N1-N3 -tag
+ce N2-N3 -tag
+ce N0-N3 -tag
+st 6000
+cn N5 x=241.71 y=-7.18
+cn N4 x=245.68 y=-6.71
+cn N2 x=244.69 y=-17.98
+cn N0 x=250.39 y=-1.77
+cn N1 x=245.83 y=-6.99
+cn N3 x=251.63 y=6.01
+st 7000
+cn N5 x=241.63 y=-6.57
+cn N4 x=246.19 y=-6.80
+cn N2 x=245.03 y=-18.82
+cn N0 x=250.73 y=-1.41
+cn N1 x=245.41 y=-6.38
+cn N3 x=252.10 y=6.87
+st 8000
+cn N5 x=241.55 y=-5.95
+cn N4 x=246.69 y=-6.89
+cn N2 x=245.36 y=-19.66
+cn N0 x=251.07 y=-1.05
+cn N1 x=244.98 y=-5.77
+cn N3 x=252.58 y=7.74
+st 9000
+cn N5 x=241.47 y=-5.34
+cn N4 x=247.20 y=-6.99
+cn N2 x=245.70 y=-20.50
+cn N0 x=251.41 y=-0.70
+cn N1 x=244.56 y=-5.15
+cn N3 x=253.05 y=8.61
+st 10000
+cn N5 x=241.40 y=-4.72
+cn N4 x=247.70 y=-7.08
+cn N2 x=246.04 y=-21.34
+cn N0 x=251.76 y=-0.34
+cn N1 x=244.14 y=-4.54
+cn N3 x=253.52 y=9.47
+st 11000
+cn N5 x=241.32 y=-4.11
+cn N4 x=248.21 y=-7.17
+cn N2 x=246.37 y=-22.18
+cn N0 x=252.10 y=0.01
+cn N1 x=243.72 y=-3.92
+cn N3 x=253.99 y=10.34
+st 12000
+cn N5 x=241.24 y=-3.50
+cn N4 x=248.72 y=-7.26
+cn N2 x=246.71 y=-23.02
+cn N0 x=252.44 y=0.37
+cn N1 x=243.29 y=-3.31
+cn N3 x=254.47 y=11.21
+st 13000
+cn N5 x=241.16 y=-2.88
+cn N4 x=249.22 y=-7.35
+cn N2 x=247.05 y=-23.86
+cn N0 x=252.78 y=0.72
+cn N1 x=242.87 y=-2.69
+cn N3 x=254.94 y=12.07
+st 14000
+cn N5 x=241.08 y=-2.27
+cn N4 x=249.73 y=-7.44
+cn N2 x=247.38 y=-24.70
+cn N0 x=253.12 y=1.08
+cn N1 x=242.45 y=-2.08
+cn N3 x=255.41 y=12.94
+st 15000
+cn N5 x=241.00 y=-1.65
+cn N4 x=250.23 y=-7.53
+cn N2 x=247.72 y=-25.54
+cn N0 x=253.46 y=1.44
+cn N1 x=242.02 y=-1.46
+cn N3 x=255.88 y=13.81
+st 16000
+cn N5 x=240.92 y=-1.04
+cn N4 x=250.74 y=-7.62
+cn N2 x=248.06 y=-26.38
+cn N0 x=253.81 y=1.79
+cn N1 x=241.60 y=-0.85
+cn N3 x=256.36 y=14.67
+st 17000
+cn N5 x=240.84 y=-0.42
+cn N4 x=251.25 y=-7.72
+cn N2 x=248.39 y=-27.22
+cn N0 x=254.15 y=2.15
+cn N1 x=241.18 y=-0.24
+cn N3 x=256.83 y=15.54
+st 18000
+cn N5 x=240.76 y=0.19
+cn N4 x=251.75 y=-7.81
+cn N2 x=248.73 y=-28.06
+cn N0 x=254.49 y=2.50
+cn N1 x=240.76 y=0.38
+cn N3 x=257.30 y=16.40
+st 19000
+cn N5 x=240.68 y=0.81
+cn N4 x=252.26 y=-7.90
+cn N2 x=249.07 y=-28.90
+cn N0 x=254.83 y=2.86
+cn N1 x=240.33 y=0.99
+cn N3 x=257.77 y=17.27
+st 20000
+cn N5 x=240.61 y=1.42
+cn N4 x=252.77 y=-7.99
+cn N2 x=249.40 y=-29.74
+cn N0 x=255.17 y=3.21
+cn N1 x=239.91 y=1.61
+cn N3 x=258.25 y=18.14
+st 21000
+cn N5 x=240.53 y=2.04
+cn N4 x=253.27 y=-8.08
+cn N2 x=249.74 y=-30.58
+cn N0 x=255.51 y=3.57
+cn N1 x=239.49 y=2.22
+cn N3 x=258.72 y=19.00
+st 22000
+cn N5 x=240.45 y=2.65
+cn N4 x=253.78 y=-8.17
+cn N2 x=250.08 y=-31.42
+cn N0 x=255.86 y=3.93
+cn N1 x=239.06 y=2.84
+cn N3 x=259.19 y=19.87
+st 23000
+cn N5 x=240.37 y=3.27
+cn N4 x=254.28 y=-8.26
+cn N2 x=250.41 y=-32.26
+cn N0 x=256.20 y=4.28
+cn N1 x=238.64 y=3.45
+cn N3 x=259.66 y=20.74
+st 24000
+cn N5 x=240.29 y=3.88
+cn N4 x=254.79 y=-8.35
+cn N2 x=250.75 y=-33.10
+cn N0 x=256.54 y=4.64
+cn N1 x=238.22 y=4.07
+cn N3 x=260.14 y=21.60
+st 25000
+cn N5 x=240.21 y=4.50
+cn N4 x=255.30 y=-8.45
+cn N2 x=251.09 y=-33.94
+cn N0 x=256.88 y=4.99
+cn N1 x=237.79 y=4.68
+cn N3 x=260.61 y=22.47
+st 26000
+cn N5 x=240.13 y=5.11
+cn N4 x=255.80 y=-8.54
+cn N2 x=251.42 y=-34.77
+cn N0 x=257.22 y=5.35
+cn N1 x=237.37 y=5.29
+cn N3 x=261.08 y=23.34
+st 27000
+cn N5 x=240.05 y=5.73
+cn N4 x=256.31 y=-8.63
+cn N2 x=251.76 y=-35.61
+cn N0 x=257.56 y=5.70
+cn N1 x=236.95 y=5.91
+cn N3 x=261.55 y=24.20
+de N2-N3
+st 28000
+cn N5 x=239.97 y=6.34
+cn N4 x=256.81 y=-8.72
+cn N2 x=252.10 y=-36.45
+cn N0 x=257.90 y=6.06
+cn N1 x=236.53 y=6.52
+cn N3 x=262.03 y=25.07
+st 29000
+cn N5 x=239.89 y=6.96
+cn N4 x=257.32 y=-8.81
+cn N2 x=252.43 y=-37.29
+cn N0 x=258.25 y=6.42
+cn N1 x=236.10 y=7.14
+cn N3 x=262.50 y=25.93
+st 30000
+cn N5 x=239.82 y=7.57
+cn N4 x=257.83 y=-8.90
+cn N2 x=252.77 y=-38.13
+cn N0 x=258.59 y=6.77
+cn N1 x=235.68 y=7.75
+cn N3 x=262.97 y=26.80
+st 31000
+cn N5 x=239.74 y=8.19
+cn N4 x=258.33 y=-8.99
+cn N2 x=253.11 y=-38.97
+cn N0 x=258.93 y=7.13
+cn N1 x=235.26 y=8.37
+cn N3 x=263.44 y=27.67
+st 32000
+cn N5 x=239.66 y=8.80
+cn N4 x=258.84 y=-9.09
+cn N2 x=253.44 y=-39.81
+cn N0 x=259.27 y=7.48
+cn N1 x=234.83 y=8.98
+cn N3 x=263.92 y=28.53
+st 33000
+cn N5 x=239.58 y=9.42
+cn N4 x=259.35 y=-9.18
+cn N2 x=253.78 y=-40.65
+cn N0 x=259.61 y=7.84
+cn N1 x=234.41 y=9.60
+cn N3 x=264.39 y=29.40
+st 34000
+cn N5 x=239.50 y=10.03
+cn N4 x=259.85 y=-9.27
+cn N2 x=254.12 y=-41.49
+cn N0 x=259.95 y=8.19
+cn N1 x=233.99 y=10.21
+cn N3 x=264.86 y=30.27
+st 35000
+cn N5 x=239.42 y=10.65
+cn N4 x=260.36 y=-9.36
+cn N2 x=254.45 y=-42.33
+cn N0 x=260.30 y=8.55
+cn N1 x=233.57 y=10.82
+cn N3 x=265.33 y=31.13
+st 36000
+cn N5 x=239.34 y=11.26
+cn N4 x=260.86 y=-9.45
+cn N2 x=254.79 y=-43.17
+cn N0 x=260.64 y=8.91
+cn N1 x=233.14 y=11.44
+cn N3 x=265.81 y=32.00
+st 37000
+cn N5 x=239.26 y=11.87
+cn N4 x=261.37 y=-9.54
+cn N2 x=255.13 y=-44.01
+cn N0 x=260.98 y=9.26
+cn N1 x=232.72 y=12.05
+cn N3 x=266.28 y=32.87
+de N1-N2
+st 38000
+cn N5 x=239.18 y=12.49
+cn N4 x=261.88 y=-9.63
+cn N2 x=255.46 y=-44.85
+cn N0 x=261.32 y=9.62
+cn N1 x=232.30 y=12.67
+cn N3 x=266.75 y=33.73
+st 39000
+cn N5 x=239.10 y=13.10
+cn N4 x=262.38 y=-9.72
+cn N2 x=255.80 y=-45.69
+cn N0 x=261.66 y=9.97
+cn N1 x=231.87 y=13.28
+cn N3 x=267.22 y=34.60
+de N2-N5
+st 40000
+cn N5 x=239.02 y=13.72
+cn N4 x=262.89 y=-9.82
+cn N2 x=256.14 y=-46.53
+cn N0 x=262.00 y=10.33
+cn N1 x=231.45 y=13.90
+cn N3 x=267.70 y=35.46
+st 41000
+cn N5 x=238.95 y=14.33
+cn N4 x=263.39 y=-9.91
+cn N2 x=256.47 y=-47.37
+cn N0 x=262.35 y=10.68
+cn N1 x=231.03 y=14.51
+cn N3 x=268.17 y=36.33
+st 42000
+cn N5 x=238.87 y=14.95
+cn N4 x=263.90 y=-10.00
+cn N2 x=256.81 y=-48.21
+cn N0 x=262.69 y=11.04
+cn N1 x=230.61 y=15.13
+cn N3 x=268.64 y=37.20
+st 43000
+cn N5 x=238.79 y=15.56
+cn N4 x=264.38 y=-10.08
+cn N2 x=257.15 y=-49.05
+cn N0 x=262.93 y=11.29
+cn N1 x=230.18 y=15.74
+cn N3 x=269.11 y=38.06
+de N0-N2
+st 44000
+cn N5 x=238.71 y=16.14
+cn N2 x=257.48 y=-49.89
+cn N1 x=229.76 y=16.35
+cn N3 x=269.59 y=38.93

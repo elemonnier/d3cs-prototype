@@ -1,0 +1,100 @@
+2026-10-05 17:43:44.873 Authority: {"tkn":"t1","name":"pong"}
+
+2026-10-05 17:43:45.403 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-05 17:43:45.923 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-05 17:43:46.430 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-05 17:43:46.950 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-05 17:43:50.243 Authority: {"name":"recv_desc","mid":"N01_54","desc":{"_st":"1791215030193","_date":"1791215030141","_nbfrags":"1","src":"TM1","_docid":"N01_54","_weight":"104","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+
+2026-10-05 17:43:50.250 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_setup|TM1)","tkn":"payload-N01_54","name":"recv_payload","mid":"N01_54","topic":"TM","dest":"TM"}
+
+2026-10-05 17:43:50.785 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:43:51.291 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:43:52.576 Authority: {"name":"recv_desc","mid":"N01_62","desc":{"_st":"1791215032530","_date":"1791215032486","_nbfrags":"1","src":"TM1","_docid":"N01_62","_weight":"1747","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+
+2026-10-05 17:43:52.578 Authority: {"data":"D3CS|TM1|TM|CT_SHARE|1|{\"version\":1,\"label\":{\"classification\":\"FR-DR\",\"mission\":\"M1\"},\"abe\":{\"c_tilde\":\"/QmT9t12gXJU4ySk+eDEBKrVMm6mmExg1b55G1aIeefg3hWPgi0e9p3GURgH90UJL+cVuXMAFT6lWhyZGt5Qe0jZ2NiBTEG+/hpSiuNGBPHbTXZsFsyh4eBbhBSSjwgQRv/21uwqqd3Rp/QK7qdx+TpI+Bgq20nLQZYgUG4kIgMs8jAyoUYCemjNuzyg5CsYxmbCt23kywa33+xNgadupYvWHNp/gZGRITJ5m82k56luk3JtPvDLsmmw06x8A6kOlnZIZwd15UdmtIqN+y/7TK+uTYofSyiRf9mQXBGZENOFaBZWwAmNOL9YFmsxYO0FrJbkAl5jrZGVgL7RTNMyC5MtkEzHAefthxpqx9ujZkqClPCmkRiY5U9FcjyBFAYHHIoB6mMzda044xXo5I4V6Pe7cBzto6pEL2kTz0QcQ+uomG72oVjmdMfdXOuBnLISD4wZ1OC7XkFkohQnrssTOOxcqX0HhbC/CpbxLUBr+3qjezwxfoL5Ksk2oHbMDw4XV0zR9B3tVZ7XZ2XdcxpkLeUCFEezBDO7YQK1kX0axvtcJ7So0LJEvBC+uWa1aiwBhqZ1tvgpmNFoY10mENsMB0ZYDguFeO+wmXZRmVj7qOq01+R45VVnXVPdDW7gdFoBRGZ92pAylN14Jk+6XWAEmSbemEQ9znuwAGjVUqpwA56LGtbOH4z0rX1zmoGmuwoZmW4laM10sRuxxrvOTRT8D7DydVSKQefyxjpc0RxP89SXUknM/N2igEn2JA3yz/cM\",\"c\":\"kcrphnMBk0g+44pyzhIgaLyfoL6NZCvfHamb2GX+BUzFVXD23dfV5BnvQVEFJR2X\",\"leafs\":[{\"index\":1,\"attr\":\"FR-DR\",\"c_i\":\"uR+pm8XDNcvBkvQp5YGP8nmKZwpCs9y22xAfFFkxMaiHyDVbSkCYuQas9ZRaGBP0\",\"c_i_prime\":\"rXzyWHH3/ZzWXPwy5b3mwWIdjAviUIDSFUmdxAl/pH0v7+D3hgZIQb4WalP9FZNF\"},{\"index\":2,\"attr\":\"M1\",\"c_i\":\"l4UjmA5qhYeBeLMS6CpxRW3C7aEDAzlaUz7ESMklt8cFmWVJGLPHO9pmB0XkdJ7o\",\"c_i_prime\":\"kQVy2Nmf++ERuGHUT0rpwtdomCNlf66AEAr5E7ksaNdbLRW9raTBYyjw9zcTZ5rO\"}]},\"sym\":{\"nonce\":\"HMyxQohW7WiATpUF\",\"ciphertext\":\"uiHciQfu8NuC26m3tpg3nOKV9Yc\"}}|{\"version\":1,\"r1\":\"sSKZ7bP4LQvYpbc0Pg64o93lGLYXITQga9XrRYrIxBYcEU+nu7UD2HbseCzbazSH\",\"r2\":\"oGRZToQs0egm0XlC34McGyCm4PZnidrPhRuGM60sqo+5CJ1pzi+fd/EN/Aig/qLyCZDB6gO0JUFj78bQXF29hi8rHQPheGOE4x4Xi0XEsnkIetHWWh4TrbK6Zk4na01b\",\"r3\":\"rVdXR5o7vYYjJEObIzvOue2qs9Bvk+Rfo8+MUaVqvW3hIysaNUxwMlTVoIZ2UevNFyUEBgkO6o/Z0ziXCUbNYoAFmDgHUZDlSaWWxK3UTvrz/Xiia0GneMXkdjH1dccR\"}","tkn":"payload-N01_62","name":"recv_payload","mid":"N01_62","topic":"TM","dest":"TM"}
+
+2026-10-05 17:43:54.132 Authority: {"name":"recv_desc","mid":"N01_66","desc":{"_st":"1791215034088","_date":"1791215034042","_nbfrags":"1","src":"TM1","_docid":"N01_66","_weight":"1747","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+
+2026-10-05 17:43:54.135 Authority: {"data":"D3CS|TM1|TM|CT_SHARE|2|{\"version\":1,\"label\":{\"classification\":\"FR-DR\",\"mission\":\"M1\"},\"abe\":{\"c_tilde\":\"FH9qMqY8GY+BGEcVphuG8482ElZnKSM0D17KWEGNfoP3+TYjCSqnnw9rxU6SJAECIvE72eMnn8mbYQMFhzPR9nbkyBgupjHJAafeYGXVvSFJbtCg8HBXZ8xIiTlc7McJZ92xvh83+9svkPDP25cR+JbFRGX/v111HAzByZjwmpIsCjv2G1c1p0PfMw1R53EDKx0vFonTMWpYwylap2hsobYX4W0FBqpIOk1Gd2c0mZnKFYSlmZis4Eu/Z8q0wDwHQ85Lu4DNYJwDs3UsMTWnKriqhEXiRtA6xiZgLS6F1r4wsRoytd5p1Tcha+6Wa1kLJ41ot3qen57+cTupF+TAqXwn8AYPPnMifHvQuDC5QdhSefeyIjx7mgXM72B6wpwGgPxaVRmq0r8xl6mn2jRNIMKIwUH4W2tb7zMuoiAxOZf4OY43dgYmJhi8QWFveXoQ7qkx+qcRJOqroRSN/OQMA1vhvZy8ZL6EzZOXizwT55HhPmsLnzbzNxv4q0AwvHgIr6OeYI2uYoAKWrkCt2rF/TPM4ZdJIlp0WmsihoKG7roebAxfYtmv7zAtdGX3/0YDBEgyWUNafk1PHhbzQlCXS/+qyedC2+AdC16JQeSBwrm4gKVbJKu7SeZxZOT0F1MG80QQ9d0xjDYvoHpXsyaawJ/Naz5IMkzJkJnaJwBEbKI8j0FTlbOSQCQ0ivDU99oFAuY1TrPQupi+tBYDeD/GrdBXszM8bjTLXCAtwGmxV27XZ4EqG8st5ls/iyhpb7AO\",\"c\":\"rL1DzyKbqfXmYHP8qrgod4mRwIQPNH642gpgdKsxTN00d4Ru7zXOU+ZuG7Nfllj8\",\"leafs\":[{\"index\":1,\"attr\":\"FR-DR\",\"c_i\":\"sBuDqkIh9qhkbR0+3Dtc1MiA4t9EGduyBXzc2j+HGb4NCVaopCx1ucnwJ4tt5DXS\",\"c_i_prime\":\"sSvhrPPatAxRZ82GnAcL/6F6haWMKETyst/G3lubWDtIBcLFzZS5muN/PPIHrB5p\"},{\"index\":2,\"attr\":\"M1\",\"c_i\":\"hNdWk9YPNhmEPdUvByoyKTFLt8AOakNgEAoz51tMP/1m34iXgLm+t4eE9DiLQENt\",\"c_i_prime\":\"t+WpwxVnanuSBSkA3quxj9gG5iUtXdPqaHyBBPA5m5FR3HKMfq9nZk1BCl3QU+HJ\"}]},\"sym\":{\"nonce\":\"JgJ5mD9WZmZuBElr\",\"ciphertext\":\"Cr9gSTQdTkjDDrUkWyTX1cgzC8Y\"}}|{\"version\":1,\"r1\":\"o75o9uLm0izCok/ADFZSc4nTh6zmNnpfx8+JApPuYjPqJY+1iomMTJN/aRLddeql\",\"r2\":\"hq1v5THSfiQ2ZBDwdTPLaSre+OLrjP7ijTLqMkBDOHybuiyyHBf2s5TU3EZEjAoFD6NfQYl5279TXwXiZH4AZRNoXbFzn7rj0RfyNCwSx5D4/MEUsIVkipPhYUVDDHAd\",\"r3\":\"pDE5yJAXr+Rdr8R1wtLkB9Z3QhiKylLRdrlZKJmhD5d3edocOPXbnj5P/gt7y2K3EdpcHZV1eNFxSLFvaxXXKWV8qfhZlAG6lLR0voZXlOnGuk6aFm+LHeV1jKjhjU7X\"}","tkn":"payload-N01_66","name":"recv_payload","mid":"N01_66","topic":"TM","dest":"TM"}
+
+2026-10-05 17:43:55.739 Authority: {"name":"recv_desc","mid":"N01_69","desc":{"_st":"1791215035691","_date":"1791215035642","_nbfrags":"1","src":"TM1","_docid":"N01_69","_weight":"1747","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+
+2026-10-05 17:43:55.739 Authority: {"data":"D3CS|TM1|TM|CT_SHARE|3|{\"version\":1,\"label\":{\"classification\":\"FR-DR\",\"mission\":\"M1\"},\"abe\":{\"c_tilde\":\"D8hiGn+rcapyJlmX2Qy7Ruu8ffvxNv2z5tFOPV1lBvdckj1v2i1r9l9ikeOsEiUQrg+5NBuWkW7muElaGF7a9psmnj6RpQBOqP9iM3aKLDppMTiMKVvrrP0wJXgQjhoMUEFaaPzlG8Ka9zhm+ZxaE9+DYXr7H33D9JKtAp36QiWnPbXpT6Y+6zZQ2o1/njQSfr/dvAbXevf9CQKzaIZzfHfo/JLmeA4N06aGii30/v1ii+LKk6MCQPPb+zioeiQUi242TTewrUqVfI6XI84P4EIiI9+m2Q1wminSZKTpgbuy0k9nAF+eTd+9Nlvkmg4VqF+drURhZb8HwtPx10pWWXDrBxV7yGlGXM0MoDZU6Lo11U5h2Vx7QCWDY+WxFQUT3VxLalu5UBrv+jEYG0SjGnuXJN+mSPgKdBQ0mOA85arCQ9oryU097Xgcvt0EddQNi9ooW9uSfzFYWSwTy8x0R7k2oUfngcweGlkmmRii2LMhy0mOUr8fyQG3t6zCw90Cj41+KAp+i/uRMyRZzG0YGJrxtx7E99tSPF7LOdi4YRo0VmcvX/iC4orU6yWLp64X65FR39UeREPXmrUnNSQQkSGgdgMGpDbhlGdUBQm6A4E2NOo7UpcFJtQ2q9jkVrwLbuZh9la9I6oYPODA+1yUyUWYqnTCyMi3PC7d36koG1zeTIiMGQ95GJ5YV7buifwRaTc8CKYhn56bCwXQrlOGah3veZbkI5CtMu8jdKBiOp/FwAKHDb/uVoCcJSgd7rEH\",\"c\":\"hFToAn1rxgeH+tkXTd8qu6tKq4XSrG7xadzrDJ8jd8TnQBSvroYlGbedt77MTCiz\",\"leafs\":[{\"index\":1,\"attr\":\"FR-DR\",\"c_i\":\"j1YJJLaioXkoon9tNb7/6Tn/Ei1rcneKG4XmZ2GH874h/9oHb5ZbeRAyAawkKADd\",\"c_i_prime\":\"uHb8s+BVmwKghEahyxWzKgywfYRb5F0u7aH+O0ZfHZfAwDRG5k2FbT6KIk+3UhC3\"},{\"index\":2,\"attr\":\"M1\",\"c_i\":\"jvY2I3fZb/i22cRsP9oO5ZX2/gYfU88dxrHhkczjpthTdqTmmrZLuuVIpOcGuG1U\",\"c_i_prime\":\"tVYxYsv7Ti1PT2aJhMyRDI0eKjMkO0fc5HsPAZh7qoutp3yL8TCdBSa4792VYZR/\"}]},\"sym\":{\"nonce\":\"yRkkEtQzq4fQ5iDl\",\"ciphertext\":\"/9n4BZ3zPs0yY83AFB28XVPcmos\"}}|{\"version\":1,\"r1\":\"lfIkIrKaDcj9afuYGQe2SwByySy9N+NV3b/NZJOAdC9tZ6OFnW8mSvPgujgOfZg+\",\"r2\":\"iwKWJ7y11RTgnqMTTCMRnRur/1fsKe/HA/PdXNZPdA9kSumdY5ginl1S9XIttqtqBDXFoFNMqxje/+5KrXFROt2HKBmP2f5shJBJ4YrXl+pkIkKgSmD4NtMzBDchV8Mb\",\"r3\":\"jin5cjyEZJMH1H0rNkPqV1YsPGeiqksLjLXX+WsIqyWxcFR4BzMl6DDz8MPfrgskDqZYp4qwthEcCklvGzCgpP2dcWX859CbZjWtO1Kpli/BH/bpqs1nQpVyT/qOBQiW\"}","tkn":"payload-N01_69","name":"recv_payload","mid":"N01_69","topic":"TM","dest":"TM"}
+
+2026-10-05 17:43:56.362 Authority: {"name":"recv_desc","mid":"N00_68","desc":{"_date":"1791215036361","_nbfrags":"1","src":"Authority","_docid":"N00_68","_weight":"116","topic":"TM","dest":"TM"}}
+
+2026-10-05 17:43:56.363 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:43:56.405 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":1,\"items\":[{\"attribute_type\":\"mission\",\"attribute_value\":\"BENCH_ARL\"}]})","tkn":"payload-N00_68","name":"recv_payload","mid":"N00_68","topic":"TM","dest":"TM"}
+
+2026-10-05 17:43:57.953 Authority: {"name":"recv_desc","mid":"N00_72","desc":{"_date":"1791215037950","_nbfrags":"1","src":"Authority","_docid":"N00_72","_weight":"58","topic":"TM","dest":"TM"}}
+
+2026-10-05 17:43:57.953 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:43:57.954 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":2,\"items\":[]})","tkn":"payload-N00_72","name":"recv_payload","mid":"N00_72","topic":"TM","dest":"TM"}
+
+2026-10-05 17:43:59.484 Authority: {"name":"recv_desc","mid":"N00_75","desc":{"_date":"1791215039482","_nbfrags":"1","src":"Authority","_docid":"N00_75","_weight":"116","topic":"TM","dest":"TM"}}
+
+2026-10-05 17:43:59.485 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:43:59.485 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":3,\"items\":[{\"attribute_type\":\"mission\",\"attribute_value\":\"BENCH_ARL\"}]})","tkn":"payload-N00_75","name":"recv_payload","mid":"N00_75","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:01.020 Authority: {"name":"recv_desc","mid":"N00_79","desc":{"_date":"1791215041018","_nbfrags":"1","src":"Authority","_docid":"N00_79","_weight":"58","topic":"TM","dest":"TM"}}
+
+2026-10-05 17:44:01.020 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:01.021 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":4,\"items\":[]})","tkn":"payload-N00_79","name":"recv_payload","mid":"N00_79","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:02.558 Authority: {"name":"recv_desc","mid":"N00_82","desc":{"_date":"1791215042555","_nbfrags":"1","src":"Authority","_docid":"N00_82","_weight":"116","topic":"TM","dest":"TM"}}
+
+2026-10-05 17:44:02.559 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:02.560 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":5,\"items\":[{\"attribute_type\":\"mission\",\"attribute_value\":\"BENCH_ARL\"}]})","tkn":"payload-N00_82","name":"recv_payload","mid":"N00_82","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:04.092 Authority: {"name":"recv_desc","mid":"N00_86","desc":{"_date":"1791215044090","_nbfrags":"1","src":"Authority","_docid":"N00_86","_weight":"58","topic":"TM","dest":"TM"}}
+
+2026-10-05 17:44:04.092 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:04.094 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":6,\"items\":[]})","tkn":"payload-N00_86","name":"recv_payload","mid":"N00_86","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:06.943 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_key_w1|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_key_w1|TM1)","mid":"N01_101","name":"recv_payload","tkn":"payload-N01_101","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:07.969 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:08.478 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:09.247 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_key_001|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_key_001|TM1)","mid":"N01_115","name":"recv_payload","tkn":"payload-N01_115","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:10.273 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:10.780 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:12.083 Authority: {"name":"recv_desc","mid":"N01_130","desc":{"_st":"1791215052039","_date":"1791215051994","_nbfrags":"1","src":"TM1","_docid":"N01_130","_weight":"108","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+
+2026-10-05 17:44:12.084 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_key_002|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_key_002|TM1)","tkn":"payload-N01_130","name":"recv_payload","mid":"N01_130","topic":"TM","dest":"TM"}
+
+2026-10-05 17:44:12.611 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-05 17:44:13.117 Authority: {"tkn":"t3","name":"ok"}
+
+on\",\"attribute_value\":\"BENCH_ARL\"}]})","tkn":"payload-N00_82","name":"recv_payload","mid":"N00_82","topic":"TM","dest":"TM"}
+2026-10-05 17:44:04.092 Authority: {"name":"recv_desc","mid":"N00_86","desc":{"_date":"1791215044090","_nbfrags":"1","src":"Authority","_docid":"N00_86","_weight":"58","topic":"TM","dest":"TM"}}
+2026-10-05 17:44:04.092 Authority: {"tkn":"t3","name":"ok"}
+2026-10-05 17:44:04.094 Authority: {"data":"TLS(D3CS|Authority|TM|ARL_UPDATE|{\"version\":6,\"items\":[]})","tkn":"payload-N00_86","name":"recv_payload","mid":"N00_86","topic":"TM","dest":"TM"}
+2026-10-05 17:44:06.943 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_key_w1|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_key_w1|TM1)","mid":"N01_101","name":"recv_payload","tkn":"payload-N01_101","topic":"TM","dest":"TM"}
+2026-10-05 17:44:07.969 Authority: {"tkn":"t3","name":"ok"}
+2026-10-05 17:44:08.478 Authority: {"tkn":"t3","name":"ok"}
+2026-10-05 17:44:09.247 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_key_001|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_key_001|TM1)","mid":"N01_115","name":"recv_payload","tkn":"payload-N01_115","topic":"TM","dest":"TM"}
+2026-10-05 17:44:10.273 Authority: {"tkn":"t3","name":"ok"}
+2026-10-05 17:44:10.780 Authority: {"tkn":"t3","name":"ok"}
+2026-10-05 17:44:12.083 Authority: {"name":"recv_desc","mid":"N01_130","desc":{"_st":"1791215052039","_date":"1791215051994","_nbfrags":"1","src":"TM1","_docid":"N01_130","_weight":"108","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+2026-10-05 17:44:12.084 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|bench_h1_key_002|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h1_key_002|TM1)","tkn":"payload-N01_130","name":"recv_payload","mid":"N01_130","topic":"TM","dest":"TM"}
+2026-10-05 17:44:12.611 Authority: {"tkn":"t3","name":"ok"}
+2026-10-05 17:44:13.117 Authority: {"tkn":"t3","name":"ok"}

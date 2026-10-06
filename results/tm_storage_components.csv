@@ -1,0 +1,5 @@
+component,description,serialized_size_bytes
+CPABE_PUBLIC_PARAMETERS,tm_dir/pp.bin,1273
+ABS_PUBLIC_PARAMETERS,tm_dir/params.bin,1137
+PSKA_u1,tm_dir/nodes/u1/pskau1.bin,148
+ARL_REFERENCE_1_ENTRY,tm_dir/nodes/<tm>/arl.json,75

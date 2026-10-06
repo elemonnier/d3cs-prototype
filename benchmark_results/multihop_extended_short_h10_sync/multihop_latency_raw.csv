@@ -1,0 +1,7 @@
+workflow,hops,iteration,run_id,source_node,destination_node,latency_ms,success
+CT_SHARE,10,1,CT_SHARE_h10_001,U10,Authority,2407.991548,true
+CT_SHARE,10,2,CT_SHARE_h10_002,U10,Authority,1485.980157,true
+ARL_UPDATE,10,1,ARL_UPDATE_h10_001,Authority,U10,1487.618915,true
+ARL_UPDATE,10,2,ARL_UPDATE_h10_002,Authority,U10,1490.085094,true
+KEY_REQUEST_RESPONSE,10,1,bench_h10_key_001,U10,Authority,4012.301045,true
+KEY_REQUEST_RESPONSE,10,2,bench_h10_key_002,U10,Authority,4016.759452,true

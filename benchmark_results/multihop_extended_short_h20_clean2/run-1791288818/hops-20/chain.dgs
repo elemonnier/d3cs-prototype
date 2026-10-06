@@ -1,0 +1,64 @@
+DGS004
+SIMUL 0 0
+st 0
+an N00 x=0 y=0 label="Authority"
+an N01 x=50 y=0 label="U1"
+an N02 x=100 y=0 label="U2"
+an N03 x=150 y=0 label="U3"
+an N04 x=200 y=0 label="U4"
+an N05 x=250 y=0 label="U5"
+an N06 x=300 y=0 label="U6"
+an N07 x=350 y=0 label="U7"
+an N08 x=400 y=0 label="U8"
+an N09 x=450 y=0 label="U9"
+an N10 x=500 y=0 label="U10"
+an N11 x=550 y=0 label="U11"
+an N12 x=600 y=0 label="U12"
+an N13 x=650 y=0 label="U13"
+an N14 x=700 y=0 label="U14"
+an N15 x=750 y=0 label="U15"
+an N16 x=800 y=0 label="U16"
+an N17 x=850 y=0 label="U17"
+an N18 x=900 y=0 label="U18"
+an N19 x=950 y=0 label="U19"
+an N20 x=1000 y=0 label="U20"
+ae N00-N01 N00 N01
+ae N01-N02 N01 N02
+ae N02-N03 N02 N03
+ae N03-N04 N03 N04
+ae N04-N05 N04 N05
+ae N05-N06 N05 N06
+ae N06-N07 N06 N07
+ae N07-N08 N07 N08
+ae N08-N09 N08 N09
+ae N09-N10 N09 N10
+ae N10-N11 N10 N11
+ae N11-N12 N11 N12
+ae N12-N13 N12 N13
+ae N13-N14 N13 N14
+ae N14-N15 N14 N15
+ae N15-N16 N15 N16
+ae N16-N17 N16 N17
+ae N17-N18 N17 N18
+ae N18-N19 N18 N19
+ae N19-N20 N19 N20
+ce N00-N01 status="CONNECTED"
+ce N01-N02 status="CONNECTED"
+ce N02-N03 status="CONNECTED"
+ce N03-N04 status="CONNECTED"
+ce N04-N05 status="CONNECTED"
+ce N05-N06 status="CONNECTED"
+ce N06-N07 status="CONNECTED"
+ce N07-N08 status="CONNECTED"
+ce N08-N09 status="CONNECTED"
+ce N09-N10 status="CONNECTED"
+ce N10-N11 status="CONNECTED"
+ce N11-N12 status="CONNECTED"
+ce N12-N13 status="CONNECTED"
+ce N13-N14 status="CONNECTED"
+ce N14-N15 status="CONNECTED"
+ce N15-N16 status="CONNECTED"
+ce N16-N17 status="CONNECTED"
+ce N17-N18 status="CONNECTED"
+ce N18-N19 status="CONNECTED"
+ce N19-N20 status="CONNECTED"

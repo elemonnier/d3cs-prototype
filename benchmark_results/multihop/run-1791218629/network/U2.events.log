@@ -1,0 +1,34 @@
+event=receive timestamp_ns=1791218641949314832 workflow=KEY_REQUEST run_id=bench_h1_setup node=U2 source=TM1 destination=TM
+event=receive timestamp_ns=1791218644413392438 workflow=CT_SHARE run_id=1 node=U2 source=TM1 destination=TM
+event=receive timestamp_ns=1791218645945384701 workflow=CT_SHARE run_id=2 node=U2 source=TM1 destination=TM
+event=receive timestamp_ns=1791218647485288155 workflow=CT_SHARE run_id=3 node=U2 source=TM1 destination=TM
+event=receive timestamp_ns=1791218648793378452 workflow=ARL_UPDATE run_id=1 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218650361362699 workflow=ARL_UPDATE run_id=2 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218651897312303 workflow=ARL_UPDATE run_id=3 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218653433374794 workflow=ARL_UPDATE run_id=4 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218654973394755 workflow=ARL_UPDATE run_id=5 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218656509337034 workflow=ARL_UPDATE run_id=6 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218660185319668 workflow=KEY_REQUEST run_id=bench_h1_key_w1 node=U2 source=TM1 destination=TM
+event=receive timestamp_ns=1791218664089373363 workflow=KEY_REQUEST run_id=bench_h1_key_001 node=U2 source=TM1 destination=TM
+event=receive timestamp_ns=1791218668665463194 workflow=KEY_REQUEST run_id=bench_h1_key_002 node=U2 source=TM1 destination=TM
+event=send timestamp_ns=1791218670297474342 workflow=KEY_REQUEST run_id=bench_h2_setup node=U2 source=TM2 destination=TM
+event=key_latency timestamp_ns=1791218673760787172 workflow=KEY_REQUEST_RESPONSE run_id=bench_h2_setup node=U2 duration_ns=3463316539
+event=receive timestamp_ns=1791218673753338223 workflow=KEY_RESPONSE run_id=bench_h2_setup node=U2 source=Authority destination=bench_h2_setup
+event=send timestamp_ns=1791218673870524404 workflow=CT_SHARE run_id=1 node=U2 source=TM2 destination=TM
+event=send timestamp_ns=1791218676247071817 workflow=CT_SHARE run_id=2 node=U2 source=TM2 destination=TM
+event=send timestamp_ns=1791218677781668933 workflow=CT_SHARE run_id=3 node=U2 source=TM2 destination=TM
+event=receive timestamp_ns=1791218681017368894 workflow=ARL_UPDATE run_id=7 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218682557312526 workflow=ARL_UPDATE run_id=8 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218684093372074 workflow=ARL_UPDATE run_id=9 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218685629373538 workflow=ARL_UPDATE run_id=10 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218687161416748 workflow=ARL_UPDATE run_id=11 node=U2 source=Authority destination=TM
+event=receive timestamp_ns=1791218688701405888 workflow=ARL_UPDATE run_id=12 node=U2 source=Authority destination=TM
+event=send timestamp_ns=1791218689241370942 workflow=KEY_REQUEST run_id=bench_h2_key_w1 node=U2 source=TM2 destination=TM
+event=key_latency timestamp_ns=1791218691173161715 workflow=KEY_REQUEST_RESPONSE run_id=bench_h2_key_w1 node=U2 duration_ns=1931786918
+event=receive timestamp_ns=1791218691161372942 workflow=KEY_RESPONSE run_id=bench_h2_key_w1 node=U2 source=Authority destination=bench_h2_key_w1
+event=send timestamp_ns=1791218692825332691 workflow=KEY_REQUEST run_id=bench_h2_key_001 node=U2 source=TM2 destination=TM
+event=key_latency timestamp_ns=1791218696292787071 workflow=KEY_REQUEST_RESPONSE run_id=bench_h2_key_001 node=U2 duration_ns=3467456674
+event=receive timestamp_ns=1791218696281468667 workflow=KEY_RESPONSE run_id=bench_h2_key_001 node=U2 source=Authority destination=bench_h2_key_001
+event=send timestamp_ns=1791218696889425031 workflow=KEY_REQUEST run_id=bench_h2_key_002 node=U2 source=TM2 destination=TM
+event=key_latency timestamp_ns=1791218699329677501 workflow=KEY_REQUEST_RESPONSE run_id=bench_h2_key_002 node=U2 duration_ns=2440250847
+event=receive timestamp_ns=1791218699321418081 workflow=KEY_RESPONSE run_id=bench_h2_key_002 node=U2 source=Authority destination=bench_h2_key_002

@@ -1,0 +1,6 @@
+N00=Authority
+N01=U1
+N02=U2
+N03=U3
+N04=U4
+N05=U5

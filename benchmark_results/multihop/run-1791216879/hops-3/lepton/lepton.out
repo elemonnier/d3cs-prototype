@@ -1,0 +1,2102 @@
+   lepton_host                   : localhost
+   oppnet_adapter                : /home/etienne/d3cs-prototype/src/network/tools/dodwan-adapter/bin/multihop_adapter.sh
+   jitter                        : 0
+   time_margin                   : 0
+   start_time                    : 1791216879000
+   nodes_deferred                : 0
+   oppnet_adapter_classpath      : /home/etienne/d3cs-prototype/src/network/tools/dodwan/libs/dodwan-4.1.jar:/home/etienne/d3cs-prototype/src/network/tools/dodwan-adapter/libs/dodwan-adapter-1.0.jar
+OppNet:
+   log_dir                       : /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791216879/hops-3/lepton
+   accel                         : 1
+   simul_area                    : car:-20,-20,300,40
+   edge_default_status           : DISCONNECTED
+   node_default_status           : NONE
+   oppnet_adapter_classname      : casa.lepton.hub.DodwanAdapter
+   hub_period                    : 10
+   hub_latency                   : 60
+   lepton_host                   : localhost
+   lepton_hub_port               : 4500
+   lepton_console_port           : 5100
+   in_dgs                        : /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791216879/hops-3/chain.dgs
+   make_edges                    : false
+   nodes                         : 0
+   period                        : 1.0
+   duration                      : -1
+   out_dgs                       : /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791216879/hops-3/lepton/lepton.dgs
+   show                          : true
+   stylesheet                    : graph {fill-mode : none;} 
+node {fill-mode: plain; text-alignment: above; text-size: 20px; text-offset: 0px, -28px; size: 28px; fill-color: black;} 
+node.KEY_ABE {fill-color: blue;} 
+node.KEY_ABE_ABS {fill-color: green;} 
+node.TAG {stroke-mode: plain; stroke-color: green; stroke-width: 2;} 
+node.OFFLINE {fill-color: #808080;} 
+edge {shape: line; fill-mode: dyn-plain; size: 8px; fill-color: blue;} 
+edge.CONNECTED {size: 12px; fill-color: red;} 
+edge.TAG {stroke-mode: plain; stroke-color: green; stroke-width: 2;}
+   time_corner                   : NORTH_WEST
+   time_font                     : Sans-BOLD-18
+   time_fgcolor                  : 0x000000
+   time_bgcolor                  : 0xffffff
+OppNodes:
+   nodes_profiles                : /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791216879/hops-3/node_profiles.txt
+   node_labels                   : /home/etienne/d3cs-prototype/benchmark_results/multihop/run-1791216879/hops-3/node_labels.txt
+   mobile                        : true
+   show_node_status              : DEFAULT
+Connectivity:
+   range                         : 60
+2026-10-05 18:14:39.992 hub adapter: casa.lepton.hub.DodwanAdapter
+
+Name : docker0 (DOWN) (MCAST)
+
+Name : br-b57d7866eef4 (DOWN) (MCAST)
+
+Name : eth0 (UP) (MCAST)
+2026-10-05 18:14:40.003 hub udp_chan: create UDP_Channel(local=/[0:0:0:0:0:0:0:0]:4500)
+2026-10-05 18:14:40.003 hub udp_chan: open UDP_Channel(local=/[0:0:0:0:0:0:0:0]:4500)
+Areas: simulation: car:-20.0,-20.0,300.0,40.0
+       viewport:   car:-20.0,-20.0,300.0,40.0
+viewportArea: car:-20.0,-20.0,300.0,40.0
+Do not enable auto layout
+2026-10-05 18:14:40.920 hub udp_chan: < [65] /127.0.0.1:58806
+2026-10-05 18:14:40.924 hub beacon: < DodwanBeacon(<descriptor _docid="N03_4",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:40.925 hub hub: < [beacon] sdr=N03 (hello)
+2026-10-05 18:14:40.926 hub hub: Creating a proxy for /172.22.71.5:44303
+2026-10-05 18:14:40.928 hub hub: creating TCP proxy socket on port 43445 for peer /172.22.71.5:44303
+2026-10-05 18:14:40.929 hub beacon: > DodwanBeacon(<descriptor _docid="N03_4",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:40.929 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:40.929 hub hub: warning: rcv=N02 unknown
+2026-10-05 18:14:40.929 hub hub: warning: rcv=N04 unknown
+2026-10-05 18:14:40.929 hub udp_chan: < [65] /127.0.0.1:34401
+2026-10-05 18:14:40.929 hub beacon: < DodwanBeacon(<descriptor _docid="N01_3",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:40.929 hub hub: < [beacon] sdr=N01 (hello)
+2026-10-05 18:14:40.929 hub hub: Creating a proxy for /172.22.71.5:39033
+2026-10-05 18:14:40.929 hub hub: creating TCP proxy socket on port 35043 for peer /172.22.71.5:39033
+2026-10-05 18:14:40.929 hub beacon: > DodwanBeacon(<descriptor _docid="N01_3",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:40.930 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:40.930 hub hub: warning: rcv=N02 unknown
+2026-10-05 18:14:40.930 hub hub: warning: rcv=N00 unknown
+2026-10-05 18:14:40.930 hub udp_chan: < [65] /127.0.0.1:59609
+2026-10-05 18:14:40.930 hub beacon: < DodwanBeacon(<descriptor _docid="N04_3",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:40.930 hub hub: < [beacon] sdr=N04 (hello)
+2026-10-05 18:14:40.930 hub hub: Creating a proxy for /172.22.71.5:44351
+2026-10-05 18:14:40.930 hub hub: creating TCP proxy socket on port 33835 for peer /172.22.71.5:44351
+2026-10-05 18:14:40.931 hub beacon: > DodwanBeacon(<descriptor _docid="N04_3",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:40.931 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:40.931 hub udp_chan: > [65] /127.0.0.1:58806
+2026-10-05 18:14:40.931 hub hub: warning: rcv=N05 unknown
+2026-10-05 18:14:40.934 hub udp_chan: < [65] /127.0.0.1:44920
+2026-10-05 18:14:40.935 hub beacon: < DodwanBeacon(<descriptor _docid="N00_4",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:40.935 hub hub: < [beacon] sdr=N00 (hello)
+2026-10-05 18:14:40.935 hub hub: Creating a proxy for /172.22.71.5:46439
+2026-10-05 18:14:40.935 hub hub: creating TCP proxy socket on port 43091 for peer /172.22.71.5:46439
+2026-10-05 18:14:40.935 hub beacon: > DodwanBeacon(<descriptor _docid="N00_4",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:40.936 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:40.936 hub udp_chan: > [65] /127.0.0.1:34401
+2026-10-05 18:14:40.937 hub udp_chan: < [65] /127.0.0.1:35318
+2026-10-05 18:14:40.937 hub beacon: < DodwanBeacon(<descriptor _docid="N05_3",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:40.937 hub hub: < [beacon] sdr=N05 (hello)
+2026-10-05 18:14:40.937 hub hub: Creating a proxy for /172.22.71.5:42645
+2026-10-05 18:14:40.938 hub hub: creating TCP proxy socket on port 36919 for peer /172.22.71.5:42645
+2026-10-05 18:14:40.938 hub beacon: > DodwanBeacon(<descriptor _docid="N05_3",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:40.938 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:40.939 hub udp_chan: > [65] /127.0.0.1:59609
+2026-10-05 18:14:40.939 hub hub: cx accepted from 172.22.71.5:42474, connecting to /172.22.71.5:44351
+2026-10-05 18:14:40.941 hub relay: < callerId=N03
+2026-10-05 18:14:40.942 hub udp_chan: < [65] /127.0.0.1:44730
+2026-10-05 18:14:40.942 hub beacon: < DodwanBeacon(<descriptor _docid="N02_3",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:40.942 hub hub: < [beacon] sdr=N02 (hello)
+2026-10-05 18:14:40.942 hub hub: Creating a proxy for /172.22.71.5:37995
+2026-10-05 18:14:40.953 hub hub: creating TCP proxy socket on port 45707 for peer /172.22.71.5:37995
+2026-10-05 18:14:40.953 hub hub: cx accepted from 172.22.71.5:38224, connecting to /172.22.71.5:42645
+2026-10-05 18:14:40.954 hub beacon: > DodwanBeacon(<descriptor _docid="N02_3",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:40.954 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:40.954 hub relay: < callerId=N04
+2026-10-05 18:14:40.954 hub relay: opened StreamRelay(N03 <=> N04)
+2026-10-05 18:14:40.954 hub udp_chan: > [65] /127.0.0.1:58806
+2026-10-05 18:14:40.954 hub udp_chan: > [65] /127.0.0.1:34401
+2026-10-05 18:14:40.954 hub relay: opened StreamRelay(N04 <=> N05)
+2026-10-05 18:14:40.957 hub relay: [11]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:40.960 hub relay: [2]> Pipe(172.22.71.5:42645 => 172.22.71.5:38224)
+2026-10-05 18:14:40.961 hub hub: cx accepted from 172.22.71.5:52072, connecting to /172.22.71.5:37995
+2026-10-05 18:14:40.965 hub relay: < callerId=N01
+2026-10-05 18:14:40.966 hub relay: opened StreamRelay(N01 <=> N02)
+2026-10-05 18:14:40.967 hub relay: [98]> Pipe(172.22.71.5:42645 => 172.22.71.5:38224)
+2026-10-05 18:14:40.969 hub relay: [89]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:40.970 hub relay: [4]> Pipe(172.22.71.5:38224 => 172.22.71.5:42645)
+2026-10-05 18:14:40.970 hub relay: [2]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:40.971 hub relay: [9]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:40.973 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:40.974 hub relay: [4]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:40.975 hub relay: [85]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:40.975 hub relay: [4]> Pipe(172.22.71.5:52072 => 172.22.71.5:37995)
+2026-10-05 18:14:41.017 hub relay: [166]> Pipe(172.22.71.5:52072 => 172.22.71.5:37995)
+2026-10-05 18:14:41.017 hub relay: [166]> Pipe(172.22.71.5:38224 => 172.22.71.5:42645)
+2026-10-05 18:14:41.018 hub relay: [4]> Pipe(172.22.71.5:42645 => 172.22.71.5:38224)
+2026-10-05 18:14:41.021 hub relay: [166]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.022 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.023 hub relay: [4]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:41.061 hub relay: [202]> Pipe(172.22.71.5:42645 => 172.22.71.5:38224)
+2026-10-05 18:14:41.062 hub relay: [4]> Pipe(172.22.71.5:38224 => 172.22.71.5:42645)
+2026-10-05 18:14:41.065 hub relay: [202]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:41.065 hub relay: [202]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.067 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.067 hub relay: [4]> Pipe(172.22.71.5:52072 => 172.22.71.5:37995)
+2026-10-05 18:14:41.109 hub relay: [215]> Pipe(172.22.71.5:38224 => 172.22.71.5:42645)
+2026-10-05 18:14:41.110 hub relay: [4]> Pipe(172.22.71.5:42645 => 172.22.71.5:38224)
+2026-10-05 18:14:41.113 hub relay: [215]> Pipe(172.22.71.5:52072 => 172.22.71.5:37995)
+2026-10-05 18:14:41.113 hub relay: [229]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.116 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.118 hub relay: [4]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:41.153 hub relay: [90]> Pipe(172.22.71.5:42645 => 172.22.71.5:38224)
+2026-10-05 18:14:41.157 hub relay: [90]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.158 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.161 hub relay: [90]> Pipe(172.22.71.5:37995 => 172.22.71.5:52072)
+2026-10-05 18:14:41.201 hub relay: [86]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.202 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.245 hub relay: [78]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.250 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.293 hub relay: [142]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.294 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.337 hub relay: [91]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+Closing simulation. Frame: true
+2026-10-05 18:14:41.595 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.637 hub relay: [87]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.639 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.639 hub relay: [78]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.640 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.681 hub relay: [144]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:41.683 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.725 hub relay: [91]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:41.921 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:41.922 hub beacon: < DodwanBeacon(<descriptor _docid="N03_12",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:41.922 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:41.922 hub beacon: > DodwanBeacon(<descriptor _docid="N03_12",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:41.922 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:41.922 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:41.922 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:41.922 hub udp_chan: < [65] /127.0.0.1:34401
+2026-10-05 18:14:41.923 hub beacon: < DodwanBeacon(<descriptor _docid="N01_7",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:41.923 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:41.923 hub beacon: > DodwanBeacon(<descriptor _docid="N01_7",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:41.923 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:41.923 hub udp_chan: > [65] /127.0.0.1:44730
+2026-10-05 18:14:41.923 hub udp_chan: > [65] /127.0.0.1:44920
+2026-10-05 18:14:41.926 hub hub: cx accepted from 172.22.71.5:54070, connecting to /172.22.71.5:44303
+2026-10-05 18:14:41.928 hub relay: < callerId=N02
+2026-10-05 18:14:41.928 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:41.929 hub beacon: < DodwanBeacon(<descriptor _docid="N04_14",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:41.929 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:41.929 hub beacon: > DodwanBeacon(<descriptor _docid="N04_14",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:41.930 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:41.930 hub relay: opened StreamRelay(N02 <=> N03)
+2026-10-05 18:14:41.930 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:41.930 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:41.930 hub hub: cx accepted from 172.22.71.5:50400, connecting to /172.22.71.5:39033
+2026-10-05 18:14:41.934 hub relay: [11]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:41.935 hub relay: < callerId=N00
+2026-10-05 18:14:41.936 hub relay: [90]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:41.936 hub relay: opened StreamRelay(N00 <=> N01)
+2026-10-05 18:14:41.936 hub udp_chan: < [65] /127.0.0.1:44920
+2026-10-05 18:14:41.937 hub relay: [4]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:41.937 hub beacon: < DodwanBeacon(<descriptor _docid="N00_7",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:41.937 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:41.937 hub beacon: > DodwanBeacon(<descriptor _docid="N00_7",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:41.937 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:41.938 hub udp_chan: > [65] /127.0.0.1:34401
+2026-10-05 18:14:41.938 hub relay: [11]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:41.938 hub udp_chan: < [65] /127.0.0.1:35318
+2026-10-05 18:14:41.938 hub beacon: < DodwanBeacon(<descriptor _docid="N05_7",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:41.938 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:41.938 hub beacon: > DodwanBeacon(<descriptor _docid="N05_7",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:41.938 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:41.938 hub udp_chan: > [65] /127.0.0.1:59609
+2026-10-05 18:14:41.939 hub relay: [89]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:41.940 hub relay: [4]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:41.942 hub udp_chan: < [65] /127.0.0.1:44730
+2026-10-05 18:14:41.942 hub beacon: < DodwanBeacon(<descriptor _docid="N02_9",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:41.942 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:41.942 hub beacon: > DodwanBeacon(<descriptor _docid="N02_9",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:41.942 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:41.942 hub udp_chan: > [65] /127.0.0.1:58806
+2026-10-05 18:14:41.943 hub udp_chan: > [65] /127.0.0.1:34401
+2026-10-05 18:14:41.977 hub relay: [166]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:41.981 hub relay: [166]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:41.983 hub relay: [4]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:41.987 hub relay: [4]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:42.029 hub relay: [202]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.031 hub relay: [4]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:42.033 hub relay: [226]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:42.035 hub relay: [4]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:42.078 hub relay: [248]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:42.081 hub relay: [4]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.081 hub relay: [216]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:42.083 hub relay: [4]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:42.109 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:42.121 hub relay: [91]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.125 hub relay: [182]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:42.128 hub relay: [4]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:42.129 hub relay: [4]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:42.157 hub relay: [87]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:42.160 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:42.161 hub relay: [78]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:42.163 hub relay: [4]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:42.169 hub relay: [78]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:42.169 hub relay: [87]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:42.171 hub relay: [4]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.178 hub relay: [4]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:42.208 hub relay: [153]> Pipe(172.22.71.5:42474 => 172.22.71.5:44351)
+2026-10-05 18:14:42.212 hub relay: [4]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:42.217 hub relay: [78]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.219 hub relay: [4]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:42.225 hub relay: [153]> Pipe(172.22.71.5:44303 => 172.22.71.5:54070)
+2026-10-05 18:14:42.227 hub relay: [4]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:42.257 hub relay: [91]> Pipe(172.22.71.5:44351 => 172.22.71.5:42474)
+2026-10-05 18:14:42.261 hub relay: [163]> Pipe(172.22.71.5:50400 => 172.22.71.5:39033)
+2026-10-05 18:14:42.265 hub relay: [4]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.273 hub relay: [91]> Pipe(172.22.71.5:54070 => 172.22.71.5:44303)
+2026-10-05 18:14:42.305 hub relay: [91]> Pipe(172.22.71.5:39033 => 172.22.71.5:50400)
+2026-10-05 18:14:42.922 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:42.922 hub beacon: < DodwanBeacon(<descriptor _docid="N01_13",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:42.922 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:42.922 hub beacon: > DodwanBeacon(<descriptor _docid="N01_13",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:42.923 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:42.923 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:42.923 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:42.923 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:42.923 hub beacon: < DodwanBeacon(<descriptor _docid="N03_19",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:42.923 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:42.923 hub beacon: > DodwanBeacon(<descriptor _docid="N03_19",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:42.923 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:42.923 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:42.923 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:42.929 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:42.929 hub beacon: < DodwanBeacon(<descriptor _docid="N04_17",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:42.929 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:42.929 hub beacon: > DodwanBeacon(<descriptor _docid="N04_17",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:42.929 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:42.930 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:42.930 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:42.937 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:42.937 hub beacon: < DodwanBeacon(<descriptor _docid="N00_13",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:42.937 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:42.937 hub beacon: > DodwanBeacon(<descriptor _docid="N00_13",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:42.937 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:42.937 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:42.938 hub udp_chan: < [65] /127.0.0.1:35318
+2026-10-05 18:14:42.938 hub beacon: < DodwanBeacon(<descriptor _docid="N05_8",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:42.938 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:42.938 hub beacon: > DodwanBeacon(<descriptor _docid="N05_8",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:42.938 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:42.938 hub udp_chan: > [65] /127.0.0.1:59609
+2026-10-05 18:14:42.942 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:42.943 hub beacon: < DodwanBeacon(<descriptor _docid="N02_13",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:42.943 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:42.943 hub beacon: > DodwanBeacon(<descriptor _docid="N02_13",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:42.943 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:42.943 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:42.943 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:43.923 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:43.924 hub beacon: < DodwanBeacon(<descriptor _docid="N03_20",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:43.924 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:43.924 hub beacon: > DodwanBeacon(<descriptor _docid="N03_20",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:43.924 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:43.924 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:43.924 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:43.925 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:43.925 hub beacon: < DodwanBeacon(<descriptor _docid="N01_14",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:43.925 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:43.925 hub beacon: > DodwanBeacon(<descriptor _docid="N01_14",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:43.925 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:43.925 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:43.925 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:43.930 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:43.930 hub beacon: < DodwanBeacon(<descriptor _docid="N04_18",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:43.930 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:43.930 hub beacon: > DodwanBeacon(<descriptor _docid="N04_18",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:43.930 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:43.931 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:43.931 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:43.938 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:43.938 hub beacon: < DodwanBeacon(<descriptor _docid="N00_14",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:43.938 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:43.939 hub beacon: > DodwanBeacon(<descriptor _docid="N00_14",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:43.939 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:43.939 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:43.939 hub udp_chan: < [65] /127.0.0.1:35318
+2026-10-05 18:14:43.939 hub beacon: < DodwanBeacon(<descriptor _docid="N05_9",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:43.939 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:43.939 hub beacon: > DodwanBeacon(<descriptor _docid="N05_9",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:43.939 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:43.939 hub udp_chan: > [65] /127.0.0.1:59609
+2026-10-05 18:14:43.943 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:43.944 hub beacon: < DodwanBeacon(<descriptor _docid="N02_14",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:43.944 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:43.944 hub beacon: > DodwanBeacon(<descriptor _docid="N02_14",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:43.944 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:43.944 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:43.944 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:44.924 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:44.924 hub beacon: < DodwanBeacon(<descriptor _docid="N03_21",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:44.924 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:44.925 hub beacon: > DodwanBeacon(<descriptor _docid="N03_21",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:44.925 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:44.925 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:44.925 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:44.925 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:44.925 hub beacon: < DodwanBeacon(<descriptor _docid="N01_15",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:44.925 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:44.925 hub beacon: > DodwanBeacon(<descriptor _docid="N01_15",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:44.925 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:44.926 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:44.926 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:44.931 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:44.931 hub beacon: < DodwanBeacon(<descriptor _docid="N04_19",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:44.931 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:44.931 hub beacon: > DodwanBeacon(<descriptor _docid="N04_19",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:44.931 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:44.931 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:44.932 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:44.939 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:44.939 hub beacon: < DodwanBeacon(<descriptor _docid="N00_15",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:44.939 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:44.939 hub beacon: > DodwanBeacon(<descriptor _docid="N00_15",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:44.939 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:44.939 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:44.940 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:44.940 hub beacon: < DodwanBeacon(<descriptor _docid="N05_10",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:44.940 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:44.940 hub beacon: > DodwanBeacon(<descriptor _docid="N05_10",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:44.940 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:44.940 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:44.944 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:44.944 hub beacon: < DodwanBeacon(<descriptor _docid="N02_15",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:44.944 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:44.944 hub beacon: > DodwanBeacon(<descriptor _docid="N02_15",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:44.945 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:44.945 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:44.945 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:45.925 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:45.925 hub beacon: < DodwanBeacon(<descriptor _docid="N01_16",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:45.925 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:45.925 hub beacon: > DodwanBeacon(<descriptor _docid="N01_16",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:45.926 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:45.926 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:45.926 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:45.926 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:45.926 hub beacon: < DodwanBeacon(<descriptor _docid="N03_22",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:45.926 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:45.926 hub beacon: > DodwanBeacon(<descriptor _docid="N03_22",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:45.926 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:45.926 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:45.926 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:45.931 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:45.932 hub beacon: < DodwanBeacon(<descriptor _docid="N04_20",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:45.932 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:45.932 hub beacon: > DodwanBeacon(<descriptor _docid="N04_20",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:45.932 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:45.932 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:45.932 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:45.939 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:45.939 hub beacon: < DodwanBeacon(<descriptor _docid="N00_16",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:45.939 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:45.939 hub beacon: > DodwanBeacon(<descriptor _docid="N00_16",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:45.940 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:45.940 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:45.940 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:45.940 hub beacon: < DodwanBeacon(<descriptor _docid="N05_11",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:45.940 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:45.940 hub beacon: > DodwanBeacon(<descriptor _docid="N05_11",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:45.940 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:45.940 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:45.945 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:45.945 hub beacon: < DodwanBeacon(<descriptor _docid="N02_16",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:45.945 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:45.945 hub beacon: > DodwanBeacon(<descriptor _docid="N02_16",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:45.945 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:45.945 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:45.946 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:46.927 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:46.928 hub beacon: < DodwanBeacon(<descriptor _docid="N03_23",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:46.928 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:46.928 hub beacon: > DodwanBeacon(<descriptor _docid="N03_23",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:46.928 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:46.928 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:46.928 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:46.929 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:46.929 hub beacon: < DodwanBeacon(<descriptor _docid="N01_17",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:46.929 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:46.929 hub beacon: > DodwanBeacon(<descriptor _docid="N01_17",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:46.929 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:46.929 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:46.930 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:46.933 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:46.934 hub beacon: < DodwanBeacon(<descriptor _docid="N04_21",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:46.934 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:46.934 hub beacon: > DodwanBeacon(<descriptor _docid="N04_21",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:46.935 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:46.935 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:46.935 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:46.940 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:46.941 hub beacon: < DodwanBeacon(<descriptor _docid="N00_17",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:46.941 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:46.941 hub beacon: > DodwanBeacon(<descriptor _docid="N00_17",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:46.941 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:46.941 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:46.941 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:46.941 hub beacon: < DodwanBeacon(<descriptor _docid="N05_12",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:46.941 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:46.941 hub beacon: > DodwanBeacon(<descriptor _docid="N05_12",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:46.941 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:46.941 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:46.946 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:46.946 hub beacon: < DodwanBeacon(<descriptor _docid="N02_17",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:46.946 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:46.946 hub beacon: > DodwanBeacon(<descriptor _docid="N02_17",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:46.946 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:46.946 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:46.946 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:47.928 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:47.928 hub beacon: < DodwanBeacon(<descriptor _docid="N01_18",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:47.928 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:47.928 hub beacon: > DodwanBeacon(<descriptor _docid="N01_18",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:47.928 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:47.929 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:47.929 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:47.929 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:47.929 hub beacon: < DodwanBeacon(<descriptor _docid="N03_24",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:47.929 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:47.929 hub beacon: > DodwanBeacon(<descriptor _docid="N03_24",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:47.929 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:47.929 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:47.929 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:47.934 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:47.935 hub beacon: < DodwanBeacon(<descriptor _docid="N04_22",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:47.935 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:47.935 hub beacon: > DodwanBeacon(<descriptor _docid="N04_22",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:47.935 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:47.935 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:47.935 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:47.941 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:47.941 hub beacon: < DodwanBeacon(<descriptor _docid="N00_18",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:47.941 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:47.941 hub beacon: > DodwanBeacon(<descriptor _docid="N00_18",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:47.941 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:47.941 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:47.942 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:47.942 hub beacon: < DodwanBeacon(<descriptor _docid="N05_13",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:47.942 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:47.942 hub beacon: > DodwanBeacon(<descriptor _docid="N05_13",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:47.942 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:47.942 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:47.947 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:47.947 hub beacon: < DodwanBeacon(<descriptor _docid="N02_18",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:47.947 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:47.947 hub beacon: > DodwanBeacon(<descriptor _docid="N02_18",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:47.947 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:47.947 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:47.947 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:48.929 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:48.929 hub beacon: < DodwanBeacon(<descriptor _docid="N03_25",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:48.929 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:48.929 hub beacon: > DodwanBeacon(<descriptor _docid="N03_25",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:48.929 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:48.929 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:48.929 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:48.929 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:48.930 hub beacon: < DodwanBeacon(<descriptor _docid="N01_19",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:48.930 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:48.930 hub beacon: > DodwanBeacon(<descriptor _docid="N01_19",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:48.930 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:48.930 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:48.930 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:48.936 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:48.936 hub beacon: < DodwanBeacon(<descriptor _docid="N04_23",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:48.936 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:48.936 hub beacon: > DodwanBeacon(<descriptor _docid="N04_23",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:48.936 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:48.936 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:48.936 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:48.942 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:48.942 hub beacon: < DodwanBeacon(<descriptor _docid="N00_19",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:48.942 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:48.942 hub beacon: > DodwanBeacon(<descriptor _docid="N00_19",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:48.942 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:48.942 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:48.942 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:48.942 hub beacon: < DodwanBeacon(<descriptor _docid="N05_14",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:48.942 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:48.942 hub beacon: > DodwanBeacon(<descriptor _docid="N05_14",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:48.942 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:48.942 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:48.947 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:48.947 hub beacon: < DodwanBeacon(<descriptor _docid="N02_19",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:48.947 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:48.947 hub beacon: > DodwanBeacon(<descriptor _docid="N02_19",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:48.948 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:48.948 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:48.948 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:49.930 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:49.931 hub beacon: < DodwanBeacon(<descriptor _docid="N03_26",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:49.931 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:49.931 hub beacon: > DodwanBeacon(<descriptor _docid="N03_26",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:49.931 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:49.931 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:49.932 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:49.932 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:49.932 hub beacon: < DodwanBeacon(<descriptor _docid="N01_20",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:49.932 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:49.932 hub beacon: > DodwanBeacon(<descriptor _docid="N01_20",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:49.933 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:49.933 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:49.933 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:49.936 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:49.936 hub beacon: < DodwanBeacon(<descriptor _docid="N04_24",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:49.936 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:49.936 hub beacon: > DodwanBeacon(<descriptor _docid="N04_24",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:49.936 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:49.936 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:49.937 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:49.943 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:49.943 hub beacon: < DodwanBeacon(<descriptor _docid="N00_20",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:49.944 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:49.944 hub beacon: > DodwanBeacon(<descriptor _docid="N00_20",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:49.944 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:49.944 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:49.944 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:49.944 hub beacon: < DodwanBeacon(<descriptor _docid="N05_15",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:49.944 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:49.944 hub beacon: > DodwanBeacon(<descriptor _docid="N05_15",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:49.944 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:49.944 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:49.948 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:49.949 hub beacon: < DodwanBeacon(<descriptor _docid="N02_20",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:49.949 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:49.949 hub beacon: > DodwanBeacon(<descriptor _docid="N02_20",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:49.949 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:49.949 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:49.949 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:50.931 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:50.931 hub beacon: < DodwanBeacon(<descriptor _docid="N03_27",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:50.931 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:50.931 hub beacon: > DodwanBeacon(<descriptor _docid="N03_27",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:50.932 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:50.932 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:50.932 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:50.932 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:50.932 hub beacon: < DodwanBeacon(<descriptor _docid="N01_21",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:50.932 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:50.932 hub beacon: > DodwanBeacon(<descriptor _docid="N01_21",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:50.932 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:50.932 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:50.932 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:50.937 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:50.937 hub beacon: < DodwanBeacon(<descriptor _docid="N04_25",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:50.937 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:50.937 hub beacon: > DodwanBeacon(<descriptor _docid="N04_25",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:50.937 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:50.937 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:50.937 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:50.943 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:50.943 hub beacon: < DodwanBeacon(<descriptor _docid="N00_21",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:50.943 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:50.943 hub beacon: > DodwanBeacon(<descriptor _docid="N00_21",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:50.944 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:50.944 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:50.944 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:50.944 hub beacon: < DodwanBeacon(<descriptor _docid="N05_16",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:50.944 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:50.944 hub beacon: > DodwanBeacon(<descriptor _docid="N05_16",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:50.944 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:50.944 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:50.949 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:50.949 hub beacon: < DodwanBeacon(<descriptor _docid="N02_21",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:50.949 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:50.949 hub beacon: > DodwanBeacon(<descriptor _docid="N02_21",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:50.949 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:50.949 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:50.949 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:51.933 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:51.933 hub beacon: < DodwanBeacon(<descriptor _docid="N03_28",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:51.933 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:51.933 hub beacon: > DodwanBeacon(<descriptor _docid="N03_28",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:51.934 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:51.934 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:51.934 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:51.934 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:51.934 hub beacon: < DodwanBeacon(<descriptor _docid="N01_22",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:51.934 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:51.934 hub beacon: > DodwanBeacon(<descriptor _docid="N01_22",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:51.934 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:51.934 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:51.935 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:51.938 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:51.938 hub beacon: < DodwanBeacon(<descriptor _docid="N04_26",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:51.938 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:51.938 hub beacon: > DodwanBeacon(<descriptor _docid="N04_26",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:51.938 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:51.938 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:51.938 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:51.944 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:51.945 hub beacon: < DodwanBeacon(<descriptor _docid="N00_22",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:51.945 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:51.945 hub beacon: > DodwanBeacon(<descriptor _docid="N00_22",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:51.945 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:51.945 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:51.945 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:51.945 hub beacon: < DodwanBeacon(<descriptor _docid="N05_17",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:51.945 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:51.945 hub beacon: > DodwanBeacon(<descriptor _docid="N05_17",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:51.945 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:51.945 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:51.950 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:51.950 hub beacon: < DodwanBeacon(<descriptor _docid="N02_22",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:51.950 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:51.950 hub beacon: > DodwanBeacon(<descriptor _docid="N02_22",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:51.950 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:51.950 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:51.950 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:52.934 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:52.934 hub beacon: < DodwanBeacon(<descriptor _docid="N03_29",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:52.934 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:52.934 hub beacon: > DodwanBeacon(<descriptor _docid="N03_29",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:52.934 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:52.934 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:52.934 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:52.935 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:52.935 hub beacon: < DodwanBeacon(<descriptor _docid="N01_23",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:52.935 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:52.935 hub beacon: > DodwanBeacon(<descriptor _docid="N01_23",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:52.935 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:52.936 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:52.936 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:52.939 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:52.939 hub beacon: < DodwanBeacon(<descriptor _docid="N04_27",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:52.939 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:52.939 hub beacon: > DodwanBeacon(<descriptor _docid="N04_27",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:52.939 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:52.939 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:52.939 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:52.945 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:52.945 hub beacon: < DodwanBeacon(<descriptor _docid="N05_18",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:52.945 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:52.945 hub beacon: > DodwanBeacon(<descriptor _docid="N05_18",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:52.945 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:52.946 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:52.946 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:52.946 hub beacon: < DodwanBeacon(<descriptor _docid="N00_23",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:52.946 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:52.946 hub beacon: > DodwanBeacon(<descriptor _docid="N00_23",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:52.946 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:52.946 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:52.951 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:52.951 hub beacon: < DodwanBeacon(<descriptor _docid="N02_23",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:52.951 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:52.951 hub beacon: > DodwanBeacon(<descriptor _docid="N02_23",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:52.951 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:52.951 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:52.951 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:53.935 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:53.935 hub beacon: < DodwanBeacon(<descriptor _docid="N03_30",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:53.935 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:53.935 hub beacon: > DodwanBeacon(<descriptor _docid="N03_30",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:53.936 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:53.936 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:53.936 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:53.937 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:53.937 hub beacon: < DodwanBeacon(<descriptor _docid="N01_24",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:53.937 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:53.937 hub beacon: > DodwanBeacon(<descriptor _docid="N01_24",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:53.937 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:53.938 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:53.938 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:53.939 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:53.939 hub beacon: < DodwanBeacon(<descriptor _docid="N04_28",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:53.939 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:53.939 hub beacon: > DodwanBeacon(<descriptor _docid="N04_28",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:53.940 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:53.940 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:53.940 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:53.946 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:53.946 hub beacon: < DodwanBeacon(<descriptor _docid="N05_19",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:53.946 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:53.946 hub beacon: > DodwanBeacon(<descriptor _docid="N05_19",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:53.946 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:53.947 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:53.947 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:53.947 hub beacon: < DodwanBeacon(<descriptor _docid="N00_24",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:53.947 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:53.947 hub beacon: > DodwanBeacon(<descriptor _docid="N00_24",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:53.947 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:53.947 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:53.951 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:53.952 hub beacon: < DodwanBeacon(<descriptor _docid="N02_24",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:53.952 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:53.952 hub beacon: > DodwanBeacon(<descriptor _docid="N02_24",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:53.952 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:53.952 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:53.952 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:54.937 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:54.937 hub beacon: < DodwanBeacon(<descriptor _docid="N03_31",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:54.938 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:54.938 hub beacon: > DodwanBeacon(<descriptor _docid="N03_31",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:54.938 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:54.938 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:54.938 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:54.938 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:54.939 hub beacon: < DodwanBeacon(<descriptor _docid="N01_25",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:54.939 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:54.939 hub beacon: > DodwanBeacon(<descriptor _docid="N01_25",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:54.939 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:54.939 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:54.939 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:54.940 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:54.941 hub beacon: < DodwanBeacon(<descriptor _docid="N04_29",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:54.941 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:54.941 hub beacon: > DodwanBeacon(<descriptor _docid="N04_29",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:54.941 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:54.941 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:54.941 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:54.946 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:54.947 hub beacon: < DodwanBeacon(<descriptor _docid="N05_20",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:54.947 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:54.947 hub beacon: > DodwanBeacon(<descriptor _docid="N05_20",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:54.947 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:54.947 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:54.947 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:54.947 hub beacon: < DodwanBeacon(<descriptor _docid="N00_25",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:54.947 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:54.947 hub beacon: > DodwanBeacon(<descriptor _docid="N00_25",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:54.947 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:54.947 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:54.952 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:54.952 hub beacon: < DodwanBeacon(<descriptor _docid="N02_25",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:54.952 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:54.952 hub beacon: > DodwanBeacon(<descriptor _docid="N02_25",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:54.952 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:54.953 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:54.953 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:55.938 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:55.938 hub beacon: < DodwanBeacon(<descriptor _docid="N03_32",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:55.938 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:55.939 hub beacon: > DodwanBeacon(<descriptor _docid="N03_32",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:55.939 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:55.939 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:55.939 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:55.939 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:55.939 hub beacon: < DodwanBeacon(<descriptor _docid="N01_26",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:55.939 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:55.939 hub beacon: > DodwanBeacon(<descriptor _docid="N01_26",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:55.940 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:55.940 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:55.940 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:55.942 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:55.946 hub beacon: < DodwanBeacon(<descriptor _docid="N04_30",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:55.946 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:55.946 hub beacon: > DodwanBeacon(<descriptor _docid="N04_30",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:55.947 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:55.947 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:55.947 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:55.947 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:55.947 hub beacon: < DodwanBeacon(<descriptor _docid="N05_21",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:55.947 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:55.948 hub beacon: > DodwanBeacon(<descriptor _docid="N05_21",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:55.948 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:55.948 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:55.948 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:55.948 hub beacon: < DodwanBeacon(<descriptor _docid="N00_26",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:55.948 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:55.948 hub beacon: > DodwanBeacon(<descriptor _docid="N00_26",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:55.948 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:55.948 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:55.953 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:55.953 hub beacon: < DodwanBeacon(<descriptor _docid="N02_26",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:55.953 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:55.953 hub beacon: > DodwanBeacon(<descriptor _docid="N02_26",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:55.953 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:55.953 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:55.953 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:56.938 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:56.938 hub beacon: < DodwanBeacon(<descriptor _docid="N03_33",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:56.938 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:56.938 hub beacon: > DodwanBeacon(<descriptor _docid="N03_33",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:56.938 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:56.938 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:56.938 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:56.939 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:56.939 hub beacon: < DodwanBeacon(<descriptor _docid="N01_27",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:56.939 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:56.939 hub beacon: > DodwanBeacon(<descriptor _docid="N01_27",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:56.939 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:56.940 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:56.940 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:56.942 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:56.942 hub beacon: < DodwanBeacon(<descriptor _docid="N04_31",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:56.942 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:56.942 hub beacon: > DodwanBeacon(<descriptor _docid="N04_31",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:56.942 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:56.942 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:56.942 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:56.948 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:56.948 hub beacon: < DodwanBeacon(<descriptor _docid="N05_22",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:56.948 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:56.948 hub beacon: > DodwanBeacon(<descriptor _docid="N05_22",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:56.948 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:56.948 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:56.949 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:56.949 hub beacon: < DodwanBeacon(<descriptor _docid="N00_27",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:56.949 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:56.949 hub beacon: > DodwanBeacon(<descriptor _docid="N00_27",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:56.949 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:56.949 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:56.954 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:56.954 hub beacon: < DodwanBeacon(<descriptor _docid="N02_27",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:56.954 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:56.954 hub beacon: > DodwanBeacon(<descriptor _docid="N02_27",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:56.954 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:56.954 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:56.954 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:57.940 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:57.941 hub beacon: < DodwanBeacon(<descriptor _docid="N03_34",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:57.941 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:57.941 hub beacon: > DodwanBeacon(<descriptor _docid="N03_34",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:57.941 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:57.942 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:57.942 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:57.942 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:57.942 hub beacon: < DodwanBeacon(<descriptor _docid="N01_28",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:57.942 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:57.942 hub beacon: > DodwanBeacon(<descriptor _docid="N01_28",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:57.942 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:57.942 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:57.943 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:57.944 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:57.944 hub beacon: < DodwanBeacon(<descriptor _docid="N04_32",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:57.944 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:57.944 hub beacon: > DodwanBeacon(<descriptor _docid="N04_32",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:57.944 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:57.945 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:57.945 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:57.949 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:57.949 hub beacon: < DodwanBeacon(<descriptor _docid="N05_23",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:57.949 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:57.949 hub beacon: > DodwanBeacon(<descriptor _docid="N05_23",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:57.949 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:57.949 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:57.951 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:57.951 hub beacon: < DodwanBeacon(<descriptor _docid="N00_28",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:57.951 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:57.951 hub beacon: > DodwanBeacon(<descriptor _docid="N00_28",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:57.951 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:57.951 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:57.954 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:57.954 hub beacon: < DodwanBeacon(<descriptor _docid="N02_28",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:57.955 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:57.955 hub beacon: > DodwanBeacon(<descriptor _docid="N02_28",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:57.955 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:57.955 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:57.955 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:58.940 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:58.941 hub beacon: < DodwanBeacon(<descriptor _docid="N03_35",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:58.941 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:58.941 hub beacon: > DodwanBeacon(<descriptor _docid="N03_35",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:58.941 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:58.941 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:58.941 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:58.942 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:58.942 hub beacon: < DodwanBeacon(<descriptor _docid="N01_29",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:58.942 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:58.942 hub beacon: > DodwanBeacon(<descriptor _docid="N01_29",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:58.942 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:58.942 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:58.942 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:58.944 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:58.945 hub beacon: < DodwanBeacon(<descriptor _docid="N04_33",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:58.945 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:58.945 hub beacon: > DodwanBeacon(<descriptor _docid="N04_33",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:58.945 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:58.945 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:58.945 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:58.950 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:58.950 hub beacon: < DodwanBeacon(<descriptor _docid="N05_24",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:58.950 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:58.950 hub beacon: > DodwanBeacon(<descriptor _docid="N05_24",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:58.950 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:58.950 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:58.951 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:58.951 hub beacon: < DodwanBeacon(<descriptor _docid="N00_29",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:58.951 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:58.951 hub beacon: > DodwanBeacon(<descriptor _docid="N00_29",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:58.951 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:58.951 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:58.955 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:58.955 hub beacon: < DodwanBeacon(<descriptor _docid="N02_29",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:58.955 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:58.955 hub beacon: > DodwanBeacon(<descriptor _docid="N02_29",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:58.955 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:58.955 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:58.955 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:59.941 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:14:59.942 hub beacon: < DodwanBeacon(<descriptor _docid="N03_36",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:14:59.942 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:14:59.942 hub beacon: > DodwanBeacon(<descriptor _docid="N03_36",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:14:59.942 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:14:59.942 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:59.942 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:59.942 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:14:59.942 hub beacon: < DodwanBeacon(<descriptor _docid="N01_30",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:14:59.942 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:14:59.943 hub beacon: > DodwanBeacon(<descriptor _docid="N01_30",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:14:59.943 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:14:59.943 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:14:59.943 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:14:59.945 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:14:59.945 hub beacon: < DodwanBeacon(<descriptor _docid="N04_34",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:14:59.945 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:14:59.945 hub beacon: > DodwanBeacon(<descriptor _docid="N04_34",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:14:59.945 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:14:59.946 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:59.946 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:14:59.950 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:14:59.950 hub beacon: < DodwanBeacon(<descriptor _docid="N05_25",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:14:59.950 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:14:59.950 hub beacon: > DodwanBeacon(<descriptor _docid="N05_25",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:14:59.950 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:14:59.951 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:14:59.952 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:14:59.952 hub beacon: < DodwanBeacon(<descriptor _docid="N00_30",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:14:59.952 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:14:59.952 hub beacon: > DodwanBeacon(<descriptor _docid="N00_30",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:14:59.952 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:14:59.952 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:14:59.956 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:14:59.956 hub beacon: < DodwanBeacon(<descriptor _docid="N02_30",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:14:59.956 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:14:59.956 hub beacon: > DodwanBeacon(<descriptor _docid="N02_30",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:14:59.956 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:14:59.956 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:14:59.956 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:00.943 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:00.944 hub beacon: < DodwanBeacon(<descriptor _docid="N03_37",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:00.944 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:00.944 hub beacon: > DodwanBeacon(<descriptor _docid="N03_37",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:00.944 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:00.944 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:00.945 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:00.945 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:00.945 hub beacon: < DodwanBeacon(<descriptor _docid="N01_31",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:00.951 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:00.951 hub beacon: > DodwanBeacon(<descriptor _docid="N01_31",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:00.951 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:00.951 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:00.951 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:00.951 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:00.952 hub beacon: < DodwanBeacon(<descriptor _docid="N04_35",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:00.952 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:00.952 hub beacon: > DodwanBeacon(<descriptor _docid="N04_35",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:00.952 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:00.952 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:00.952 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:00.952 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:00.952 hub beacon: < DodwanBeacon(<descriptor _docid="N05_26",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:00.952 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:00.952 hub beacon: > DodwanBeacon(<descriptor _docid="N05_26",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:00.952 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:00.952 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:00.953 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:00.954 hub beacon: < DodwanBeacon(<descriptor _docid="N00_31",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:00.954 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:00.954 hub beacon: > DodwanBeacon(<descriptor _docid="N00_31",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:00.954 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:00.954 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:00.957 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:00.957 hub beacon: < DodwanBeacon(<descriptor _docid="N02_31",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:00.957 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:00.957 hub beacon: > DodwanBeacon(<descriptor _docid="N02_31",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:00.957 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:00.957 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:00.957 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:01.944 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:01.944 hub beacon: < DodwanBeacon(<descriptor _docid="N03_38",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:01.944 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:01.944 hub beacon: > DodwanBeacon(<descriptor _docid="N03_38",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:01.944 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:01.944 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:01.944 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:01.945 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:01.946 hub beacon: < DodwanBeacon(<descriptor _docid="N01_32",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:01.946 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:01.946 hub beacon: > DodwanBeacon(<descriptor _docid="N01_32",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:01.946 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:01.946 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:01.946 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:01.948 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:01.948 hub beacon: < DodwanBeacon(<descriptor _docid="N04_36",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:01.948 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:01.948 hub beacon: > DodwanBeacon(<descriptor _docid="N04_36",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:01.948 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:01.948 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:01.948 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:01.952 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:01.952 hub beacon: < DodwanBeacon(<descriptor _docid="N05_27",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:01.952 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:01.952 hub beacon: > DodwanBeacon(<descriptor _docid="N05_27",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:01.952 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:01.952 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:01.953 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:01.953 hub beacon: < DodwanBeacon(<descriptor _docid="N00_32",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:01.953 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:01.953 hub beacon: > DodwanBeacon(<descriptor _docid="N00_32",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:01.953 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:01.953 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:01.957 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:01.957 hub beacon: < DodwanBeacon(<descriptor _docid="N02_32",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:01.957 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:01.957 hub beacon: > DodwanBeacon(<descriptor _docid="N02_32",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:01.957 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:01.957 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:01.957 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:02.945 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:02.945 hub beacon: < DodwanBeacon(<descriptor _docid="N03_39",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:02.945 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:02.945 hub beacon: > DodwanBeacon(<descriptor _docid="N03_39",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:02.945 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:02.946 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:02.946 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:02.946 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:02.946 hub beacon: < DodwanBeacon(<descriptor _docid="N01_33",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:02.946 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:02.946 hub beacon: > DodwanBeacon(<descriptor _docid="N01_33",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:02.946 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:02.946 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:02.946 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:02.949 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:02.949 hub beacon: < DodwanBeacon(<descriptor _docid="N04_37",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:02.949 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:02.949 hub beacon: > DodwanBeacon(<descriptor _docid="N04_37",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:02.949 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:02.949 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:02.949 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:02.953 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:02.953 hub beacon: < DodwanBeacon(<descriptor _docid="N05_28",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:02.953 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:02.953 hub beacon: > DodwanBeacon(<descriptor _docid="N05_28",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:02.953 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:02.953 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:02.954 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:02.954 hub beacon: < DodwanBeacon(<descriptor _docid="N00_33",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:02.954 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:02.954 hub beacon: > DodwanBeacon(<descriptor _docid="N00_33",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:02.954 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:02.954 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:02.958 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:02.958 hub beacon: < DodwanBeacon(<descriptor _docid="N02_33",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:02.958 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:02.958 hub beacon: > DodwanBeacon(<descriptor _docid="N02_33",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:02.958 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:02.958 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:02.958 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:03.946 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:03.946 hub beacon: < DodwanBeacon(<descriptor _docid="N03_40",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:03.946 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:03.946 hub beacon: > DodwanBeacon(<descriptor _docid="N03_40",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:03.946 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:03.946 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:03.946 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:03.949 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:03.950 hub beacon: < DodwanBeacon(<descriptor _docid="N01_34",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:03.950 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:03.950 hub beacon: > DodwanBeacon(<descriptor _docid="N01_34",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:03.950 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:03.950 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:03.950 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:03.950 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:03.950 hub beacon: < DodwanBeacon(<descriptor _docid="N04_38",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:03.950 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:03.950 hub beacon: > DodwanBeacon(<descriptor _docid="N04_38",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:03.951 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:03.951 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:03.951 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:03.953 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:03.953 hub beacon: < DodwanBeacon(<descriptor _docid="N05_29",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:03.953 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:03.953 hub beacon: > DodwanBeacon(<descriptor _docid="N05_29",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:03.954 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:03.954 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:03.954 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:03.954 hub beacon: < DodwanBeacon(<descriptor _docid="N00_34",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:03.954 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:03.954 hub beacon: > DodwanBeacon(<descriptor _docid="N00_34",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:03.954 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:03.955 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:03.958 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:03.958 hub beacon: < DodwanBeacon(<descriptor _docid="N02_34",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:03.958 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:03.958 hub beacon: > DodwanBeacon(<descriptor _docid="N02_34",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:03.958 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:03.959 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:03.959 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:04.947 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:04.948 hub beacon: < DodwanBeacon(<descriptor _docid="N03_41",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:04.948 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:04.948 hub beacon: > DodwanBeacon(<descriptor _docid="N03_41",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:04.948 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:04.948 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:04.948 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:04.948 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:04.948 hub beacon: < DodwanBeacon(<descriptor _docid="N01_35",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:04.948 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:04.948 hub beacon: > DodwanBeacon(<descriptor _docid="N01_35",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:04.948 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:04.948 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:04.948 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:04.950 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:04.950 hub beacon: < DodwanBeacon(<descriptor _docid="N04_39",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:04.950 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:04.950 hub beacon: > DodwanBeacon(<descriptor _docid="N04_39",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:04.950 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:04.950 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:04.950 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:04.954 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:04.954 hub beacon: < DodwanBeacon(<descriptor _docid="N05_30",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:04.954 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:04.954 hub beacon: > DodwanBeacon(<descriptor _docid="N05_30",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:04.954 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:04.954 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:04.955 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:04.955 hub beacon: < DodwanBeacon(<descriptor _docid="N00_35",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:04.955 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:04.955 hub beacon: > DodwanBeacon(<descriptor _docid="N00_35",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:04.955 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:04.955 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:04.959 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:04.959 hub beacon: < DodwanBeacon(<descriptor _docid="N02_35",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:04.959 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:04.959 hub beacon: > DodwanBeacon(<descriptor _docid="N02_35",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:04.959 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:04.959 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:04.959 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:05.948 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:05.949 hub beacon: < DodwanBeacon(<descriptor _docid="N03_42",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:05.949 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:05.949 hub beacon: > DodwanBeacon(<descriptor _docid="N03_42",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:05.949 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:05.949 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:05.949 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:05.949 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:05.950 hub beacon: < DodwanBeacon(<descriptor _docid="N01_36",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:05.950 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:05.950 hub beacon: > DodwanBeacon(<descriptor _docid="N01_36",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:05.950 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:05.950 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:05.950 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:05.951 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:05.951 hub beacon: < DodwanBeacon(<descriptor _docid="N04_40",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:05.951 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:05.951 hub beacon: > DodwanBeacon(<descriptor _docid="N04_40",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:05.951 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:05.951 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:05.951 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:05.955 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:05.955 hub beacon: < DodwanBeacon(<descriptor _docid="N05_31",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:05.955 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:05.955 hub beacon: > DodwanBeacon(<descriptor _docid="N05_31",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:05.955 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:05.955 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:05.955 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:05.955 hub beacon: < DodwanBeacon(<descriptor _docid="N00_36",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:05.955 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:05.955 hub beacon: > DodwanBeacon(<descriptor _docid="N00_36",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:05.955 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:05.955 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:05.959 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:05.960 hub beacon: < DodwanBeacon(<descriptor _docid="N02_36",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:05.960 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:05.960 hub beacon: > DodwanBeacon(<descriptor _docid="N02_36",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:05.960 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:05.960 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:05.960 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:06.949 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:06.949 hub beacon: < DodwanBeacon(<descriptor _docid="N03_43",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:06.949 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:06.949 hub beacon: > DodwanBeacon(<descriptor _docid="N03_43",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:06.949 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:06.949 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:06.949 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:06.950 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:06.950 hub beacon: < DodwanBeacon(<descriptor _docid="N01_37",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:06.950 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:06.950 hub beacon: > DodwanBeacon(<descriptor _docid="N01_37",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:06.950 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:06.950 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:06.950 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:06.951 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:06.951 hub beacon: < DodwanBeacon(<descriptor _docid="N04_41",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:06.951 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:06.951 hub beacon: > DodwanBeacon(<descriptor _docid="N04_41",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:06.951 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:06.951 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:06.952 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:06.955 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:06.956 hub beacon: < DodwanBeacon(<descriptor _docid="N05_32",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:06.956 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:06.956 hub beacon: > DodwanBeacon(<descriptor _docid="N05_32",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:06.956 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:06.956 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:06.956 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:06.956 hub beacon: < DodwanBeacon(<descriptor _docid="N00_37",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:06.956 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:06.956 hub beacon: > DodwanBeacon(<descriptor _docid="N00_37",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:06.956 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:06.956 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:06.960 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:06.960 hub beacon: < DodwanBeacon(<descriptor _docid="N02_37",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:06.960 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:06.960 hub beacon: > DodwanBeacon(<descriptor _docid="N02_37",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:06.960 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:06.960 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:06.960 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:07.950 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:07.950 hub beacon: < DodwanBeacon(<descriptor _docid="N03_44",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:07.950 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:07.950 hub beacon: > DodwanBeacon(<descriptor _docid="N03_44",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:07.950 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:07.951 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:07.951 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:07.951 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:07.951 hub beacon: < DodwanBeacon(<descriptor _docid="N01_38",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:07.951 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:07.951 hub beacon: > DodwanBeacon(<descriptor _docid="N01_38",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:07.951 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:07.951 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:07.951 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:07.952 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:07.952 hub beacon: < DodwanBeacon(<descriptor _docid="N04_42",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:07.952 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:07.952 hub beacon: > DodwanBeacon(<descriptor _docid="N04_42",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:07.952 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:07.952 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:07.952 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:07.956 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:07.957 hub beacon: < DodwanBeacon(<descriptor _docid="N00_38",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:07.957 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:07.957 hub beacon: > DodwanBeacon(<descriptor _docid="N00_38",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:07.957 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:07.957 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:07.957 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:07.957 hub beacon: < DodwanBeacon(<descriptor _docid="N05_33",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:07.957 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:07.957 hub beacon: > DodwanBeacon(<descriptor _docid="N05_33",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:07.957 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:07.957 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:07.961 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:07.961 hub beacon: < DodwanBeacon(<descriptor _docid="N02_38",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:07.961 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:07.961 hub beacon: > DodwanBeacon(<descriptor _docid="N02_38",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:07.961 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:07.961 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:07.961 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:08.950 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:08.951 hub beacon: < DodwanBeacon(<descriptor _docid="N03_45",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:08.951 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:08.951 hub beacon: > DodwanBeacon(<descriptor _docid="N03_45",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:08.951 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:08.951 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:08.951 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:08.951 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:08.951 hub beacon: < DodwanBeacon(<descriptor _docid="N01_39",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:08.951 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:08.951 hub beacon: > DodwanBeacon(<descriptor _docid="N01_39",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:08.951 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:08.951 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:08.951 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:08.952 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:08.953 hub beacon: < DodwanBeacon(<descriptor _docid="N04_43",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:08.953 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:08.953 hub beacon: > DodwanBeacon(<descriptor _docid="N04_43",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:08.953 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:08.954 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:08.954 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:08.957 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:08.957 hub beacon: < DodwanBeacon(<descriptor _docid="N05_34",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:08.957 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:08.957 hub beacon: > DodwanBeacon(<descriptor _docid="N05_34",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:08.957 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:08.957 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:08.958 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:08.958 hub beacon: < DodwanBeacon(<descriptor _docid="N00_39",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:08.958 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:08.958 hub beacon: > DodwanBeacon(<descriptor _docid="N00_39",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:08.958 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:08.958 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:08.961 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:08.961 hub beacon: < DodwanBeacon(<descriptor _docid="N02_39",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:08.961 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:08.961 hub beacon: > DodwanBeacon(<descriptor _docid="N02_39",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:08.961 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:08.961 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:08.961 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:09.951 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:09.952 hub beacon: < DodwanBeacon(<descriptor _docid="N03_46",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:09.952 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:09.952 hub beacon: > DodwanBeacon(<descriptor _docid="N03_46",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:09.952 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:09.952 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:09.952 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:09.952 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:09.952 hub beacon: < DodwanBeacon(<descriptor _docid="N01_40",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:09.952 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:09.952 hub beacon: > DodwanBeacon(<descriptor _docid="N01_40",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:09.953 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:09.953 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:09.953 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:09.954 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:09.954 hub beacon: < DodwanBeacon(<descriptor _docid="N04_44",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:09.954 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:09.954 hub beacon: > DodwanBeacon(<descriptor _docid="N04_44",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:09.954 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:09.954 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:09.955 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:09.958 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:09.958 hub beacon: < DodwanBeacon(<descriptor _docid="N00_40",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:09.958 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:09.958 hub beacon: > DodwanBeacon(<descriptor _docid="N00_40",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:09.958 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:09.958 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:09.958 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:09.958 hub beacon: < DodwanBeacon(<descriptor _docid="N05_35",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:09.958 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:09.958 hub beacon: > DodwanBeacon(<descriptor _docid="N05_35",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:09.958 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:09.959 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:09.962 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:09.962 hub beacon: < DodwanBeacon(<descriptor _docid="N02_40",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:09.962 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:09.962 hub beacon: > DodwanBeacon(<descriptor _docid="N02_40",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:09.962 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:09.962 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:09.962 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:10.951 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:10.952 hub beacon: < DodwanBeacon(<descriptor _docid="N03_47",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:10.952 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:10.952 hub beacon: > DodwanBeacon(<descriptor _docid="N03_47",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:10.952 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:10.952 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:10.952 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:10.952 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:10.953 hub beacon: < DodwanBeacon(<descriptor _docid="N01_41",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:10.953 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:10.953 hub beacon: > DodwanBeacon(<descriptor _docid="N01_41",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:10.953 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:10.953 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:10.954 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:10.954 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:10.954 hub beacon: < DodwanBeacon(<descriptor _docid="N04_45",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:10.954 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:10.954 hub beacon: > DodwanBeacon(<descriptor _docid="N04_45",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:10.954 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:10.954 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:10.954 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:10.958 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:10.959 hub beacon: < DodwanBeacon(<descriptor _docid="N00_41",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:10.959 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:10.959 hub beacon: > DodwanBeacon(<descriptor _docid="N00_41",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:10.959 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:10.959 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:10.959 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:10.959 hub beacon: < DodwanBeacon(<descriptor _docid="N05_36",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:10.959 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:10.959 hub beacon: > DodwanBeacon(<descriptor _docid="N05_36",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:10.959 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:10.959 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:10.962 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:10.962 hub beacon: < DodwanBeacon(<descriptor _docid="N02_41",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:10.962 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:10.962 hub beacon: > DodwanBeacon(<descriptor _docid="N02_41",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:10.962 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:10.963 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:10.963 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:11.952 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:11.952 hub beacon: < DodwanBeacon(<descriptor _docid="N03_48",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:11.952 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:11.952 hub beacon: > DodwanBeacon(<descriptor _docid="N03_48",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:11.952 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:11.952 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:11.952 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:11.953 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:11.953 hub beacon: < DodwanBeacon(<descriptor _docid="N01_42",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:11.953 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:11.953 hub beacon: > DodwanBeacon(<descriptor _docid="N01_42",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:11.953 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:11.953 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:11.953 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:11.954 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:11.955 hub beacon: < DodwanBeacon(<descriptor _docid="N04_46",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:11.955 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:11.955 hub beacon: > DodwanBeacon(<descriptor _docid="N04_46",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:11.955 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:11.955 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:11.955 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:11.959 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:11.959 hub beacon: < DodwanBeacon(<descriptor _docid="N00_42",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:11.959 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:11.959 hub beacon: > DodwanBeacon(<descriptor _docid="N00_42",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:11.959 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:11.959 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:11.959 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:11.960 hub beacon: < DodwanBeacon(<descriptor _docid="N05_37",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:11.960 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:11.960 hub beacon: > DodwanBeacon(<descriptor _docid="N05_37",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:11.960 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:11.960 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:11.963 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:11.963 hub beacon: < DodwanBeacon(<descriptor _docid="N02_42",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:11.963 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:11.963 hub beacon: > DodwanBeacon(<descriptor _docid="N02_42",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:11.963 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:11.963 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:11.963 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:12.952 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:12.952 hub beacon: < DodwanBeacon(<descriptor _docid="N03_49",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:12.952 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:12.952 hub beacon: > DodwanBeacon(<descriptor _docid="N03_49",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:12.952 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:12.953 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:12.953 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:12.953 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:12.954 hub beacon: < DodwanBeacon(<descriptor _docid="N01_43",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:12.954 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:12.954 hub beacon: > DodwanBeacon(<descriptor _docid="N01_43",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:12.954 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:12.954 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:12.954 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:12.955 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:12.955 hub beacon: < DodwanBeacon(<descriptor _docid="N04_47",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:12.955 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:12.955 hub beacon: > DodwanBeacon(<descriptor _docid="N04_47",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:12.956 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:12.956 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:12.956 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:12.960 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:12.960 hub beacon: < DodwanBeacon(<descriptor _docid="N00_43",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:12.960 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:12.960 hub beacon: > DodwanBeacon(<descriptor _docid="N00_43",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:12.960 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:12.960 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:12.960 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:12.960 hub beacon: < DodwanBeacon(<descriptor _docid="N05_38",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:12.960 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:12.960 hub beacon: > DodwanBeacon(<descriptor _docid="N05_38",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:12.960 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:12.960 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:12.964 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:12.964 hub beacon: < DodwanBeacon(<descriptor _docid="N02_43",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:12.964 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:12.964 hub beacon: > DodwanBeacon(<descriptor _docid="N02_43",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:12.964 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:12.964 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:12.964 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:13.953 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:13.953 hub beacon: < DodwanBeacon(<descriptor _docid="N03_50",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:13.953 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:13.953 hub beacon: > DodwanBeacon(<descriptor _docid="N03_50",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:13.953 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:13.953 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:13.953 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:13.954 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:13.954 hub beacon: < DodwanBeacon(<descriptor _docid="N01_44",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:13.954 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:13.954 hub beacon: > DodwanBeacon(<descriptor _docid="N01_44",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:13.954 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:13.954 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:13.954 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:13.956 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:13.956 hub beacon: < DodwanBeacon(<descriptor _docid="N04_48",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:13.956 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:13.956 hub beacon: > DodwanBeacon(<descriptor _docid="N04_48",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:13.956 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:13.956 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:13.956 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:13.960 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:13.960 hub beacon: < DodwanBeacon(<descriptor _docid="N05_39",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:13.960 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:13.960 hub beacon: > DodwanBeacon(<descriptor _docid="N05_39",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:13.960 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:13.961 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:13.961 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:13.961 hub beacon: < DodwanBeacon(<descriptor _docid="N00_44",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:13.961 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:13.961 hub beacon: > DodwanBeacon(<descriptor _docid="N00_44",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:13.961 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:13.961 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:13.964 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:13.965 hub beacon: < DodwanBeacon(<descriptor _docid="N02_44",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:13.965 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:13.965 hub beacon: > DodwanBeacon(<descriptor _docid="N02_44",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:13.965 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:13.965 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:13.965 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:14.953 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:14.954 hub beacon: < DodwanBeacon(<descriptor _docid="N03_51",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:14.954 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:14.954 hub beacon: > DodwanBeacon(<descriptor _docid="N03_51",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:14.954 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:14.954 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:14.954 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:14.955 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:14.955 hub beacon: < DodwanBeacon(<descriptor _docid="N01_45",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:14.955 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:14.955 hub beacon: > DodwanBeacon(<descriptor _docid="N01_45",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:14.956 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:14.956 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:14.956 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:14.956 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:14.957 hub beacon: < DodwanBeacon(<descriptor _docid="N04_49",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:14.957 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:14.957 hub beacon: > DodwanBeacon(<descriptor _docid="N04_49",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:14.958 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:14.958 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:14.958 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:14.961 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:14.961 hub beacon: < DodwanBeacon(<descriptor _docid="N05_40",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:14.961 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:14.961 hub beacon: > DodwanBeacon(<descriptor _docid="N05_40",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:14.961 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:14.961 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:14.961 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:14.961 hub beacon: < DodwanBeacon(<descriptor _docid="N00_45",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:14.961 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:14.961 hub beacon: > DodwanBeacon(<descriptor _docid="N00_45",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:14.961 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:14.961 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:14.965 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:14.965 hub beacon: < DodwanBeacon(<descriptor _docid="N02_45",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:14.965 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:14.965 hub beacon: > DodwanBeacon(<descriptor _docid="N02_45",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:14.965 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:14.965 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:14.965 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:15.954 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:15.955 hub beacon: < DodwanBeacon(<descriptor _docid="N03_52",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:15.955 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:15.955 hub beacon: > DodwanBeacon(<descriptor _docid="N03_52",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:15.956 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:15.956 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:15.956 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:15.956 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:15.957 hub beacon: < DodwanBeacon(<descriptor _docid="N01_46",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:15.957 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:15.957 hub beacon: > DodwanBeacon(<descriptor _docid="N01_46",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:15.957 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:15.957 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:15.957 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:15.957 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:15.957 hub beacon: < DodwanBeacon(<descriptor _docid="N04_50",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:15.959 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:15.959 hub beacon: > DodwanBeacon(<descriptor _docid="N04_50",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:15.959 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:15.959 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:15.960 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:15.961 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:15.961 hub beacon: < DodwanBeacon(<descriptor _docid="N00_46",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:15.961 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:15.961 hub beacon: > DodwanBeacon(<descriptor _docid="N00_46",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:15.961 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:15.961 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:15.962 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:15.962 hub beacon: < DodwanBeacon(<descriptor _docid="N05_41",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:15.962 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:15.962 hub beacon: > DodwanBeacon(<descriptor _docid="N05_41",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:15.962 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:15.962 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:15.966 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:15.966 hub beacon: < DodwanBeacon(<descriptor _docid="N02_46",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:15.966 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:15.966 hub beacon: > DodwanBeacon(<descriptor _docid="N02_46",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:15.966 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:15.966 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:15.966 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:16.956 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:16.956 hub beacon: < DodwanBeacon(<descriptor _docid="N03_53",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:16.956 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:16.956 hub beacon: > DodwanBeacon(<descriptor _docid="N03_53",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:16.956 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:16.956 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:16.956 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:16.958 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:16.958 hub beacon: < DodwanBeacon(<descriptor _docid="N04_51",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:16.958 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:16.959 hub beacon: > DodwanBeacon(<descriptor _docid="N04_51",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:16.959 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:16.959 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:16.959 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:16.959 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:16.960 hub beacon: < DodwanBeacon(<descriptor _docid="N01_47",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:16.960 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:16.960 hub beacon: > DodwanBeacon(<descriptor _docid="N01_47",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:16.960 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:16.960 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:16.960 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:16.963 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:16.963 hub beacon: < DodwanBeacon(<descriptor _docid="N05_42",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:16.963 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:16.963 hub beacon: > DodwanBeacon(<descriptor _docid="N05_42",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:16.964 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:16.964 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:16.964 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:16.965 hub beacon: < DodwanBeacon(<descriptor _docid="N00_47",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:16.965 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:16.965 hub beacon: > DodwanBeacon(<descriptor _docid="N00_47",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:16.965 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:16.965 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:16.967 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:16.967 hub beacon: < DodwanBeacon(<descriptor _docid="N02_47",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:16.967 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:16.967 hub beacon: > DodwanBeacon(<descriptor _docid="N02_47",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:16.967 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:16.968 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:16.968 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:17.957 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:17.958 hub beacon: < DodwanBeacon(<descriptor _docid="N03_54",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:17.958 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:17.958 hub beacon: > DodwanBeacon(<descriptor _docid="N03_54",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:17.958 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:17.958 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:17.958 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:17.959 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:17.959 hub beacon: < DodwanBeacon(<descriptor _docid="N04_52",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:17.959 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:17.959 hub beacon: > DodwanBeacon(<descriptor _docid="N04_52",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:17.960 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:17.960 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:17.960 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:17.960 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:17.961 hub beacon: < DodwanBeacon(<descriptor _docid="N01_48",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:17.961 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:17.961 hub beacon: > DodwanBeacon(<descriptor _docid="N01_48",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:17.961 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:17.961 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:17.961 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:17.964 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:17.964 hub beacon: < DodwanBeacon(<descriptor _docid="N05_43",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:17.964 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:17.964 hub beacon: > DodwanBeacon(<descriptor _docid="N05_43",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:17.964 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:17.964 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:17.964 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:17.964 hub beacon: < DodwanBeacon(<descriptor _docid="N00_48",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:17.964 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:17.964 hub beacon: > DodwanBeacon(<descriptor _docid="N00_48",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:17.964 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:17.964 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:17.968 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:17.968 hub beacon: < DodwanBeacon(<descriptor _docid="N02_48",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:17.968 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:17.968 hub beacon: > DodwanBeacon(<descriptor _docid="N02_48",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:17.968 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:17.968 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:17.968 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:18.958 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:18.958 hub beacon: < DodwanBeacon(<descriptor _docid="N03_55",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:18.958 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:18.958 hub beacon: > DodwanBeacon(<descriptor _docid="N03_55",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:18.958 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:18.958 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:18.958 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:18.960 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:18.960 hub beacon: < DodwanBeacon(<descriptor _docid="N04_53",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:18.960 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:18.960 hub beacon: > DodwanBeacon(<descriptor _docid="N04_53",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:18.960 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:18.960 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:18.960 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:18.961 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:18.961 hub beacon: < DodwanBeacon(<descriptor _docid="N01_49",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:18.961 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:18.961 hub beacon: > DodwanBeacon(<descriptor _docid="N01_49",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:18.961 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:18.961 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:18.961 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:18.964 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:18.964 hub beacon: < DodwanBeacon(<descriptor _docid="N00_49",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:18.964 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:18.964 hub beacon: > DodwanBeacon(<descriptor _docid="N00_49",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:18.964 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:18.965 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:18.965 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:18.965 hub beacon: < DodwanBeacon(<descriptor _docid="N05_44",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:18.965 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:18.965 hub beacon: > DodwanBeacon(<descriptor _docid="N05_44",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:18.965 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:18.965 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:18.968 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:18.968 hub beacon: < DodwanBeacon(<descriptor _docid="N02_49",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:18.968 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:18.968 hub beacon: > DodwanBeacon(<descriptor _docid="N02_49",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:18.968 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:18.968 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:18.968 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:19.959 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:19.959 hub beacon: < DodwanBeacon(<descriptor _docid="N03_56",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:19.959 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:19.959 hub beacon: > DodwanBeacon(<descriptor _docid="N03_56",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:19.959 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:19.959 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:19.959 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:19.960 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:19.961 hub beacon: < DodwanBeacon(<descriptor _docid="N04_54",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:19.961 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:19.961 hub beacon: > DodwanBeacon(<descriptor _docid="N04_54",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:19.961 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:19.961 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:19.961 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:19.962 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:19.962 hub beacon: < DodwanBeacon(<descriptor _docid="N01_50",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:19.962 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:19.962 hub beacon: > DodwanBeacon(<descriptor _docid="N01_50",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:19.962 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:19.962 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:19.962 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:19.965 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:19.965 hub beacon: < DodwanBeacon(<descriptor _docid="N00_50",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:19.965 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:19.965 hub beacon: > DodwanBeacon(<descriptor _docid="N00_50",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:19.966 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:19.966 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:19.966 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:19.966 hub beacon: < DodwanBeacon(<descriptor _docid="N05_45",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:19.966 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:19.966 hub beacon: > DodwanBeacon(<descriptor _docid="N05_45",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:19.966 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:19.966 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:19.969 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:19.970 hub beacon: < DodwanBeacon(<descriptor _docid="N02_50",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:19.970 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:19.970 hub beacon: > DodwanBeacon(<descriptor _docid="N02_50",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:19.970 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:19.970 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:19.970 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:20.960 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:20.960 hub beacon: < DodwanBeacon(<descriptor _docid="N03_57",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:20.960 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:20.960 hub beacon: > DodwanBeacon(<descriptor _docid="N03_57",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:20.960 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:20.960 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:20.960 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:20.961 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:20.966 hub beacon: < DodwanBeacon(<descriptor _docid="N04_55",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:20.966 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:20.966 hub beacon: > DodwanBeacon(<descriptor _docid="N04_55",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:20.967 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:20.967 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:20.967 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:20.967 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:20.967 hub beacon: < DodwanBeacon(<descriptor _docid="N01_51",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:20.967 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:20.967 hub beacon: > DodwanBeacon(<descriptor _docid="N01_51",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:20.967 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:20.967 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:20.967 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:20.967 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:20.967 hub beacon: < DodwanBeacon(<descriptor _docid="N00_51",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:20.967 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:20.967 hub beacon: > DodwanBeacon(<descriptor _docid="N00_51",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:20.967 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:20.967 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:20.967 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:20.967 hub beacon: < DodwanBeacon(<descriptor _docid="N05_46",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:20.967 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:20.967 hub beacon: > DodwanBeacon(<descriptor _docid="N05_46",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:20.967 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:20.967 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:20.970 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:20.970 hub beacon: < DodwanBeacon(<descriptor _docid="N02_51",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:20.970 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:20.970 hub beacon: > DodwanBeacon(<descriptor _docid="N02_51",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:20.970 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:20.970 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:20.970 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:21.961 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:21.961 hub beacon: < DodwanBeacon(<descriptor _docid="N03_58",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:21.961 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:21.961 hub beacon: > DodwanBeacon(<descriptor _docid="N03_58",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:21.961 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:21.961 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:21.961 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:21.962 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:21.963 hub beacon: < DodwanBeacon(<descriptor _docid="N04_56",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:21.963 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:21.963 hub beacon: > DodwanBeacon(<descriptor _docid="N04_56",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:21.963 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:21.963 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:21.963 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:21.963 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:21.963 hub beacon: < DodwanBeacon(<descriptor _docid="N01_52",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:21.963 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:21.964 hub beacon: > DodwanBeacon(<descriptor _docid="N01_52",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:21.964 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:21.964 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:21.964 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:21.966 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:21.966 hub beacon: < DodwanBeacon(<descriptor _docid="N00_52",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:21.966 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:21.967 hub beacon: > DodwanBeacon(<descriptor _docid="N00_52",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:21.967 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:21.967 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:21.967 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:21.967 hub beacon: < DodwanBeacon(<descriptor _docid="N05_47",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:21.967 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:21.967 hub beacon: > DodwanBeacon(<descriptor _docid="N05_47",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:21.967 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:21.967 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:21.971 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:21.971 hub beacon: < DodwanBeacon(<descriptor _docid="N02_52",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:21.971 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:21.971 hub beacon: > DodwanBeacon(<descriptor _docid="N02_52",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:21.974 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:21.974 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:21.974 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:22.961 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:22.962 hub beacon: < DodwanBeacon(<descriptor _docid="N03_59",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:22.962 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:22.962 hub beacon: > DodwanBeacon(<descriptor _docid="N03_59",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:22.962 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:22.962 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:22.962 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:22.963 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:22.963 hub beacon: < DodwanBeacon(<descriptor _docid="N04_57",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:22.963 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:22.963 hub beacon: > DodwanBeacon(<descriptor _docid="N04_57",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:22.963 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:22.963 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:22.963 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:22.965 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:22.965 hub beacon: < DodwanBeacon(<descriptor _docid="N01_53",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:22.965 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:22.965 hub beacon: > DodwanBeacon(<descriptor _docid="N01_53",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:22.965 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:22.965 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:22.965 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:22.967 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:22.967 hub beacon: < DodwanBeacon(<descriptor _docid="N00_53",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:22.967 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:22.967 hub beacon: > DodwanBeacon(<descriptor _docid="N00_53",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:22.967 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:22.967 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:22.968 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:22.968 hub beacon: < DodwanBeacon(<descriptor _docid="N05_48",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:22.968 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:22.968 hub beacon: > DodwanBeacon(<descriptor _docid="N05_48",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:22.968 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:22.968 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:22.971 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:22.972 hub beacon: < DodwanBeacon(<descriptor _docid="N02_53",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:22.972 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:22.972 hub beacon: > DodwanBeacon(<descriptor _docid="N02_53",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:22.972 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:22.972 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:22.972 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:23.962 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:23.962 hub beacon: < DodwanBeacon(<descriptor _docid="N03_60",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:23.962 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:23.963 hub beacon: > DodwanBeacon(<descriptor _docid="N03_60",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:23.963 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:23.963 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:23.963 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:23.963 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:23.964 hub beacon: < DodwanBeacon(<descriptor _docid="N04_58",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:23.964 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:23.964 hub beacon: > DodwanBeacon(<descriptor _docid="N04_58",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:23.964 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:23.964 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:23.964 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:23.965 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:23.965 hub beacon: < DodwanBeacon(<descriptor _docid="N01_54",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:23.965 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:23.965 hub beacon: > DodwanBeacon(<descriptor _docid="N01_54",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:23.965 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:23.966 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:23.966 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:23.968 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:23.968 hub beacon: < DodwanBeacon(<descriptor _docid="N00_54",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:23.968 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:23.968 hub beacon: > DodwanBeacon(<descriptor _docid="N00_54",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:23.968 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:23.968 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:23.969 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:23.969 hub beacon: < DodwanBeacon(<descriptor _docid="N05_49",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:23.969 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:23.969 hub beacon: > DodwanBeacon(<descriptor _docid="N05_49",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:23.969 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:23.969 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:23.978 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:23.978 hub beacon: < DodwanBeacon(<descriptor _docid="N02_54",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:23.978 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:23.978 hub beacon: > DodwanBeacon(<descriptor _docid="N02_54",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:23.978 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:23.978 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:23.978 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:24.963 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:24.963 hub beacon: < DodwanBeacon(<descriptor _docid="N03_61",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:24.963 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:24.963 hub beacon: > DodwanBeacon(<descriptor _docid="N03_61",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:24.963 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:24.963 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:24.964 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:24.964 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:24.964 hub beacon: < DodwanBeacon(<descriptor _docid="N04_59",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:24.964 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:24.965 hub beacon: > DodwanBeacon(<descriptor _docid="N04_59",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:24.965 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:24.965 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:24.965 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:24.966 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:24.966 hub beacon: < DodwanBeacon(<descriptor _docid="N01_55",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:24.966 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:24.966 hub beacon: > DodwanBeacon(<descriptor _docid="N01_55",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:24.966 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:24.966 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:24.966 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:24.968 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:24.968 hub beacon: < DodwanBeacon(<descriptor _docid="N00_55",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:24.968 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:24.968 hub beacon: > DodwanBeacon(<descriptor _docid="N00_55",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:24.968 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:24.968 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:24.970 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:24.970 hub beacon: < DodwanBeacon(<descriptor _docid="N05_50",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:24.970 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:24.970 hub beacon: > DodwanBeacon(<descriptor _docid="N05_50",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:24.970 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:24.970 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:24.978 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:24.978 hub beacon: < DodwanBeacon(<descriptor _docid="N02_55",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:24.978 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:24.978 hub beacon: > DodwanBeacon(<descriptor _docid="N02_55",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:24.978 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:24.979 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:24.979 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:25.964 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:25.965 hub beacon: < DodwanBeacon(<descriptor _docid="N03_62",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:25.971 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:25.972 hub beacon: > DodwanBeacon(<descriptor _docid="N03_62",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:25.972 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:25.972 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:25.972 hub beacon: < DodwanBeacon(<descriptor _docid="N04_60",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:25.972 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:25.972 hub beacon: > DodwanBeacon(<descriptor _docid="N04_60",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:25.972 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:25.972 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:25.972 hub beacon: < DodwanBeacon(<descriptor _docid="N01_56",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:25.972 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:25.972 hub beacon: > DodwanBeacon(<descriptor _docid="N01_56",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:25.972 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:25.972 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:25.972 hub beacon: < DodwanBeacon(<descriptor _docid="N00_56",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:25.972 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:25.972 hub beacon: > DodwanBeacon(<descriptor _docid="N00_56",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:25.972 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:25.972 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:25.972 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:25.972 hub beacon: < DodwanBeacon(<descriptor _docid="N05_51",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:25.972 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:25.972 hub beacon: > DodwanBeacon(<descriptor _docid="N05_51",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:25.973 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:25.973 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:25.979 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:25.979 hub beacon: < DodwanBeacon(<descriptor _docid="N02_56",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:25.979 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:25.979 hub beacon: > DodwanBeacon(<descriptor _docid="N02_56",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:25.979 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:25.979 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:25.979 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:26.966 hub udp_chan: < [66] /127.0.0.1:58806
+2026-10-05 18:15:26.966 hub beacon: < DodwanBeacon(<descriptor _docid="N03_63",_btype="hello",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:26.966 hub hub: < [beacon] sdr=N03 (hello) [dup]
+2026-10-05 18:15:26.966 hub beacon: > DodwanBeacon(<descriptor _docid="N03_63",_btype="hello",_gaddr="172.22.71.5:43445",_sdr="N03">"
+2026-10-05 18:15:26.966 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:26.966 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:26.967 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:26.967 hub udp_chan: < [66] /127.0.0.1:59609
+2026-10-05 18:15:26.967 hub beacon: < DodwanBeacon(<descriptor _docid="N04_61",_btype="hello",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:26.967 hub hub: < [beacon] sdr=N04 (hello) [dup]
+2026-10-05 18:15:26.967 hub beacon: > DodwanBeacon(<descriptor _docid="N04_61",_btype="hello",_gaddr="172.22.71.5:33835",_sdr="N04">"
+2026-10-05 18:15:26.967 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:26.967 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:26.967 hub udp_chan: > [66] /127.0.0.1:35318
+2026-10-05 18:15:26.968 hub udp_chan: < [66] /127.0.0.1:34401
+2026-10-05 18:15:26.969 hub beacon: < DodwanBeacon(<descriptor _docid="N01_57",_btype="hello",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:26.969 hub hub: < [beacon] sdr=N01 (hello) [dup]
+2026-10-05 18:15:26.969 hub beacon: > DodwanBeacon(<descriptor _docid="N01_57",_btype="hello",_gaddr="172.22.71.5:35043",_sdr="N01">"
+2026-10-05 18:15:26.969 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:26.969 hub udp_chan: > [66] /127.0.0.1:44730
+2026-10-05 18:15:26.969 hub udp_chan: > [66] /127.0.0.1:44920
+2026-10-05 18:15:26.970 hub udp_chan: < [66] /127.0.0.1:44920
+2026-10-05 18:15:26.970 hub beacon: < DodwanBeacon(<descriptor _docid="N00_57",_btype="hello",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:26.970 hub hub: < [beacon] sdr=N00 (hello) [dup]
+2026-10-05 18:15:26.970 hub beacon: > DodwanBeacon(<descriptor _docid="N00_57",_btype="hello",_gaddr="172.22.71.5:43091",_sdr="N00">"
+2026-10-05 18:15:26.970 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:26.971 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:26.972 hub udp_chan: < [66] /127.0.0.1:35318
+2026-10-05 18:15:26.972 hub beacon: < DodwanBeacon(<descriptor _docid="N05_52",_btype="hello",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:26.972 hub hub: < [beacon] sdr=N05 (hello) [dup]
+2026-10-05 18:15:26.972 hub beacon: > DodwanBeacon(<descriptor _docid="N05_52",_btype="hello",_gaddr="172.22.71.5:36919",_sdr="N05">"
+2026-10-05 18:15:26.973 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:26.973 hub udp_chan: > [66] /127.0.0.1:59609
+2026-10-05 18:15:26.980 hub udp_chan: < [66] /127.0.0.1:44730
+2026-10-05 18:15:26.980 hub beacon: < DodwanBeacon(<descriptor _docid="N02_57",_btype="hello",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:26.980 hub hub: < [beacon] sdr=N02 (hello) [dup]
+2026-10-05 18:15:26.980 hub beacon: > DodwanBeacon(<descriptor _docid="N02_57",_btype="hello",_gaddr="172.22.71.5:45707",_sdr="N02">"
+2026-10-05 18:15:26.980 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:26.980 hub udp_chan: > [66] /127.0.0.1:58806
+2026-10-05 18:15:26.980 hub udp_chan: > [66] /127.0.0.1:34401
+2026-10-05 18:15:27.795 hub udp_chan: < [64] /127.0.0.1:44920
+2026-10-05 18:15:27.795 hub beacon: < DodwanBeacon(<descriptor _docid="N00_57",_btype="bye",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:27.795 hub hub: < [beacon] sdr=N00 (bye) [dup]
+2026-10-05 18:15:27.795 hub relay: closing StreamRelay(N00 <=> N01)
+2026-10-05 18:15:27.795 hub beacon: > DodwanBeacon(<descriptor _docid="N00_57",_btype="bye",_gaddr="172.22.71.5:46439",_sdr="N00">"
+2026-10-05 18:15:27.795 hub hub:   > sdr=N00,rcv=N01
+2026-10-05 18:15:27.795 hub udp_chan: > [64] /127.0.0.1:34401
+2026-10-05 18:15:27.803 hub udp_chan: < [64] /127.0.0.1:34401
+2026-10-05 18:15:27.803 hub beacon: < DodwanBeacon(<descriptor _docid="N01_57",_btype="bye",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:27.803 hub hub: < [beacon] sdr=N01 (bye) [dup]
+2026-10-05 18:15:27.803 hub beacon: > DodwanBeacon(<descriptor _docid="N01_57",_btype="bye",_gaddr="172.22.71.5:39033",_sdr="N01">"
+2026-10-05 18:15:27.803 hub hub:   > sdr=N01,rcv=N02,N00
+2026-10-05 18:15:27.803 hub udp_chan: > [64] /127.0.0.1:44730
+2026-10-05 18:15:27.803 hub udp_chan: > [64] /127.0.0.1:44920
+2026-10-05 18:15:27.804 hub relay: closing StreamRelay(N01 <=> N02)
+2026-10-05 18:15:27.811 hub udp_chan: < [64] /127.0.0.1:44730
+2026-10-05 18:15:27.812 hub beacon: < DodwanBeacon(<descriptor _docid="N02_57",_btype="bye",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:27.812 hub hub: < [beacon] sdr=N02 (bye) [dup]
+2026-10-05 18:15:27.812 hub beacon: > DodwanBeacon(<descriptor _docid="N02_57",_btype="bye",_gaddr="172.22.71.5:37995",_sdr="N02">"
+2026-10-05 18:15:27.812 hub hub:   > sdr=N02,rcv=N03,N01
+2026-10-05 18:15:27.812 hub udp_chan: > [64] /127.0.0.1:58806
+2026-10-05 18:15:27.812 hub udp_chan: > [64] /127.0.0.1:34401
+2026-10-05 18:15:27.812 hub relay: closing StreamRelay(N02 <=> N03)
+2026-10-05 18:15:27.821 hub udp_chan: < [64] /127.0.0.1:58806
+2026-10-05 18:15:27.821 hub beacon: < DodwanBeacon(<descriptor _docid="N03_63",_btype="bye",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:27.821 hub hub: < [beacon] sdr=N03 (bye) [dup]
+2026-10-05 18:15:27.821 hub beacon: > DodwanBeacon(<descriptor _docid="N03_63",_btype="bye",_gaddr="172.22.71.5:44303",_sdr="N03">"
+2026-10-05 18:15:27.821 hub hub:   > sdr=N03,rcv=N02,N04
+2026-10-05 18:15:27.821 hub udp_chan: > [64] /127.0.0.1:44730
+2026-10-05 18:15:27.821 hub udp_chan: > [64] /127.0.0.1:59609
+2026-10-05 18:15:27.821 hub relay: closing StreamRelay(N03 <=> N04)
+2026-10-05 18:15:27.829 hub udp_chan: < [64] /127.0.0.1:59609
+2026-10-05 18:15:27.829 hub beacon: < DodwanBeacon(<descriptor _docid="N04_61",_btype="bye",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:27.829 hub hub: < [beacon] sdr=N04 (bye) [dup]
+2026-10-05 18:15:27.829 hub beacon: > DodwanBeacon(<descriptor _docid="N04_61",_btype="bye",_gaddr="172.22.71.5:44351",_sdr="N04">"
+2026-10-05 18:15:27.829 hub hub:   > sdr=N04,rcv=N03,N05
+2026-10-05 18:15:27.829 hub udp_chan: > [64] /127.0.0.1:58806
+2026-10-05 18:15:27.829 hub udp_chan: > [64] /127.0.0.1:35318
+2026-10-05 18:15:27.829 hub relay: closing StreamRelay(N04 <=> N05)
+2026-10-05 18:15:27.838 hub udp_chan: < [64] /127.0.0.1:35318
+2026-10-05 18:15:27.838 hub beacon: < DodwanBeacon(<descriptor _docid="N05_52",_btype="bye",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:27.838 hub hub: < [beacon] sdr=N05 (bye) [dup]
+2026-10-05 18:15:27.838 hub beacon: > DodwanBeacon(<descriptor _docid="N05_52",_btype="bye",_gaddr="172.22.71.5:42645",_sdr="N05">"
+2026-10-05 18:15:27.838 hub hub:   > sdr=N05,rcv=N04
+2026-10-05 18:15:27.838 hub udp_chan: > [64] /127.0.0.1:59609

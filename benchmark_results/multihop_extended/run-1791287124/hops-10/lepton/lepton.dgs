@@ -1,0 +1,42 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,550.0,40.0"
+st 0
+an N03 profile="n03" x=150.00 y=0.00 label="U3"
+an N02 profile="n02" x=100.00 y=0.00 label="U2"
+an N05 profile="n05" x=250.00 y=0.00 label="U5"
+an N04 profile="n04" x=200.00 y=0.00 label="U4"
+an N07 profile="n07" x=350.00 y=0.00 label="U7"
+an N06 profile="n06" x=300.00 y=0.00 label="U6"
+an N09 profile="n09" x=450.00 y=0.00 label="U9"
+an N08 profile="n08" x=400.00 y=0.00 label="U8"
+an N10 profile="n10" x=500.00 y=0.00 label="U10"
+an N01 profile="n01" x=50.00 y=0.00 label="U1"
+an N00 profile="n00" x=0.00 y=0.00 label="Authority"
+ae N02-N03 N02 N03
+ae N09-N10 N09 N10
+ae N06-N07 N06 N07
+ae N01-N02 N01 N02
+ae N03-N04 N03 N04
+ae N05-N06 N05 N06
+ae N07-N08 N07 N08
+ae N00-N01 N00 N01
+ae N04-N05 N04 N05
+ae N08-N09 N08 N09
+ce N01-N02 tag="TRANSFER"
+ce N02-N03 tag="TRANSFER"
+ce N03-N04 tag="TRANSFER"
+ce N07-N08 tag="TRANSFER"
+ce N08-N09 tag="TRANSFER"
+ce N05-N06 tag="TRANSFER"
+ce N09-N10 tag="TRANSFER"
+ce N00-N01 tag="TRANSFER"
+ce N02-N03 -tag
+ce N09-N10 -tag
+ce N01-N02 -tag
+ce N03-N04 -tag
+ce N05-N06 -tag
+ce N07-N08 -tag
+ce N00-N01 -tag
+ce N08-N09 -tag
+ce N00-N01 tag="TRANSFER"

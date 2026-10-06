@@ -1,0 +1,10 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,300.0,40.0"
+st 0
+an N00 profile="n00" x=0.00 y=0.00 label="Authority"
+an N01 profile="n01" x=50.00 y=0.00 label="U1"
+an N03 profile="n03" x=150.00 y=0.00 label="U3"
+an N04 profile="n04" x=200.00 y=0.00 label="U4"
+an N02 profile="n02" x=100.00 y=0.00 label="U2"
+an N05 profile="n05" x=250.00 y=0.00 label="U5"

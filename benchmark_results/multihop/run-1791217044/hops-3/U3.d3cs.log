@@ -1,0 +1,19 @@
+2026-10-05 18:17:24.945 U3: {"tkn":"t1","name":"pong"}
+
+2026-10-05 18:17:25.467 U3: {"tkn":"t2","name":"ok"}
+
+2026-10-05 18:17:25.980 U3: {"tkn":"t2","name":"ok"}
+
+2026-10-05 18:17:26.493 U3: {"tkn":"t2","name":"ok"}
+
+2026-10-05 18:17:27.007 U3: {"tkn":"t2","name":"ok"}
+
+2026-10-05 18:17:33.024 U3: {"tkn":"t2","name":"ok"}
+
+2026-10-05 18:17:33.533 U3: {"name":"recv_desc","mid":"N03_28","desc":{"_date":"1791217053531","_nbfrags":"1","src":"TM3","_docid":"N03_28","_weight":"104","topic":"TM","dest":"TM"}}
+
+2026-10-05 18:17:33.533 U3: {"tkn":"t3","name":"ok"}
+
+2026-10-05 18:17:33.534 U3: {"data":"TLS(D3CS|TM3|TM|KEY_REQUEST|bench_h3_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h3_setup|TM3)","tkn":"payload-N03_28","name":"recv_payload","mid":"N03_28","topic":"TM","dest":"TM"}
+
+2026-10-05 18:17:33.534 U3: {"data":"TLS(D3CS|TM3|TM|KEY_REQUEST|bench_h3_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h3_setup|TM3)","tkn":"payload-N03_28","name":"recv_payload","mid":"N03_28","topic":"TM","dest":"TM"}

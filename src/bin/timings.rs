@@ -1,300 +1,128 @@
-// fichier permettant de mesurer les temps d'exécution des primitives crypto
+use std::{fs,path::Path,time::Instant};
+use anyhow::{Context,Result};
+use serde::{Deserialize,Serialize};
 
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
-use std::time::Instant;
+#[derive(Clone,Serialize,Deserialize)]
+pub struct DocumentLabel{pub classification:String,pub mission:String}
 
-use anyhow::{Context, Result};
-use chrono::Local;
+#[path="../crypto/abs.rs"]
+mod abs;
+#[path="../crypto/cpabe.rs"]
+mod cpabe;
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
-pub struct Clearance {
-    pub classification: String,
-    pub mission: String,
+const DEFAULT_WARMUPS:usize=100;
+const DEFAULT_MEASUREMENTS:usize=500;
+
+struct Samples{operation:&'static str,times_us:Vec<u128>}
+
+fn reps(kind:&str,default:usize)->Result<usize>{
+ let key=match kind{"warmup"=>"D3CS_ABS_WARMUPS","measure"=>"D3CS_ABS_MEASUREMENTS",_=>unreachable!()};
+ Ok(std::env::var(key).map(|v|v.parse()).unwrap_or(Ok(default))?)
 }
 
-#[derive(Clone)]
-pub struct UserRecord {
-    pub password: String,
-    pub clearance: Clearance,
-    pub is_authority_user: bool,
+fn record<F:FnMut()->Result<()>>(operation:&'static str,warmups:usize,measurements:usize,mut f:F)->Result<Samples>{
+ for _ in 0..warmups{f()?}
+ let mut times_us=Vec::with_capacity(measurements);
+ for _ in 0..measurements{let started=Instant::now();f()?;times_us.push(started.elapsed().as_micros())}
+ Ok(Samples{operation,times_us})
 }
 
-pub struct UserDb {
-    pub users: HashMap<String, UserRecord>,
-}
+fn mean(values:&[u128])->f64{values.iter().map(|x|*x as f64).sum::<f64>()/values.len()as f64}
+fn stddev(values:&[u128],average:f64)->f64{(values.iter().map(|x|{let d=*x as f64-average;d*d}).sum::<f64>()/values.len()as f64).sqrt()}
+fn median(values:&[u128])->f64{let mut sorted=values.to_vec();sorted.sort_unstable();let middle=sorted.len()/2;if sorted.len()%2==0{(sorted[middle-1]+sorted[middle])as f64/2.0}else{sorted[middle]as f64}}
+fn json_size<T:serde::Serialize>(value:&T)->Result<usize>{Ok(serde_json::to_vec(value)?.len())}
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
-pub struct PendingRevocation {
-    pub id: u64,
-    pub requester: String,
-    pub missions: Vec<String>,
-}
+fn main()->Result<()>{
+ let warmups=reps("warmup",DEFAULT_WARMUPS)?;
+ let measurements=reps("measure",DEFAULT_MEASUREMENTS)?;
+ anyhow::ensure!(measurements>0,"D3CS_ABS_MEASUREMENTS must be positive");
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum RunMode {
-    Local,
-    Network,
-}
+ let attr="FR-DR";
+ let short_message=b"test";
+ let label=DocumentLabel{classification:"FR-DR".to_string(),mission:"M1".to_string()};
 
-pub const AUTHORITY_LOGIN: &str = "authority";
-pub const AUTHORITY_PASSWORD: &str = "authority";
+ let setup=record("setup",warmups,measurements,||{abs::setup()?;Ok(())})?;
+ let(params,msk)=abs::setup().context("ABS setup preparation")?;
 
-pub mod network {
-    #[derive(Clone)]
-    pub struct NetworkRuntime;
-}
+ let extract=record("extract",warmups,measurements,||{abs::extract(&params,&msk,attr)?;Ok(())})?;
+ let user_key=abs::extract(&params,&msk,attr).context("ABS extract preparation")?;
 
-pub struct AppState {
-    pub host: String,
-    pub port: u16,
-    pub config_dir: String,
-    pub users_dir: String,
-    pub tm_dir: String,
-    pub authority_dir: String,
-    pub ihm_dir: String,
-    pub mode: RunMode,
-    pub user_db: Mutex<UserDb>,
-    pub sessions: Mutex<HashMap<String, String>>,
-    pub pending_revocations: Mutex<Vec<PendingRevocation>>,
-    pub network_runtime: Mutex<Option<Arc<network::NetworkRuntime>>>,
-}
+ let sign=record("sign",warmups,measurements,||{abs::sign(&params,&user_key,short_message)?;Ok(())})?;
+ let signature=abs::sign(&params,&user_key,short_message).context("short-message signature preparation")?;
+ anyhow::ensure!(abs::verify_with_attr(&params,&signature,short_message,attr)?,"short-message signature failed verification");
+ let verify=record("verify",warmups,measurements,||{abs::verify_with_attr(&params,&signature,short_message,attr)?;Ok(())})?;
 
-#[allow(dead_code)]
-#[path = "../crypto/mod.rs"]
-mod crypto;
+ let(cpabe_params,_cpabe_msk)=cpabe::setup().context("CP-ABE setup for ciphertext scenario")?;
+ let ciphertext=cpabe::encrypt(&cpabe_params,&label,"test").context("CP-ABE ciphertext generation")?;
+ let ciphertext_message=serde_json::to_string(&ciphertext).context("CP-ABE ciphertext serialization")?.into_bytes();
+ anyhow::ensure!(ciphertext_message.len()>1000,"unexpectedly small serialized CP-ABE ciphertext");
+ let ciphertext_signature=abs::sign(&params,&user_key,&ciphertext_message).context("ciphertext signature preparation")?;
+ anyhow::ensure!(abs::verify_with_attr(&params,&ciphertext_signature,&ciphertext_message,attr)?,"ciphertext signature failed verification");
 
-fn load_env_var(key: &str, default: &str) -> String {
-    std::env::var(key).unwrap_or_else(|_| default.to_string())
-}
+ let ciphertext_sign=record("sign",warmups,measurements,||{abs::sign(&params,&user_key,&ciphertext_message)?;Ok(())})?;
+ let ciphertext_verify=record("verify",warmups,measurements,||{abs::verify_with_attr(&params,&ciphertext_signature,&ciphertext_message,attr)?;Ok(())})?;
 
-fn detect_base_dir() -> Result<PathBuf> {
-    if let Ok(raw) = std::env::var("D3CS_BASE_DIR") {
-        let path = PathBuf::from(raw);
-        if path.exists() {
-            return Ok(path);
-        }
-    }
+ let samples=vec![setup,extract,sign,verify];
+ let results=Path::new("results");
+ fs::create_dir_all(results)?;
 
-    let cwd = std::env::current_dir()?;
-    if cwd.join("Cargo.toml").exists() {
-        return Ok(cwd);
-    }
+ let mut raw=String::from("operation,iteration,time_us
+");
+ for sample in &samples{for(index,time)in sample.times_us.iter().enumerate(){raw.push_str(&format!("{},{},{}\n",sample.operation,index+1,time));}}
+ fs::write(results.join("abs_timings.csv"),raw)?;
 
-    let exe = std::env::current_exe()?;
-    for ancestor in exe.ancestors() {
-        if ancestor.join("Cargo.toml").exists() {
-            return Ok(ancestor.to_path_buf());
-        }
-    }
+ let mut summary=String::from("operation,n,mean_us,stddev_us,median_us,min_us,max_us
+");
+ println!("operation,n,mean_us,stddev_us,median_us,min_us,max_us");
+ for sample in &samples{
+  let average=mean(&sample.times_us);
+  let line=format!("{},{},{:.3},{:.3},{:.3},{},{}\n",sample.operation,sample.times_us.len(),average,stddev(&sample.times_us,average),median(&sample.times_us),sample.times_us.iter().min().unwrap(),sample.times_us.iter().max().unwrap());
+  print!("{line}");
+  summary.push_str(&line);
+ }
+ fs::write(results.join("abs_timings_summary.csv"),summary)?;
 
-    Ok(cwd)
-}
+ let sizes=[
+  ("public_parameters",json_size(&params)?),
+  ("master_secret_key",json_size(&msk)?),
+  ("user_private_key",json_size(&user_key)?),
+  ("signature",json_size(&signature)?),
+ ];
+ let mut sizes_csv=String::from("object,size_bytes
+");
+ for(object,size)in sizes{sizes_csv.push_str(&format!("{object},{size}
+"));}
+ fs::write(results.join("abs_sizes.csv"),sizes_csv)?;
 
-fn absolutize_path(base_dir: &Path, path: String) -> String {
-    let candidate = PathBuf::from(&path);
-    if candidate.is_absolute() {
-        path
-    } else {
-        base_dir.join(candidate).to_string_lossy().to_string()
-    }
-}
+ let mut ciphertext_raw=String::from("operation,iteration,time_us
+");
+ for sample in [&ciphertext_sign,&ciphertext_verify]{for(index,time)in sample.times_us.iter().enumerate(){ciphertext_raw.push_str(&format!("{},{},{}\n",sample.operation,index+1,time));}}
+ fs::write(results.join("abs_ciphertext_timings.csv"),ciphertext_raw)?;
 
-fn default_gui_dir(base_dir: &Path) -> String {
-    if base_dir.join("src/gui").exists() {
-        "src/gui".to_string()
-    } else {
-        "src/ihm".to_string()
-    }
-}
+ let mut ciphertext_summary=String::from("operation,n,mean_us,stddev_us,median_us,min_us,max_us
+");
+ println!("ciphertext_input_size_bytes={}",ciphertext_message.len());
+ println!("signature_size_bytes={}",json_size(&ciphertext_signature)?);
+ println!("operation,n,mean_us,stddev_us,median_us,min_us,max_us");
+ for sample in [&ciphertext_sign,&ciphertext_verify]{
+  let average=mean(&sample.times_us);
+  let line=format!("{},{},{:.3},{:.3},{:.3},{},{}\n",sample.operation,sample.times_us.len(),average,stddev(&sample.times_us,average),median(&sample.times_us),sample.times_us.iter().min().unwrap(),sample.times_us.iter().max().unwrap());
+  print!("{line}");
+  ciphertext_summary.push_str(&line);
+ }
+ fs::write(results.join("abs_ciphertext_timings_summary.csv"),ciphertext_summary)?;
 
-fn build_default_users() -> HashMap<String, UserRecord> {
-    let mut users = HashMap::new();
-    users.insert(
-        AUTHORITY_LOGIN.to_string(),
-        UserRecord {
-            password: AUTHORITY_PASSWORD.to_string(),
-            clearance: Clearance {
-                classification: "FR-S".to_string(),
-                mission: "M1".to_string(),
-            },
-            is_authority_user: true,
-        },
-    );
-    users
-}
+ let ciphertext_size=ciphertext_message.len();
+ let signature_size=json_size(&ciphertext_signature)?;
+ let mut ciphertext_sizes=String::from("object,size_bytes
+");
+ ciphertext_sizes.push_str(&format!("ciphertext_input_size_bytes,{ciphertext_size}
+"));
+ ciphertext_sizes.push_str(&format!("signature_size_bytes,{signature_size}
+"));
+ ciphertext_sizes.push_str(&format!("ciphertext_plus_signature_size_bytes,{}
+",ciphertext_size+signature_size));
+ fs::write(results.join("abs_ciphertext_sizes.csv"),ciphertext_sizes)?;
 
-fn build_default_state() -> Result<Arc<AppState>> {
-    let base_dir = detect_base_dir()?;
-    let host = load_env_var("D3CS_HOST", "127.0.0.1");
-    let config_dir = absolutize_path(&base_dir, load_env_var("D3CS_CONFIG_DIR", "src/config"));
-    let users_dir = absolutize_path(&base_dir, load_env_var("D3CS_USERS_DIR", "runtime/users"));
-    let tm_dir = absolutize_path(&base_dir, load_env_var("D3CS_TM_DIR", "runtime/tm"));
-    let authority_dir = absolutize_path(
-        &base_dir,
-        load_env_var("D3CS_AUTHORITY_DIR", "runtime/authority"),
-    );
-    let ihm_dir = absolutize_path(
-        &base_dir,
-        load_env_var("D3CS_IHM_DIR", &default_gui_dir(&base_dir)),
-    );
-
-    fs::create_dir_all(&config_dir)?;
-    fs::create_dir_all(&users_dir)?;
-    fs::create_dir_all(&tm_dir)?;
-    fs::create_dir_all(&authority_dir)?;
-    fs::create_dir_all(&ihm_dir)?;
-
-    Ok(Arc::new(AppState {
-        host,
-        port: 8080,
-        config_dir,
-        users_dir,
-        tm_dir,
-        authority_dir,
-        ihm_dir,
-        mode: RunMode::Local,
-        user_db: Mutex::new(UserDb {
-            users: build_default_users(),
-        }),
-        sessions: Mutex::new(HashMap::new()),
-        pending_revocations: Mutex::new(Vec::new()),
-        network_runtime: Mutex::new(None),
-    }))
-}
-
-fn measure<T, F>(name: &str, f: F) -> Result<T>
-where
-    F: FnOnce() -> Result<T>,
-{
-    let started_at = Instant::now();
-    let out = f()?;
-    let elapsed_us = started_at.elapsed().as_micros();
-    console_log(format!("{name} : executed in {elapsed_us} us"));
-    Ok(out)
-}
-
-fn console_log(message: impl AsRef<str>) {
-    println!(
-        "{} {}",
-        Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
-        message.as_ref()
-    );
-}
-
-fn seed_empty_arl(state: &Arc<AppState>) -> Result<Option<String>> {
-    let arl_path = PathBuf::from(&state.tm_dir)
-        .join("nodes")
-        .join("authority")
-        .join("arl.json");
-    let previous = fs::read_to_string(&arl_path).ok();
-
-    let arl = crypto::RevocationList {
-        version: 0,
-        items: Vec::new(),
-    };
-    let content = serde_json::to_string(&arl)?;
-    if let Some(parent) = arl_path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    fs::write(&arl_path, content)?;
-
-    Ok(previous)
-}
-
-fn restore_arl(state: &Arc<AppState>, previous: Option<String>) -> Result<()> {
-    let arl_path = PathBuf::from(&state.tm_dir)
-        .join("nodes")
-        .join("authority")
-        .join("arl.json");
-    if let Some(content) = previous {
-        if let Some(parent) = arl_path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::write(&arl_path, content)?;
-    } else if arl_path.exists() {
-        fs::remove_file(&arl_path)?;
-    }
-    Ok(())
-}
-
-fn main() -> Result<()> {
-    let attr = "FR-DR";
-    let message = b"test";
-    let cpabe_attrs = vec!["FR-DR".to_string(), "M1".to_string()];
-    let label = crypto::DocumentLabel {
-        classification: "FR-DR".to_string(),
-        mission: "M1".to_string(),
-    };
-
-    let (abs_params, abs_msk) = measure("abs::setup()", || {
-        crypto::abs::setup().context("abs::setup failed")
-    })?;
-    let abs_user_key = measure("abs::extract()", || {
-        crypto::abs::extract(&abs_params, &abs_msk, attr).context("abs::extract failed")
-    })?;
-    let abs_sig = measure("abs::sign()", || {
-        crypto::abs::sign(&abs_params, &abs_user_key, message).context("abs::sign failed")
-    })?;
-    let abs_verified = measure("abs::verify_with_attr()", || {
-        crypto::abs::verify_with_attr(&abs_params, &abs_sig, message, attr)
-            .context("abs::verify_with_attr failed")
-    })?;
-    anyhow::ensure!(abs_verified, "abs::verify_with_attr returned false");
-
-    let (pp, msk) = measure("cpabe::setup()", || {
-        crypto::cpabe::setup().context("cpabe::setup failed")
-    })?;
-    let (pska, psks) = measure("cpabe::keygen()", || {
-        crypto::cpabe::keygen(&pp, &msk, &cpabe_attrs).context("cpabe::keygen failed")
-    })?;
-    let (delegated_psks, tk) = measure("cpabe::delegate()", || {
-        crypto::cpabe::delegate(&pp, &psks, &cpabe_attrs).context("cpabe::delegate failed")
-    })?;
-    let delegated_pska = measure("cpabe::tm_delegate()", || {
-        crypto::cpabe::tm_delegate(&pska, &tk).context("cpabe::tm_delegate failed")
-    })?;
-    let ct = measure("cpabe::encrypt()", || {
-        crypto::cpabe::encrypt(&pp, &label, "test").context("cpabe::encrypt failed")
-    })?;
-    let cti = measure("cpabe::tm_decrypt()", || {
-        crypto::cpabe::tm_decrypt(&pp, &ct, &pska).context("cpabe::tm_decrypt failed")
-    })?;
-    let decrypted = measure("cpabe::decrypt()", || {
-        crypto::cpabe::decrypt(&pp, &cti, &psks).context("cpabe::decrypt failed")
-    })?;
-    anyhow::ensure!(
-        decrypted == "test",
-        "cpabe::decrypt returned an unexpected plaintext"
-    );
-
-    let delegated_cti = crypto::cpabe::tm_decrypt(&pp, &ct, &delegated_pska)
-        .context("delegated cpabe::tm_decrypt failed")?;
-    let delegated_decrypted = crypto::cpabe::decrypt(&pp, &delegated_cti, &delegated_psks)
-        .context("delegated cpabe::decrypt failed")?;
-    anyhow::ensure!(
-        delegated_decrypted == "test",
-        "delegated cpabe decrypt returned an unexpected plaintext"
-    );
-
-    let state = build_default_state().context("failed to build benchmark AppState")?;
-    let previous_arl = seed_empty_arl(&state).context("failed to seed ARL for revoke_missions")?;
-    let missions = vec!["M1".to_string()];
-    let revoke_result = measure("mod::revoke_missions()", || {
-        crypto::revoke_missions(&state, &missions).context("revoke_missions failed")
-    });
-    let restore_result = restore_arl(&state, previous_arl);
-
-    let arl = revoke_result?;
-    restore_result.context("failed to restore ARL after revoke_missions benchmark")?;
-    anyhow::ensure!(
-        arl.items
-            .iter()
-            .any(|item| { item.attribute_type == "mission" && item.attribute_value == "M1" }),
-        "revoke_missions did not add mission M1 to the ARL"
-    );
-
-    Ok(())
+ Ok(())
 }

@@ -1,0 +1,9 @@
+message_type,payload_description,serialized_size_bytes
+KEY_REQUEST,login+clearance+user_topic+tm_topic,80
+KEY_RESPONSE_USER_KEYGEN,login+PP+PSKS+ABS_user_key,2168
+KEY_RESPONSE_TM_KEY,login+ABS_params+PSKA,1333
+DELEGATE_OFFER,login+clearance+user_topic+tm_topic,84
+DELEGATE_ACCEPT,login+clearance+user_topic+tm_topic,85
+ASK_REVOCATION,requester+missions+request_key,56
+CT_SHARE,document_id+ciphertext+ABS_signature,1747
+ARL_UPDATE,serialized_revocation_list,109

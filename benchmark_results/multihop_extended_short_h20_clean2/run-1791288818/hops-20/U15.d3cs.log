@@ -1,0 +1,13 @@
+2026-10-06 14:13:39.964 U15: {"tkn":"t1","name":"pong"}
+
+2026-10-06 14:13:40.483 U15: {"tkn":"t2","name":"ok"}
+
+2026-10-06 14:13:40.998 U15: {"tkn":"t2","name":"ok"}
+
+2026-10-06 14:13:41.507 U15: {"tkn":"t2","name":"ok"}
+
+2026-10-06 14:13:42.016 U15: {"tkn":"t2","name":"ok"}
+
+2026-10-06 14:13:49.251 U15: {"data":"TLS(D3CS|TM20|TM|KEY_REQUEST|bench_h20_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h20_setup|TM20)","mid":"N20_31","name":"recv_payload","tkn":"payload-N20_31","topic":"TM","dest":"TM"}
+
+2026-10-06 14:13:49.251 U15: {"data":"TLS(D3CS|TM20|TM|KEY_REQUEST|bench_h20_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h20_setup|TM20)","mid":"N20_31","name":"recv_payload","tkn":"payload-N20_31","topic":"TM","dest":"TM"}

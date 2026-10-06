@@ -1,0 +1,5 @@
+event=send timestamp_ns=1791214833284347949 workflow=KEY_RESPONSE run_id=bench_h1_setup node=Authority source=Authority destination=bench_h1_setup
+event=receive timestamp_ns=1791214833273882151 workflow=KEY_REQUEST run_id=bench_h1_setup node=Authority source=TM1 destination=TM
+event=receive timestamp_ns=1791214836697608091 workflow=CT_SHARE run_id=1 node=Authority source=TM1 destination=TM
+event=receive timestamp_ns=1791214838237565417 workflow=CT_SHARE run_id=2 node=Authority source=TM1 destination=TM
+event=receive timestamp_ns=1791214839773668116 workflow=CT_SHARE run_id=3 node=Authority source=TM1 destination=TM

@@ -1,0 +1,146 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,300.0,40.0"
+st 0
+an N00 x=174.03 y=-11.48 label="Authority"
+an N01 x=174.36 y=-12.87 label="U1"
+an N02 x=173.44 y=17.71 label="U2"
+an N03 x=172.31 y=-17.45 label="U3"
+an N04 x=172.91 y=-6.65 label="U4"
+an N05 x=172.69 y=7.60 label="U5"
+st 1000
+cn N00 x=174.52 y=-11.14
+cn N01 x=173.82 y=-12.91
+cn N02 x=173.80 y=17.42
+cn N03 x=172.77 y=-17.35
+cn N04 x=172.93 y=-6.04
+cn N05 x=173.15 y=7.65
+ae N00-N01 N00 N01
+ae N00-N02 N00 N02
+ae N00-N03 N00 N03
+ae N00-N04 N00 N04
+ae N00-N05 N00 N05
+ae N01-N02 N01 N02
+ae N01-N03 N01 N03
+ae N01-N04 N01 N04
+ae N01-N05 N01 N05
+ae N02-N03 N02 N03
+ae N02-N04 N02 N04
+ae N02-N05 N02 N05
+ae N03-N04 N03 N04
+ae N03-N05 N03 N05
+ae N04-N05 N04 N05
+st 2000
+cn N00 x=175.00 y=-10.79
+cn N01 x=173.28 y=-12.96
+cn N02 x=174.15 y=17.13
+cn N03 x=173.23 y=-17.26
+cn N04 x=172.96 y=-5.42
+cn N05 x=173.61 y=7.69
+ce N00-N01 status="CONNECTED"
+ce N00-N01 tag="TRANSFER"
+ce N00-N02 status="CONNECTED"
+ce N01-N02 status="CONNECTED"
+ce N00-N02 tag="TRANSFER"
+ce N01-N02 tag="TRANSFER"
+ce N01-N03 status="CONNECTED"
+ce N02-N03 status="CONNECTED"
+ce N00-N03 status="CONNECTED"
+ce N02-N03 tag="TRANSFER"
+ce N01-N03 tag="TRANSFER"
+ce N02-N04 status="CONNECTED"
+ce N00-N04 status="CONNECTED"
+ce N03-N04 status="CONNECTED"
+ce N01-N04 status="CONNECTED"
+ce N00-N03 tag="TRANSFER"
+ce N02-N04 tag="TRANSFER"
+ce N00-N04 tag="TRANSFER"
+ce N03-N04 tag="TRANSFER"
+ce N01-N04 tag="TRANSFER"
+ce N02-N05 status="CONNECTED"
+ce N04-N05 status="CONNECTED"
+ce N01-N05 status="CONNECTED"
+ce N03-N05 status="CONNECTED"
+ce N04-N05 tag="TRANSFER"
+ce N00-N05 status="CONNECTED"
+ce N02-N05 tag="TRANSFER"
+ce N01-N05 tag="TRANSFER"
+ce N03-N05 tag="TRANSFER"
+ce N00-N05 tag="TRANSFER"
+st 3000
+cn N00 x=175.48 y=-10.45
+cn N01 x=172.75 y=-13.00
+cn N02 x=174.50 y=16.83
+cn N03 x=173.68 y=-17.16
+cn N04 x=172.98 y=-4.81
+cn N05 x=174.07 y=7.73
+st 4000
+cn N00 x=175.96 y=-10.10
+cn N01 x=172.21 y=-13.05
+cn N02 x=174.85 y=16.54
+cn N03 x=174.14 y=-17.06
+cn N04 x=173.01 y=-4.19
+cn N05 x=174.54 y=7.78
+ce N04-N05 -tag
+ce N02-N03 -tag
+ce N02-N04 -tag
+ce N03-N04 -tag
+ce N02-N05 -tag
+ce N03-N05 -tag
+st 5000
+cn N00 x=176.44 y=-9.75
+cn N01 x=171.68 y=-13.09
+cn N02 x=175.20 y=16.24
+cn N03 x=174.59 y=-16.97
+cn N04 x=173.03 y=-3.58
+cn N05 x=175.00 y=7.82
+ce N00-N02 -tag
+ce N00-N04 -tag
+ce N00-N03 -tag
+ce N00-N05 -tag
+st 6000
+cn N00 x=176.92 y=-9.41
+cn N01 x=171.14 y=-13.14
+cn N02 x=175.55 y=15.95
+cn N03 x=175.05 y=-16.87
+cn N04 x=173.06 y=-2.96
+cn N05 x=175.46 y=7.86
+st 7000
+cn N00 x=177.40 y=-9.06
+cn N01 x=170.60 y=-13.18
+cn N02 x=175.90 y=15.66
+cn N03 x=175.50 y=-16.77
+cn N04 x=173.08 y=-2.35
+cn N05 x=175.92 y=7.90
+ce N01-N05 -tag
+ce N01-N02 -tag
+ce N01-N04 -tag
+ce N01-N03 -tag
+st 8000
+cn N00 x=177.88 y=-8.71
+cn N01 x=170.07 y=-13.23
+cn N02 x=176.26 y=15.36
+cn N03 x=175.96 y=-16.67
+cn N04 x=173.11 y=-1.74
+cn N05 x=176.38 y=7.95
+st 9000
+cn N00 x=178.36 y=-8.37
+cn N01 x=169.53 y=-13.27
+cn N02 x=176.61 y=15.07
+cn N03 x=176.41 y=-16.58
+cn N04 x=173.13 y=-1.12
+cn N05 x=176.84 y=7.99
+st 10000
+cn N00 x=178.85 y=-8.02
+cn N01 x=169.00 y=-13.32
+cn N02 x=176.96 y=14.77
+cn N03 x=176.87 y=-16.48
+cn N04 x=173.16 y=-0.51
+cn N05 x=177.30 y=8.03
+st 11000
+cn N00 x=179.33 y=-7.68
+cn N01 x=168.46 y=-13.36
+cn N02 x=177.31 y=14.48
+cn N03 x=177.32 y=-16.38
+cn N04 x=173.18 y=0.11
+cn N05 x=177.76 y=8.07

@@ -1,0 +1,6 @@
+event=send timestamp_ns=1791214832633620648 workflow=KEY_REQUEST run_id=bench_h1_setup node=U1 source=TM1 destination=TM
+event=key_latency timestamp_ns=1791214834443808331 workflow=KEY_REQUEST_RESPONSE run_id=bench_h1_setup node=U1 duration_ns=1810183632
+event=receive timestamp_ns=1791214834425769249 workflow=KEY_RESPONSE run_id=bench_h1_setup node=U1 source=Authority destination=bench_h1_setup
+event=send timestamp_ns=1791214834593737008 workflow=CT_SHARE run_id=1 node=U1 source=TM1 destination=TM
+event=send timestamp_ns=1791214836925205236 workflow=CT_SHARE run_id=2 node=U1 source=TM1 destination=TM
+event=send timestamp_ns=1791214838459622171 workflow=CT_SHARE run_id=3 node=U1 source=TM1 destination=TM

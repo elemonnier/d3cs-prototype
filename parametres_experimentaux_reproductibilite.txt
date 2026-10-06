@@ -1,0 +1,853 @@
+AUDIT DU DEPOT D3CS — PARAMETRES EXPERIMENTAUX ET REPRODUCTIBILITE
+==================================================================
+
+Etat audite : branche main
+Commit : 1aa8b2643dcd550f485ac72be05005871f69ea11
+
+L'audit confirme que le depot contient un prototype Rust fonctionnel, un banc
+de micro-mesures cryptographiques a une seule iteration et une emulation reseau
+LEPTON/DoDWAN. En revanche, il ne contient pas un protocole experimental
+complet : aucun resultat n'est versionne, le materiel n'est pas decrit, le
+toolchain Rust n'est pas fige et la topologie reseau doit etre manipulee
+manuellement.
+
+La commande "cargo test --locked" reussit : 8 tests du prototype et 5 tests
+reexecutes via le binaire timings, sans echec.
+
+
+1. CARTOGRAPHIE CONCISE
+=======================
+
+Manifeste Rust
+--------------
+- Cargo.toml
+  Edition Rust, dependances directes et version du projet.
+- Cargo.lock
+  Versions exactes resolues et sommes de controle des dependances.
+
+Cryptographie
+-------------
+- src/crypto/cpabe.rs
+  Implementation CP-ABE, chiffrement hybride et formats des cles/chiffres.
+- src/crypto/abs.rs
+  Implementation ABS, extraction, signature et verification.
+- src/crypto/mod.rs
+  Agregation des primitives, revocation, stockage et gestion des cles.
+
+Configuration
+-------------
+- src/config/attributes.json
+  Univers d'attributs et hierarchie de classification.
+- src/config/blpbiba.toml
+  Reglages BLP/Biba.
+- .env
+  Hote, port et chemins runtime. Ce fichier est ignore par Git.
+
+Banc experimental
+-----------------
+- src/bin/timings.rs
+  Une iteration par primitive, mesure en microsecondes.
+- docs/specs/TIMINGS.md
+  Specification ayant conduit au banc de mesure.
+
+Tests reseau autonomes
+----------------------
+- src/bin/dodwan-tests.rs
+  Test DoDWAN WebSocket : ping, abonnement et publication.
+- src/bin/lepton-tests.rs
+  Lancement de dix demons DoDWAN via LEPTON.
+  Il s'agit de tests d'integration, pas d'experiences mesurees.
+
+Orchestration
+-------------
+- src/main.rs
+  Modes local, reseau unitaire et grappe de dix noeuds.
+- src/network/main.rs
+  Runtime reseau et role logique des Trusted Mediators.
+- src/network/netmanager.rs
+  Gestion des pairs, publications et rafraichissements.
+- src/network/dodwan.rs
+  Integration WebSocket DoDWAN et temporisations.
+- src/network/lepton.rs
+  Consultation de la topologie LEPTON.
+- src/network/packets.rs
+  Format des trames D3CS.
+
+Outils Java embarques
+---------------------
+- src/network/tools/lepton/
+  LEPTON, ses sources Java, scripts, configuration et JAR.
+- src/network/tools/dodwan/
+  DoDWAN 4.1, scripts, plugins NAPI et JAR.
+- src/network/tools/dodwan-adapter/
+  Adaptateur DoDWAN 1.0 pour LEPTON.
+
+Documentation
+-------------
+- docs/specs/
+  Specifications fonctionnelles et scenarios attendus.
+- docs/sequencediagrams/
+  Diagrammes des flux du protocole.
+- docs/statediagrams/
+  Diagrammes d'etat.
+- docs/papers/
+  Articles de reference CP-ABE et ABS.
+
+Artefacts locaux
+----------------
+- runtime/
+  Cles et donnees generees. Dossier ignore par Git.
+- target/
+  Artefacts de compilation. Dossier ignore par Git.
+
+Elements absents
+----------------
+- Pas de dossier experiments/ dedie.
+- Pas de Dockerfile.
+- Pas de configuration CI.
+- Pas de rust-toolchain.toml.
+- Pas de jeu de resultats versionne.
+- Pas de script statistique.
+
+
+2. PRIMITIVES ET BIBLIOTHEQUES CRYPTOGRAPHIQUES
+================================================
+
+2.1 Implementations
+-------------------
+
+Le CP-ABE et l'ABS sont des implementations propres au depot et non des appels
+a une bibliotheque CP-ABE/ABS externe.
+
+- CP-ABE inspire de Porwal-Mittal 2023, avec des adaptations explicites dans
+  le code, notamment l'utilisation de G1 et G2 et certains elements repris de
+  BSW07.
+  Source : src/crypto/cpabe.rs, notamment lignes 228-275 et 512-592.
+
+- ABS inspire de Li-Kim 2010, construction annoncee comme celle de la section
+  3.3, fixee a d=1.
+  Source : src/crypto/abs.rs, lignes 138-169.
+
+- References bibliographiques : README.md, lignes 9-15.
+
+Bibliotheque mathematique : arkworks 0.4 avec ark-bls12-381, ark-ec, ark-ff et
+ark-serialize.
+
+2.2 Courbe, pairing et securite
+------------------------------
+
+- Courbe/groupe : Bls12_381.
+- Pairing asymetrique de type 3 : G1 x G2 -> GT.
+- Appel : Bls12_381::pairing.
+- Sources :
+  - src/crypto/cpabe.rs, lignes 208-212 ;
+  - src/crypto/abs.rs, lignes 122-124 et 142-151.
+- Serialisation : arkworks CanonicalSerialize::serialize_compressed.
+- Parametre du hasher ABS : DefaultFieldHasher<Sha256, 128>.
+- Niveau global de securite revendique en bits : Non identifiable dans le depot.
+
+Il ne faut donc pas ecrire automatiquement « securite 128 bits » pour tout le
+systeme. La valeur 128 visible dans le code est le parametre du hasher vers le
+corps, pas une declaration explicite du niveau global du prototype.
+
+2.3 Fonctions de hachage
+-----------------------
+
+- CP-ABE, attribut vers scalaire : SHA-256.
+  Source : src/crypto/cpabe.rs, lignes 189-205.
+
+- Derivation de la cle AES depuis GT : SHA-256, sortie de 32 octets.
+  Source : src/crypto/cpabe.rs, lignes 218-225.
+
+- ABS hash-to-curve vers G1 : SHA-256, WBMap, deux DST distincts :
+  - D3CS-ABS-H1 pour l'attribut ;
+  - D3CS-ABS-H2 pour le message.
+  Source : src/crypto/abs.rs, lignes 126-135, 185, 213-214 et 246-247.
+
+La documentation mentionne RFC 9380 et expand XMD:SHA-256 dans
+docs/specs/SPEC_LOCAL.md, ligne 31. Le code exprime la construction au travers
+de l'API arkworks plutot que par une implementation RFC explicite.
+
+2.4 Chiffrement symetrique et generateur aleatoire
+--------------------------------------------------
+
+- Algorithme symetrique : AES-256-GCM.
+- Cle : 32 octets, derivee par SHA-256 depuis un element de GT.
+- Nonce : 12 octets.
+- Source : src/crypto/cpabe.rs, lignes 423-433 et 576-589.
+- Le texte clair est chiffre par AES-GCM ; la cle de session provient d'un
+  element aleatoire de GT protege par CP-ABE.
+- Generateur aleatoire cryptographique : rand_core::OsRng.
+- OsRng est utilise dans CP-ABE Setup, KeyGen, Delegate et Encrypt, ainsi que
+  dans ABS Setup, Extract et Sign et pour les tokens de session.
+
+La dependance directe rand existe, mais aucune utilisation rand::...
+n'apparait dans les sources Rust. L'aleatoire du prototype passe effectivement
+par rand_core.
+
+La remarque « Hybrid encryption is missing » du README.md, ligne 91, est
+obsolete et contredite par l'implementation AES-256-GCM.
+
+
+3. FORMATS ET TAILLES CRYPTOGRAPHIQUES
+======================================
+
+Les fichiers portant l'extension .bin ne sont pas des blobs binaires bruts.
+Ils contiennent du JSON UTF-8 compact produit par serde_json::to_string. Les
+elements cryptographiques sont serialises en forme canonique compressee, puis
+encodes en Base64 standard sans bourrage.
+
+Source principale : src/crypto/cpabe.rs, lignes 113-186.
+
+Tailles elementaires observables dans les artefacts locaux :
+
+- scalaire Fr : 32 octets ;
+- G1 compresse : 48 octets ;
+- G2 compresse : 96 octets ;
+- Fq12/GT serialise : 576 octets ;
+- encodages Base64 correspondants : 43, 64, 128 et 768 caracteres.
+
+Tailles des objets en JSON compact
+----------------------------------
+
+- Parametres publics CP-ABE PP
+  Composition : g, h et f en G1 ; g2 et f2 en G2 ; y en GT.
+  Taille : 1 273 octets.
+
+- Cle maitre CP-ABE MSK
+  Composition : alpha et beta, deux scalaires de 32 octets.
+  Taille : 120 octets.
+
+- PSKA
+  Composition : un element G2 d.
+  Taille : 148 octets.
+
+- PSKS de l'experience a deux attributs
+  Attributs : FR-DR et M1.
+  Chaque entree contient d et d_prime en G2.
+  Taille : 606 octets.
+
+- PSKS d'un utilisateur FR-S normal
+  Attributs : FR-S, FR-DR et une mission.
+  Taille : 898 octets.
+
+- PSKS de l'autorite
+  Attributs : FR-S, FR-DR, M1 et M2.
+  Taille : 1 188 octets.
+
+- TK
+  Composition : un element G2 t.
+  Taille : 148 octets.
+
+- Parametres publics ABS
+  Composition : deux G2, un G1, un GT et d=1.
+  Taille : 1 137 octets.
+
+- Cle maitre ABS
+  Composition : scalaire x.
+  Taille : 63 octets.
+
+- Cle ABS utilisateur FR-DR
+  Composition : attribut, G1 d0 et G2 d1.
+  Taille : 236 octets.
+
+- Cle ABS utilisateur FR-S
+  Meme structure, chaine d'attribut plus courte.
+  Taille : 235 octets.
+
+- Signature ABS
+  Composition : G1 r1, G2 r2 et G2 r3.
+  Taille : 357 octets.
+
+- Chiffre CT du banc pour le message « test »
+  Composition : politique a deux feuilles et chiffre AES-GCM.
+  Taille : 1 366 octets.
+
+- Chiffre intermediaire CTI du banc
+  Le composant c est remplace par le resultat de pairing f.
+  Taille : 2 070 octets.
+
+Les tailles globales proviennent du schema serialise et sont confirmees, pour
+les cles presentes, par les artefacts locaux sous runtime/. Ces artefacts sont
+ignores par Git : leur presence ne garantit pas qu'ils seront disponibles dans
+un clone.
+
+Points importants
+-----------------
+
+- Une cle privee CP-ABE utilisateur est divisee entre PSKA cote TM et PSKS
+  cote utilisateur. Il n'existe pas de fichier unique contenant la cle
+  complete.
+
+- Pour les deux attributs du banc, l'ensemble CP-ABE represente
+  148 + 606 = 754 octets.
+
+- TK existe comme structure et comme valeur temporaire, mais l'implementation
+  reseau ne produit pas de tk.bin. La demande de stockage formulee dans
+  docs/specs/SPEC_LOCAL.md, lignes 90-97, n'est pas realisee dans le code.
+
+- Le chiffre et la signature sont stockes separement sous ct/<id>.ct et
+  signatures/<id>.sign.
+  Source : src/crypto/mod.rs, lignes 536-570.
+
+- Les tailles du CT varient avec la taille du message et avec la longueur
+  textuelle des attributs. Aucun jeu de tailles de fichiers n'est defini.
+
+
+4. POLITIQUE ET UNIVERS D'ATTRIBUTS
+===================================
+
+Univers configure
+-----------------
+
+- classifications : FR-DR et FR-S ;
+- fermeture : FR-S -> {FR-S, FR-DR} ;
+- missions : M1 et M2.
+
+Source : src/config/attributes.json, lignes 1-8.
+
+Politique CP-ABE
+---------------
+
+La politique effectivement codee est toujours :
+
+  classification AND mission
+
+Elle contient exactement deux feuilles, avec un seuil 2-of-2.
+Source : src/crypto/cpabe.rs, lignes 439-468.
+
+Politique ABS
+-------------
+
+- d=1 ;
+- un seul attribut de classification ;
+- verify_any ne teste que FR-S et FR-DR.
+
+Source : src/crypto/abs.rs, lignes 138-140 et 260-267.
+
+Configuration BLP/Biba
+----------------------
+
+- nowriteup = true
+- noreadup = true
+- nowritedown = false
+- noreaddown = false
+
+Source : src/config/blpbiba.toml, lignes 1-5.
+
+
+5. PROTOCOLE EXPERIMENTAL REELLEMENT PRESENT
+=============================================
+
+5.1 Banc timings
+----------------
+
+Le banc mesure sequentiellement :
+
+- ABS : setup, extract, sign, verify_with_attr ;
+- CP-ABE : setup, keygen, delegate, tm_delegate, encrypt, tm_decrypt, decrypt ;
+- agregat : revoke_missions.
+
+Source : src/bin/timings.rs, lignes 223-299.
+
+Parametres exacts :
+
+- attribut ABS : FR-DR ;
+- attributs CP-ABE : [FR-DR, M1] ;
+- label : FR-DR AND M1 ;
+- message : « test », soit 4 octets UTF-8 ;
+- revocation : mission M1 ;
+- une seule iteration ;
+- chronometrage avec std::time::Instant ;
+- resultat en microsecondes via elapsed().as_micros() ;
+- execution documentee en profil release.
+
+Il n'y a aucun echauffement, aucune repetition, aucun calcul de moyenne,
+mediane, ecart-type ou intervalle de confiance.
+
+5.2 Resultats
+-------------
+
+Aucun resultat de timings n'est versionne dans le depot.
+
+A titre de validation seulement, l'execution unique effectuee lors de cet
+audit le 2 octobre 2026 a donne :
+
+- ABS Setup : 1 450 us
+- ABS Extract : 1 117 us
+- ABS Sign : 2 962 us
+- ABS Verify : 3 811 us
+- CP-ABE Setup : 2 625 us
+- CP-ABE KeyGen : 4 028 us
+- CP-ABE Delegate : 4 034 us
+- CP-ABE TM Delegate : 262 us
+- CP-ABE Encrypt : 4 321 us
+- CP-ABE TM Decrypt : 1 573 us
+- CP-ABE Decrypt : 4 449 us
+- Revoke missions : 5 188 us
+
+Ces valeurs ne doivent pas etre utilisees comme resultats de these : il s'agit
+d'une seule execution, et le CPU, la RAM, la charge systeme et la politique de
+frequence n'ont pas ete consignes.
+
+
+6. PARAMETRES RESEAU
+====================
+
+6.1 Acteurs et processus
+------------------------
+
+Dans network-all, le code lance :
+
+- 1 processus applicatif Authority ;
+- 9 processus applicatifs U1 a U9 ;
+- 10 demons DoDWAN geres par LEPTON ;
+- 10 identifiants logiques de Trusted Mediator : TM0 a TM9, associes
+  respectivement a Authority, U1, ..., U9.
+
+Sources :
+- src/main.rs, lignes 471-541 ;
+- src/network/main.rs, lignes 1229-1257.
+
+Les TMs ne sont pas des processus Rust autonomes : leur role est integre au
+processus applicatif associe. Le nombre « 10 TMs » decrit donc dix roles ou
+identifiants logiques.
+
+Seul le compte authority existe initialement dans la base en memoire. Les
+noeuds U1-U9 ne correspondent pas automatiquement a neuf comptes crees : les
+comptes utilisateurs doivent etre inscrits pendant l'execution.
+
+6.2 Ports
+---------
+
+- HTTP : Authority 18080, U1 18081, ..., U9 18089.
+- Console LEPTON : 5000.
+- Hub LEPTON : 4500.
+- Mode DoDWAN isole : WebSocket 18090 pour Authority, puis 18091 a 18099.
+- Dans network-all, le port WebSocket DoDWAN est demande avec la valeur 0,
+  donc alloue dynamiquement puis lu dans :
+  /run/shm/$USER/dodwan/var/node/<Nxx>/ports
+
+Sources :
+- src/main.rs, lignes 221-249 et 301-353 ;
+- src/network/dodwan.rs, lignes 67-114 ;
+- src/network/tools/lepton/conf/lepton.conf, lignes 90-115.
+
+6.3 Topologie LEPTON active
+---------------------------
+
+network-all force :
+
+- nodes=10 ;
+- manual=true ;
+- walk_class vide ;
+- adaptateur DoDWAN ;
+- absence de modele de mobilite automatique.
+
+Source : src/main.rs, lignes 301-325.
+
+Les dix profils sont immobiles, mobile=false, avec les positions suivantes :
+
+- Authority : (30,185)
+- U1 : (-45,150)
+- U2 : (5,150)
+- U3 : (55,150)
+- U4 : (105,150)
+- U5 : (-45,115)
+- U6 : (5,115)
+- U7 : (55,115)
+- U8 : (105,115)
+- U9 : (30,80)
+
+Source : src/network/tools/lepton/conf/node_profiles.txt.
+
+Labels reseau :
+
+- U1 : FR-DR:M1
+- U2 : FR-S:M1
+- U3 : FR-DR:M2
+- U4 : FR-S:M2
+- U5 : FR-DR:M1
+- U6 : FR-S:M1
+- U7 : FR-DR:M2
+- U8 : FR-S:M2
+- U9 : FR-DR:M1
+
+Source : src/network/tools/lepton/conf/node_labels.txt.
+
+La configuration LEPTON contient aussi :
+
+- plage radio : 60 m ;
+- periode de simulation : 1,0 s ;
+- duree : -1, donc illimitee ;
+- acceleration : 1, donc temps reel ;
+- jitter de demarrage : jusqu'a 10 s ;
+- delai differe : 0 s ;
+- zone : car:-60,0,260,200 ;
+- statut par defaut des aretes : DISCONNECTED ;
+- affichage graphique : show=true ;
+- latence hub : 60 ;
+- periode hub : 10 ;
+- JVM LEPTON : G1GC, -Xms32m et -Xmx256m.
+
+Sources :
+- src/network/tools/lepton/conf/lepton.conf ;
+- src/network/tools/lepton/bin/util/oppnet_adapter.sh, lignes 23-31.
+
+Les parametres Levy Walk presents dans lepton.conf, tels que min_speed=1,
+max_speed=2 et alpha=1.8, ne sont pas actifs pour network-all puisque celui-ci
+vide walk_class et utilise le mode manuel.
+
+init.dgs est present, mais in_dgs est vide et network-all ne passe pas ce
+fichier. Il ne faut donc pas presenter init.dgs comme le scenario reellement
+execute.
+
+6.4 Temporisations internes
+---------------------------
+
+- Boucle reseau Rust : 100 ms.
+- Rafraichissement des pairs : 1 s.
+- Lecture WebSocket inactive : 500 ms.
+- Attente maximale d'une reponse DoDWAN : 3 s.
+- Connexion initiale DoDWAN : 10 s, nouvelle tentative toutes les 100 ms.
+- Console LEPTON : timeout lecture/ecriture/connexion de 750 ms.
+- Attente de demarrage d'un port DoDWAN : 30 s, interrogation toutes les
+  200 ms.
+- Delai avant delegation : 3 s si l'autorite parait joignable, 300 ms sinon.
+- Expiration d'une demande de cle : 120 s.
+- Autorite consideree recemment vue pendant 20 s.
+
+Sources :
+- src/network/main.rs, lignes 123-129, 761-791 et 1095-1111 ;
+- src/network/netmanager.rs, ligne 11 ;
+- src/network/dodwan.rs, lignes 17-18 et 140-163 ;
+- src/network/lepton.rs, lignes 10-12 ;
+- src/main.rs, lignes 328-353.
+
+6.5 Divergences reseau
+----------------------
+
+- docs/specs/SPEC_NETWORK.md demande un demon DoDWAN global, mais le code et
+  lepton-tests demarrent dix demons. La valeur reellement implementee est dix.
+
+- lepton.conf contient deux chemins absolus propres au developpeur pour
+  nodes_profiles et node_labels. Ils doivent etre adaptes apres clonage.
+  Source : lepton.conf, lignes 235-250.
+
+- L'adaptateur reference dodwan-3.0.1.jar, absent du depot, alors que le JAR
+  fourni est dodwan-4.1.jar.
+  Source : src/network/tools/dodwan-adapter/bin/adapter.sh, lignes 13-16.
+
+- Le classpath global LEPTON charge tous les JAR de libs/, ce qui peut rendre
+  dodwan-4.1.jar disponible malgre la reference precedente, mais
+  l'incoherence doit etre corrigee.
+
+- Le drapeau reseau « securise » ne met pas en oeuvre TLS : il ajoute seulement
+  l'enveloppe textuelle TLS(...).
+  Source : src/network/packets.rs, lignes 74-123.
+
+
+7. ENVIRONNEMENT LOGICIEL
+=========================
+
+7.1 Rust
+--------
+
+- Projet : d3cs-prototype, version 0.1.0.
+- Edition : Rust 2021.
+- Version minimale ou exacte de Rust/Cargo : Non identifiable dans le depot.
+- Aucun rust-toolchain ou rust-toolchain.toml.
+- Un artefact local ignore, target/.rustc_info.json, indique que le dernier
+  compilateur local etait rustc 1.91.1, cible x86_64-unknown-linux-gnu.
+  Ce n'est pas une contrainte reproductible du projet.
+
+Versions directes resolues dans Cargo.lock :
+
+- aes-gcm 0.10.3
+- anyhow 1.0.102
+- ark-bls12-381 0.4.0
+- ark-ec 0.4.2
+- ark-ff 0.4.2
+- ark-serialize 0.4.2
+- ark-std 0.4.0
+- base64 0.21.7
+- chrono 0.4.44
+- dotenvy 0.15.7
+- rand 0.8.5
+- rand_core 0.6.4
+- serde 1.0.228
+- serde_json 1.0.149
+- sha2 0.10.9
+- tiny_http 0.12.0
+- toml 0.8.23
+- tungstenite 0.21.0
+
+rand et ark-std sont declares directement mais sans utilisation directe
+identifiable dans les sources. BouncyCastle est present comme JAR LEPTON ; il
+ne fait pas partie de la cryptographie Rust D3CS.
+
+7.2 Java, LEPTON et DoDWAN
+-------------------------
+
+- LEPTON : version 1.0.
+- DoDWAN : JAR version 4.1.
+- Adaptateur DoDWAN : version 1.0.
+- Plugins DoDWAN NAPI et NAPI-WebSocket : version 1.0.
+- Java-WebSocket : 1.4.0.
+- JSON-P : 1.1.2.
+- SLF4J : 1.7.25.
+- Le POM LEPTON fixe source et cible Java a 1.8.
+  Source : src/network/tools/lepton/pom.xml, lignes 22-26.
+- Version JRE/JDK exacte requise : Non identifiable dans le depot.
+  La documentation demande seulement un JRE « recent ».
+
+7.3 OS et configuration
+-----------------------
+
+- README : environnement Linux/WSL recommande.
+- Distribution et version exactes : Non identifiable dans le depot.
+- Docker ou conteneur : Non identifiable dans le depot.
+- .env local : hote 127.0.0.1, port 18080 et chemins vers src/config,
+  runtime/users, runtime/tm, runtime/authority et src/gui.
+- .env est ignore par Git et aucun .env.example n'est fourni.
+- Sans D3CS_PORT, le code local utilise 8080, alors que le README annonce
+  18080 parce que le workspace actuel possede .env.
+
+
+8. ENVIRONNEMENT MATERIEL
+=========================
+
+- CPU : Non identifiable dans le depot.
+- Nombre de coeurs/threads : Non identifiable dans le depot.
+- Frequence, mode turbo et gouverneur CPU : Non identifiable dans le depot.
+- RAM : Non identifiable dans le depot.
+- Architecture materielle documentee : Non identifiable dans le depot.
+- Machine physique, VM ou conteneur : Non identifiable dans le depot.
+- Seul un artefact de compilation local indique une cible logicielle x86-64
+  Linux ; cela ne documente pas la machine experimentale.
+
+
+A. TABLEAU SYNTHETIQUE
+======================
+
+Parametre | Valeur | Source dans le depot | Niveau de certitude
+----------|--------|-----------------------|--------------------
+Implementation CP-ABE | Implementation Rust propre inspiree PM23 | src/crypto/cpabe.rs | Certaine
+Implementation ABS | Implementation Rust propre inspiree Li-Kim, d=1 | src/crypto/abs.rs | Certaine
+Bibliotheque mathematique | arkworks 0.4 | Cargo.toml, Cargo.lock | Certaine
+Courbe | BLS12-381 | cpabe.rs:12, abs.rs:7 | Certaine
+Pairing | Type 3, G1 x G2 vers GT | cpabe.rs:208-212, abs.rs:122-124 | Certaine
+Niveau de securite annonce | Non identifiable dans le depot | Aucun | Absente
+Hachage CP-ABE | SHA-256 | cpabe.rs:191-224 | Certaine
+Hash-to-curve ABS | SHA-256, WBMap, parametre 128 | abs.rs:126-135 | Certaine
+DST ABS | D3CS-ABS-H1 et D3CS-ABS-H2 | abs.rs | Certaine
+Symetrique | AES-256-GCM | cpabe.rs:423-433 | Certaine
+Nonce AES | 12 octets | cpabe.rs:424-425 | Certaine
+RNG | rand_core::OsRng | cpabe.rs, abs.rs, main.rs | Certaine
+Format des cles | JSON compact et Base64 sans padding | cpabe.rs:113-126 | Certaine
+PP CP-ABE | 1 273 octets | schema et runtime/tm/pp.bin | Partielle, artefact ignore
+MSK CP-ABE | 120 octets | schema et runtime/authority/msk.bin | Partielle, artefact ignore
+PSKA | 148 octets | PskaV1 et artefacts runtime | Certaine sur le format
+PSKS, 2 attributs | 606 octets | PsksV1 et timings.rs | Certaine par calcul
+TK | 148 octets, non persiste | cpabe.rs:63-67 et 376-380 | Certaine
+Parametres ABS | 1 137 octets | schema et runtime/tm/params.bin | Partielle
+MSK ABS | 63 octets | schema et runtime/authority/sk.bin | Partielle
+Signature ABS | 357 octets | AbsSignatureV1 | Certaine par format
+Politique CP-ABE | classification AND mission, 2 feuilles | cpabe.rs:439-468 | Certaine
+Univers | FR-S, FR-DR, M1, M2 | attributes.json | Certaine
+Attributs du banc | FR-DR et M1 | timings.rs:223-230 | Certaine
+Message du banc | test, 4 octets | timings.rs:224-260 | Certaine
+Repetitions | 1 | TIMINGS.md:30 et timings.rs | Certaine
+Metrique | Temps d'execution en us | timings.rs:168-176 | Certaine
+Resultats versionnes | Non identifiable dans le depot | Aucun fichier | Absente
+Noeuds reseau | Authority et U1 a U9 | main.rs:489-500 | Certaine
+TMs logiques | TM0 a TM9, integres aux processus | network/main.rs | Certaine
+Autorites | 1 | main.rs et network/main.rs | Certaine
+Demons DoDWAN actifs | 10 dans network-all | main.rs, lepton-tests.rs | Certaine
+Topologie | Manuelle, 10 noeuds immobiles | main.rs et node_profiles.txt | Certaine
+Periode LEPTON | 1,0 s | lepton.conf:145-147 | Certaine
+Duree LEPTON | Illimitee, valeur -1 | lepton.conf:149-151 | Certaine
+Port console LEPTON | 5000 | lepton.conf:109-114 | Certaine
+Ports HTTP | 18080 a 18089 | main.rs:221-245 | Certaine
+Rust edition | 2021 | Cargo.toml:4 | Certaine
+Rust/Cargo exacts | Non identifiables comme contrainte versionnee | Aucun toolchain pin | Absente
+OS exact | Non identifiable dans le depot | README seulement | Absente
+CPU/RAM | Non identifiable dans le depot | Aucun | Absente
+Transport TLS reel | Absent, enveloppe textuelle TLS(...) | packets.rs:74-123 | Certaine
+
+
+B. INFORMATIONS A COMPLETER MANUELLEMENT
+========================================
+
+Pour rendre l'experience publiable et reproductible, il faut encore documenter :
+
+- le CPU exact, le nombre de coeurs, la frequence et le gouverneur ;
+- la RAM disponible ;
+- machine physique, VM ou WSL, avec version ;
+- distribution, version du noyau et architecture ;
+- versions exactes de rustc, Cargo, JRE/JDK, Maven, Bash et netcat ;
+- un fichier rust-toolchain.toml ou une version minimale Rust ;
+- la topologie et la contactologie exactes utilisees a chaque experience ;
+- les actions manuelles effectuees dans l'interface LEPTON ;
+- la decision entre un ou dix demons DoDWAN ;
+- la correction des chemins absolus LEPTON ;
+- la correction de la reference dodwan-3.0.1.jar ;
+- le nombre reel de comptes ou sujets et leurs clearances ;
+- le nombre de repetitions, les echauffements et l'ordre des mesures ;
+- moyenne, mediane, ecart-type, percentiles et intervalles de confiance ;
+- les resultats bruts sauvegardes avec horodatage ;
+- la taille des messages et fichiers au-dela de « test » ;
+- les charges concurrentes et le nombre d'operations simultanees ;
+- les parametres reseau non decrits : debit, latence, pertes, files, MTU ;
+- le controle ou non de l'aleatoire ; OsRng ne permet pas de fixer une graine ;
+- le niveau de securite cryptographique revendique ;
+- l'impact de la compilation, du cache, du turbo CPU et des autres processus ;
+- une vraie protection TLS si la confidentialite reseau est revendiquee ;
+- une version corrigee du README concernant le chiffrement hybride et le port
+  par defaut.
+
+
+C. STRUCTURE PROPOSEE POUR LA SECTION DE THESE
+==============================================
+
+\section{Parametres experimentaux et reproductibilite}
+
+\subsection{Perimetre du prototype evalue}
+\subsubsection{Revision du code et composants inclus}
+\subsubsection{Fonctions evaluees et exclusions}
+
+\subsection{Parametres cryptographiques}
+\subsubsection{Implementations CP-ABE et ABS}
+\subsubsection{Courbe, pairing, hachage et generation aleatoire}
+\subsubsection{Chiffrement hybride AES-256-GCM}
+\subsubsection{Univers d'attributs et politique d'acces}
+\subsubsection{Formats et tailles des cles, chiffres et signatures}
+
+\subsection{Environnement experimental}
+\subsubsection{Environnement materiel}
+\subsubsection{Systeme d'exploitation et toolchains}
+\subsubsection{Dependances Rust et Java}
+
+\subsection{Configuration du prototype}
+\subsubsection{Variables d'environnement et arborescence runtime}
+\subsubsection{Parametres BLP/Biba}
+\subsubsection{Parametres DoDWAN}
+\subsubsection{Parametres et topologie LEPTON}
+
+\subsection{Protocole de mesure}
+\subsubsection{Operations mesurees}
+\subsubsection{Entrees, tailles et nombre d'attributs}
+\subsubsection{Echauffement, repetitions et agregation statistique}
+\subsubsection{Collecte et conservation des resultats}
+
+\subsection{Procedure de reproduction}
+\subsubsection{Recuperation et compilation}
+\subsubsection{Execution locale}
+\subsubsection{Execution reseau}
+\subsubsection{Reproduction des mesures}
+
+\subsection{Limites de reproductibilite et menaces a la validite}
+
+
+D. COMMANDES DE REPRODUCTION
+============================
+
+D.1 Recuperation et compilation
+-------------------------------
+
+Le remote origin configure est :
+
+  git@github.com:elemonnier/d3cs-local.git
+
+Commandes :
+
+  git clone git@github.com:elemonnier/d3cs-local.git d3cs-prototype
+  cd d3cs-prototype
+  git checkout 1aa8b2643dcd550f485ac72be05005871f69ea11
+
+  cargo fetch --locked
+  cargo build --locked --release --bins
+  cargo test --locked
+
+Les JAR LEPTON/DoDWAN sont suivis par Git ; aucune recuperation Maven n'est
+necessaire pour l'execution normale.
+
+D.2 Variables equivalentes au .env local
+-----------------------------------------
+
+.env n'etant pas versionne, definir :
+
+  export D3CS_HOST=127.0.0.1
+  export D3CS_PORT=18080
+  export D3CS_CONFIG_DIR=src/config
+  export D3CS_USERS_DIR=runtime/users
+  export D3CS_TM_DIR=runtime/tm
+  export D3CS_AUTHORITY_DIR=runtime/authority
+  export D3CS_IHM_DIR=src/gui
+
+D.3 Prototype local
+-------------------
+
+  cargo run --locked --release
+
+Ouvrir ensuite :
+
+  http://127.0.0.1:18080
+
+Compte initial :
+
+  login : authority
+  mot de passe : authority
+
+D.4 Processus reseau isole
+--------------------------
+
+  cargo run --locked --release -- network Authority
+  cargo run --locked --release -- network U1
+
+Utiliser la meme forme pour U2 a U9.
+
+D.5 Grappe complete LEPTON/DoDWAN
+---------------------------------
+
+Prerequis reellement impliques : Linux/WSL, Bash, JRE et netcat. Une session
+graphique est normalement necessaire car show=true.
+
+Corriger d'abord les chemins absolus :
+
+  d3cs_repo_root="$(pwd -P)"
+
+  sed -i \
+    "s|^nodes_profiles=.*|nodes_profiles=${d3cs_repo_root}/src/network/tools/lepton/conf/node_profiles.txt|" \
+    src/network/tools/lepton/conf/lepton.conf
+
+  sed -i \
+    "s|^node_labels=.*|node_labels=${d3cs_repo_root}/src/network/tools/lepton/conf/node_labels.txt|" \
+    src/network/tools/lepton/conf/lepton.conf
+
+Lancement :
+
+  cargo run --locked --release -- network-all
+
+Cette commande lance la plateforme et permet une experimentation manuelle.
+Elle ne reproduit pas automatiquement une sequence de contacts ou un scenario
+chronometre.
+
+D.6 Banc cryptographique
+------------------------
+
+  cargo run --locked --bin timings --release
+
+Cette commande effectue exactement une mesure par operation. Pour une
+experience de these, le binaire devra etre etendu afin de gerer repetitions,
+echauffements, export CSV/JSON et statistiques.
+
+D.7 Tests d'integration auxiliaires
+-----------------------------------
+
+  cargo run --locked --release --bin dodwan-tests
+  cargo run --locked --release --bin lepton-tests
+
+Ces deux commandes verifient le lancement ou les echanges elementaires des
+outils reseau ; elles ne collectent aucune metrique experimentale.
+

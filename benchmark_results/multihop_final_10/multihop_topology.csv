@@ -1,0 +1,12 @@
+hops,node_id,x_m,expected_neighbors,observed_neighbors,validated
+10,N00,0,N01,N01,true
+10,N01,50,N00;N02,N00;N02,true
+10,N02,100,N01;N03,N01;N03,true
+10,N03,150,N02;N04,N02;N04,true
+10,N04,200,N03;N05,N03;N05,true
+10,N05,250,N04;N06,N04;N06,true
+10,N06,300,N05;N07,N05;N07,true
+10,N07,350,N06;N08,N06;N08,true
+10,N08,400,N07;N09,N07;N09,true
+10,N09,450,N08;N10,N08;N10,true
+10,N10,500,N09,N09,true

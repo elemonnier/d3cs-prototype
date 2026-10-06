@@ -1,0 +1,21 @@
+event=send timestamp_ns=1791285810538776829 workflow=KEY_REQUEST run_id=bench_h10_setup node=U10 source=TM10 destination=TM
+event=key_latency timestamp_ns=1791285814516716676 workflow=KEY_REQUEST_RESPONSE run_id=bench_h10_setup node=U10 duration_ns=3977941590
+event=receive timestamp_ns=1791285814516727651 workflow=KEY_RESPONSE run_id=bench_h10_setup node=U10 source=Authority destination=bench_h10_setup
+event=send timestamp_ns=1791285814690687042 workflow=CT_SHARE run_id=1 node=U10 source=TM10 destination=TM
+event=send timestamp_ns=1791285817407257319 workflow=CT_SHARE run_id=2 node=U10 source=TM10 destination=TM
+event=send timestamp_ns=1791285819864193597 workflow=CT_SHARE run_id=3 node=U10 source=TM10 destination=TM
+event=receive timestamp_ns=1791285822862727673 workflow=ARL_UPDATE run_id=1 node=U10 source=Authority destination=TM
+event=receive timestamp_ns=1791285824399130056 workflow=ARL_UPDATE run_id=2 node=U10 source=Authority destination=TM
+event=receive timestamp_ns=1791285825936946859 workflow=ARL_UPDATE run_id=3 node=U10 source=Authority destination=TM
+event=receive timestamp_ns=1791285827470009966 workflow=ARL_UPDATE run_id=4 node=U10 source=Authority destination=TM
+event=receive timestamp_ns=1791285829070120095 workflow=ARL_UPDATE run_id=5 node=U10 source=Authority destination=TM
+event=receive timestamp_ns=1791285830606898291 workflow=ARL_UPDATE run_id=6 node=U10 source=Authority destination=TM
+event=send timestamp_ns=1791285831210652723 workflow=KEY_REQUEST run_id=bench_h10_key_w1 node=U10 source=TM10 destination=TM
+event=key_latency timestamp_ns=1791285835707149776 workflow=KEY_REQUEST_RESPONSE run_id=bench_h10_key_w1 node=U10 duration_ns=4496495548
+event=receive timestamp_ns=1791285835707164570 workflow=KEY_RESPONSE run_id=bench_h10_key_w1 node=U10 source=Authority destination=bench_h10_key_w1
+event=send timestamp_ns=1791285836266807219 workflow=KEY_REQUEST run_id=bench_h10_key_001 node=U10 source=TM10 destination=TM
+event=key_latency timestamp_ns=1791285839762661583 workflow=KEY_REQUEST_RESPONSE run_id=bench_h10_key_001 node=U10 duration_ns=3495856379
+event=receive timestamp_ns=1791285839762669788 workflow=KEY_RESPONSE run_id=bench_h10_key_001 node=U10 source=Authority destination=bench_h10_key_001
+event=send timestamp_ns=1791285840330870012 workflow=KEY_REQUEST run_id=bench_h10_key_002 node=U10 source=TM10 destination=TM
+event=key_latency timestamp_ns=1791285844380316546 workflow=KEY_REQUEST_RESPONSE run_id=bench_h10_key_002 node=U10 duration_ns=4049447507
+event=receive timestamp_ns=1791285844380330295 workflow=KEY_RESPONSE run_id=bench_h10_key_002 node=U10 source=Authority destination=bench_h10_key_002

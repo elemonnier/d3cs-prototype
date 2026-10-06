@@ -1,0 +1,85 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,1050.0,40.0"
+st 0
+an N10 profile="n10" x=500.00 y=0.00 label="U10"
+an N20 profile="n20" x=1000.00 y=0.00 label="U20"
+an N01 profile="n01" x=50.00 y=0.00 label="U1"
+an N12 profile="n01" x=600.00 y=0.00 label="U12"
+an N00 profile="n00" x=0.00 y=0.00 label="Authority"
+an N11 profile="n01" x=550.00 y=0.00 label="U11"
+an N03 profile="n03" x=150.00 y=0.00 label="U3"
+an N14 profile="n01" x=700.00 y=0.00 label="U14"
+an N02 profile="n02" x=100.00 y=0.00 label="U2"
+an N13 profile="n01" x=650.00 y=0.00 label="U13"
+an N05 profile="n05" x=250.00 y=0.00 label="U5"
+an N16 profile="n01" x=800.00 y=0.00 label="U16"
+an N04 profile="n04" x=200.00 y=0.00 label="U4"
+an N15 profile="n01" x=750.00 y=0.00 label="U15"
+an N07 profile="n07" x=350.00 y=0.00 label="U7"
+an N18 profile="n01" x=900.00 y=0.00 label="U18"
+an N06 profile="n06" x=300.00 y=0.00 label="U6"
+an N17 profile="n01" x=850.00 y=0.00 label="U17"
+an N09 profile="n09" x=450.00 y=0.00 label="U9"
+an N08 profile="n08" x=400.00 y=0.00 label="U8"
+an N19 profile="n01" x=950.00 y=0.00 label="U19"
+ae N06-N07 N06 N07
+ae N14-N15 N14 N15
+ae N01-N02 N01 N02
+ae N03-N04 N03 N04
+ae N16-N17 N16 N17
+ae N19-N20 N19 N20
+ae N12-N13 N12 N13
+ae N02-N03 N02 N03
+ae N09-N10 N09 N10
+ae N18-N19 N18 N19
+ae N10-N11 N10 N11
+ae N13-N14 N13 N14
+ae N05-N06 N05 N06
+ae N07-N08 N07 N08
+ae N00-N01 N00 N01
+ae N04-N05 N04 N05
+ae N08-N09 N08 N09
+ae N11-N12 N11 N12
+ae N15-N16 N15 N16
+ae N17-N18 N17 N18
+ce N07-N08 tag="TRANSFER"
+ce N10-N11 tag="TRANSFER"
+ce N11-N12 tag="TRANSFER"
+ce N13-N14 tag="TRANSFER"
+ce N14-N15 tag="TRANSFER"
+ce N16-N17 tag="TRANSFER"
+ce N17-N18 tag="TRANSFER"
+ce N19-N20 tag="TRANSFER"
+ce N04-N05 tag="TRANSFER"
+ce N01-N02 tag="TRANSFER"
+ce N00-N01 tag="TRANSFER"
+ce N02-N03 tag="TRANSFER"
+ce N05-N06 tag="TRANSFER"
+ce N08-N09 tag="TRANSFER"
+ce N06-N07 tag="TRANSFER"
+ce N09-N10 tag="TRANSFER"
+ce N12-N13 tag="TRANSFER"
+ce N15-N16 tag="TRANSFER"
+ce N18-N19 tag="TRANSFER"
+ce N03-N04 tag="TRANSFER"
+ce N06-N07 -tag
+ce N14-N15 -tag
+ce N01-N02 -tag
+ce N03-N04 -tag
+ce N16-N17 -tag
+ce N19-N20 -tag
+ce N12-N13 -tag
+ce N02-N03 -tag
+ce N09-N10 -tag
+ce N18-N19 -tag
+ce N10-N11 -tag
+ce N13-N14 -tag
+ce N05-N06 -tag
+ce N07-N08 -tag
+ce N00-N01 -tag
+ce N04-N05 -tag
+ce N08-N09 -tag
+ce N11-N12 -tag
+ce N15-N16 -tag
+ce N17-N18 -tag

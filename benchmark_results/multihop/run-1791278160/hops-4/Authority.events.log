@@ -1,0 +1,17 @@
+event=send timestamp_ns=1791278213460279776 workflow=KEY_RESPONSE run_id=bench_h4_setup node=Authority source=Authority destination=bench_h4_setup
+event=receive timestamp_ns=1791278213450676407 workflow=KEY_REQUEST run_id=bench_h4_setup node=Authority source=TM4 destination=TM
+event=receive timestamp_ns=1791278216971024128 workflow=CT_SHARE run_id=1 node=Authority source=TM4 destination=TM
+event=receive timestamp_ns=1791278218570439064 workflow=CT_SHARE run_id=2 node=Authority source=TM4 destination=TM
+event=receive timestamp_ns=1791278220138870949 workflow=CT_SHARE run_id=3 node=Authority source=TM4 destination=TM
+event=send timestamp_ns=1791278220224964296 workflow=ARL_UPDATE run_id=1 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791278221758118466 workflow=ARL_UPDATE run_id=2 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791278223294038063 workflow=ARL_UPDATE run_id=3 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791278224833017154 workflow=ARL_UPDATE run_id=4 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791278226371927094 workflow=ARL_UPDATE run_id=5 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791278227904208755 workflow=ARL_UPDATE run_id=6 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791278231861668690 workflow=KEY_RESPONSE run_id=bench_h4_key_w1 node=Authority source=Authority destination=bench_h4_key_w1
+event=receive timestamp_ns=1791278231850583605 workflow=KEY_REQUEST run_id=bench_h4_key_w1 node=Authority source=TM4 destination=TM
+event=send timestamp_ns=1791278235310985556 workflow=KEY_RESPONSE run_id=bench_h4_key_001 node=Authority source=Authority destination=bench_h4_key_001
+event=receive timestamp_ns=1791278235306568792 workflow=KEY_REQUEST run_id=bench_h4_key_001 node=Authority source=TM4 destination=TM
+event=send timestamp_ns=1791278238677823076 workflow=KEY_RESPONSE run_id=bench_h4_key_002 node=Authority source=Authority destination=bench_h4_key_002
+event=receive timestamp_ns=1791278238666775471 workflow=KEY_REQUEST run_id=bench_h4_key_002 node=Authority source=TM4 destination=TM

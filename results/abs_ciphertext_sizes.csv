@@ -1,0 +1,4 @@
+object,size_bytes
+ciphertext_input_size_bytes,1366
+signature_size_bytes,357
+ciphertext_plus_signature_size_bytes,1723

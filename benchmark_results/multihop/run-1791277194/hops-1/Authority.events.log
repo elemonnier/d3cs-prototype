@@ -1,0 +1,16 @@
+event=send timestamp_ns=1791277203990840678 workflow=KEY_RESPONSE run_id=bench_h1_setup node=Authority source=Authority destination=bench_h1_setup
+event=receive timestamp_ns=1791277203979140241 workflow=KEY_REQUEST run_id=bench_h1_setup node=Authority source=TM1 destination=TM
+event=receive timestamp_ns=1791277206378705106 workflow=CT_SHARE run_id=1 node=Authority source=TM1 destination=TM
+event=receive timestamp_ns=1791277207950909329 workflow=CT_SHARE run_id=2 node=Authority source=TM1 destination=TM
+event=receive timestamp_ns=1791277209486785036 workflow=CT_SHARE run_id=3 node=Authority source=TM1 destination=TM
+event=send timestamp_ns=1791277209602601732 workflow=ARL_UPDATE run_id=1 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791277210935431883 workflow=ARL_UPDATE run_id=2 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791277212475797294 workflow=ARL_UPDATE run_id=3 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791277214003352138 workflow=ARL_UPDATE run_id=4 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791277215545673203 workflow=ARL_UPDATE run_id=5 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791277217074022678 workflow=ARL_UPDATE run_id=6 node=Authority source=Authority destination=TM
+event=send timestamp_ns=1791277221205910819 workflow=KEY_RESPONSE run_id=bench_h1_key_w1 node=Authority source=Authority destination=bench_h1_key_w1
+event=receive timestamp_ns=1791277221194665132 workflow=KEY_REQUEST run_id=bench_h1_key_w1 node=Authority source=TM1 destination=TM
+event=send timestamp_ns=1791277224631795274 workflow=KEY_RESPONSE run_id=bench_h1_key_001 node=Authority source=Authority destination=bench_h1_key_001
+event=receive timestamp_ns=1791277224618813228 workflow=KEY_REQUEST run_id=bench_h1_key_001 node=Authority source=TM1 destination=TM
+event=send timestamp_ns=1791277226960283481 workflow=KEY_RESPONSE run_id=bench_h1_key_002 node=Authority source=Authority destination=bench_h1_key_002
