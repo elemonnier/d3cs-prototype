@@ -1,0 +1,4 @@
+No LEPTON_VAR set. Using "/home/etienne/d3cs-prototype/benchmark_results/reconnection_latency_short_scientific/run-1793273768/lepton"
+Redirecting outputs to /home/etienne/d3cs-prototype/benchmark_results/reconnection_latency_short_scientific/run-1793273768/lepton/lepton.out and /home/etienne/d3cs-prototype/benchmark_results/reconnection_latency_short_scientific/run-1793273768/lepton/lepton.err
+Writing the graph events to /home/etienne/d3cs-prototype/benchmark_results/reconnection_latency_short_scientific/run-1793273768/lepton/lepton.dgs
+Waiting for the lepton daemon termination (lepton_pid=35117)

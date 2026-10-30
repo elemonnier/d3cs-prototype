@@ -72,7 +72,7 @@ fn main()->Result<()>{
 
  add("KEY_REQUEST","login+clearance+user_topic+tm_topic",frame_size("TM1","TM",D3csRequest::KeyRequest,vec!["u1".into(),clearance_s.clone(),"U1".into(),"TM1".into()],true)?);
  add("KEY_RESPONSE_USER_KEYGEN","login+PP+PSKS+ABS_user_key",frame_size("Authority","U1",D3csRequest::KeyResponse,vec!["USER_KEYGEN".into(),"u1".into(),pp_s.clone(),psks_s.clone(),abs_user_key_s.clone()],true)?);
- add("KEY_RESPONSE_TM_KEY","login+ABS_params+PSKA",frame_size("Authority","TM1",D3csRequest::KeyResponse,vec!["TM_KEY".into(),"u1".into(),abs_params_s.clone(),pska_s.clone()],true)?);
+ add("KEY_RESPONSE_TM_KEY","login+PP+ABS_params+PSKA",frame_size("Authority","TM1",D3csRequest::KeyResponse,vec!["TM_KEY".into(),"u1".into(),pp_s.clone(),abs_params_s.clone(),pska_s.clone()],true)?);
  add("DELEGATE_OFFER","login+clearance+user_topic+tm_topic",frame_size("TM1","TM2",D3csRequest::DelegateAccept,vec!["u2".into(),clearance_s.clone(),"U2".into(),"TM2".into()],true)?);
  add("DELEGATE_ACCEPT","login+clearance+user_topic+tm_topic",frame_size("TM2","TM1",D3csRequest::AskDelegation,vec!["u2".into(),clearance_s.clone(),"U2".into(),"TM2".into()],true)?);
  let missions=vec!["M1".to_string()];

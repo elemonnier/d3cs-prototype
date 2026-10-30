@@ -1,0 +1,422 @@
+REPRODUCTIBILITE EXPERIMENTALE DU PROTOTYPE D3CS
+================================================
+
+Document de synthèse pour la section 7.1 et l'Annexe A.
+Informations relevées dans le code, les scripts, les configurations et l'environnement observé.
+
+
+PARTIE A - ELEMENTS A CONSERVER DANS LA SECTION 7.1
+====================================================
+
+Systeme observe       : Ubuntu 22.04.5 LTS sous WSL2
+Processeur observe    : Intel Core i7-1355U, 6 coeurs physiques, 12 processeurs logiques
+Memoire observee      : 7,6 GiB visibles dans WSL
+Rust observe          : rustc 1.91.1, cargo 1.91.1, edition Rust 2021
+Python observe        : Python 3.10.12
+Java observe          : OpenJDK 17.0.20.1
+Bibliotheques crypto  : Arkworks (ark-bls12-381, ark-ec, ark-ff, ark-serialize)
+Courbe                 : BLS12-381
+Appariement            : asymetrique de type 3, G1 x G2 vers GT
+Chiffrement symetrique: AES-256-GCM, cle de 32 octets, nonce de 12 octets
+Hachage                : SHA-256 et hash-to-curve SHA-256 pour ABS
+Aleatoire              : rand_core::OsRng
+CP-ABE                 : attributs FR-DR et M1, politique AND a deux feuilles, seuil 2-sur-2
+ABS                    : schema Li-Kim, d=1, attribut FR-DR
+Benchmarks crypto      : 100 warmups et 500 mesures par operation
+Campagne multi-sauts   : 1, 2, 3, 4 et 10 sauts, 5 warmups et 30 mesures par groupe
+Topologie              : chaine statique, espacement de 50 m, portee LEPTON de 60 m
+Depot GitLab           : git@gitlab.inria.fr:elemonni/d3cs-prototype.git
+
+Les informations materielles et logicielles sont observees dans l'environnement courant;
+elles ne sont pas toutes imposees par le depot.
+
+
+PARTIE B - DETAILS POUR L'ANNEXE A
+===================================
+
+1. PARAMETRES CRYPTOGRAPHIQUES
+------------------------------
+
+Versions resolues dans Cargo.lock :
+
+ark-bls12-381 0.4.0
+ark-ec        0.4.2
+ark-ff        0.4.2
+ark-serialize 0.4.2
+ark-std       0.4.0
+aes-gcm       0.10.3
+base64        0.21.7
+rand          0.8.5
+rand_core     0.6.4
+serde_json    1.0.149
+sha2          0.10.9
+
+Le CP-ABE utilise G1Projective/G1Affine, G2Projective/G2Affine, Fq12 pour GT,
+Fr pour les scalaires et Bls12_381::pairing pour G1 x G2 vers GT.
+
+L'ABS utilise egalement BLS12-381 : g et g1 sont dans G2, g2 est dans G1 et z est dans GT.
+
+Serialisation elementaire avec ark_serialize::CanonicalSerialize en mode compresse :
+
+scalaire Fr                 : 32 octets
+element compresse de G1    : 48 octets
+element compresse de G2    : 96 octets
+element compresse de GT    : 576 octets
+
+Les valeurs sont encodees en Base64 sans padding avec STANDARD_NO_PAD, puis les structures
+completes sont serialisees avec serde_json.
+
+Hachage CP-ABE : SHA-256 des attributs, converti en Fr.
+Derivation de cle symetrique : SHA-256 de la serialisation compressee d'un element GT.
+Hachage ABS : hash-to-curve vers G1 avec SHA-256 et les domaines D3CS-ABS-H1 et D3CS-ABS-H2.
+
+Chiffrement symetrique : AES-256-GCM, cle de 32 octets et nonce aleatoire de 12 octets.
+La source d'alea est rand_core::OsRng.
+
+
+2. PARAMETRES CP-ABE
+--------------------
+
+Fichiers : src/crypto/cpabe.rs et src/bin/cpabe_timings.rs
+
+Message                 : test
+Taille du message      : 4 octets
+Attributs               : FR-DR et M1
+Politique               : FR-DR AND M1
+Feuilles                : 2
+Seuil                   : 2-sur-2
+Conditions necessaires  : les deux attributs
+
+La politique est construite directement dans encrypt sous la forme de deux feuilles.
+Elle n'est pas generee par un parseur general dans le benchmark.
+
+Tailles actuellement presentes dans results/cpabe_sizes.csv :
+
+public_parameters       : 1273 octets
+master_secret_key       : 120 octets
+pska                    : 148 octets
+psks                    : 606 octets
+tk                      : 148 octets
+ciphertext              : 1366 octets
+intermediate_ciphertext : 2070 octets
+
+Operations mesurees :
+
+Setup       : cpabe::setup()
+KeyGen      : cpabe::keygen(&pp, &msk, &attrs)
+Delegate    : cpabe::delegate(&pp, &psks, &attrs)
+TM_Delegate : cpabe::tm_delegate(&pska, &tk)
+Encrypt     : cpabe::encrypt(&pp, &label, "test")
+TM_Decrypt  : cpabe::tm_decrypt(&pp, &ciphertext, &delegated_pska)
+Decrypt     : cpabe::decrypt(&pp, &intermediate_ciphertext, &delegated_psks)
+
+Le benchmark utilise 100 warmups puis 500 mesures par operation.
+
+Moyennes actuellement presentes dans results/cpabe_timings_summary.csv :
+
+Setup       : 2516,264 microsecondes
+KeyGen      : 3418,094 microsecondes
+Delegate    : 4029,114 microsecondes
+TM_Delegate : 207,006 microsecondes
+Encrypt     : 3868,446 microsecondes
+TM_Decrypt  : 1004,456 microsecondes
+Decrypt     : 4226,780 microsecondes
+
+
+3. PARAMETRES ABS
+-----------------
+
+Fichiers : src/crypto/abs.rs et src/bin/abs_timings.rs
+
+Schema                  : construction Li-Kim, section 3.3 selon les commentaires du code
+Parametre                : d=1
+Attribut                 : FR-DR
+Nombre d'attributs      : 1
+Message court            : test
+
+Tailles dans results/abs_sizes.csv :
+
+public_parameters       : 1137 octets
+master_secret_key       : 63 octets
+user_private_key        : 236 octets
+signature               : 357 octets
+
+Experience ABS sur ciphertext CP-ABE :
+
+ciphertext d'entree     : 1366 octets
+signature               : 357 octets
+ciphertext + signature  : 1723 octets
+
+La signature contient trois elements de groupe dans une structure fixe. Dans les
+configurations testees, sa taille serialisee ne depend donc pas de la longueur du message.
+
+Moyennes dans results/abs_timings_summary.csv :
+
+setup       : 1405,536 microsecondes
+extract     : 1046,664 microsecondes
+sign        : 1777,628 microsecondes
+verify      : 3425,288 microsecondes
+
+Le benchmark utilise 100 warmups et 500 mesures. Les variables D3CS_ABS_WARMUPS et
+D3CS_ABS_MEASUREMENTS permettent de modifier ces valeurs.
+
+
+4. MESSAGES RESEAU ET SCALABILITES
+-----------------------------------
+
+Fichiers : src/bin/network_sizes.rs et src/network/packets.rs
+
+Format des trames : D3CS|source|destination|type|arguments...
+Trame securisee : TLS(...)
+Arguments contenant certains caracteres : Base64 sans padding avec prefixe b64:
+Serialisation des structures cryptographiques : serde_json
+
+Tailles dans results/network_message_sizes.csv :
+
+KEY_REQUEST              : 80 octets
+KEY_RESPONSE_USER_KEYGEN : 2168 octets
+KEY_RESPONSE_TM_KEY      : 1333 octets
+DELEGATE_OFFER           : 84 octets
+DELEGATE_ACCEPT          : 85 octets
+ASK_REVOCATION           : 56 octets
+CT_SHARE                 : 1747 octets
+ARL_UPDATE               : 109 octets
+
+Scalabilite ARL : 0, 1, 10, 50, 100, 500 et 1000 entrees.
+
+Entrees | ARL serialisee | ARL_UPDATE
+0       | 24              | 58
+1       | 75              | 109
+10      | 543             | 577
+50      | 2663            | 2697
+100     | 5313            | 5347
+500     | 26913           | 26947
+1000    | 53913           | 53947
+
+Scalabilite CT_SHARE : 4, 1024, 10240, 102400 et 1048576 octets de clair.
+
+Clair       | Ciphertext | CT_SHARE
+4           | 1366        | 1747
+1024        | 2726        | 3107
+10240       | 15014       | 15395
+102400      | 137894      | 138275
+1048576     | 1399462     | 1399843
+
+
+5. STOCKAGE DU TRUSTED MEDIATOR
+--------------------------------
+
+Fichier : src/bin/tm_storage_sizes.rs
+
+Structures mesurees :
+
+CPABE_PUBLIC_PARAMETERS : 1273 octets
+ABS_PUBLIC_PARAMETERS   : 1137 octets
+PSKA                    : 148 octets
+ARL a une entree        : 75 octets
+
+Cout fixe hors ARL : 2558 octets.
+
+ARL entries | fixed state | ARL   | total
+0           | 2558        | 24    | 2582
+1           | 2558        | 75    | 2633
+10          | 2558        | 543   | 3101
+50          | 2558        | 2663  | 5221
+100         | 2558        | 5313  | 7871
+500         | 2558        | 26913 | 29471
+1000        | 2558        | 53913 | 56471
+
+Cette mesure correspond au volume logique serialise des structures. Elle ne mesure pas la
+RAM globale, les allocations Rust, ni les blocs du systeme de fichiers.
+
+
+6. CAMPAGNE MULTI-SAULTS
+-------------------------
+
+Fichiers : scripts/multihop_latency.py et scripts/merge_multihop_results.py
+
+Configurations finales : 1, 2, 3, 4, 5 et 10 sauts.
+La configuration 20 sauts est exclue des resultats finaux.
+
+H sauts correspondent a H+1 noeuds :
+
+1 saut  : 2 noeuds
+2 sauts : 3 noeuds
+3 sauts : 4 noeuds
+4 sauts : 5 noeuds
+5 sauts : 6 noeuds
+10 sauts: 11 noeuds
+
+Topologie : chaine statique N00 -> N01 -> ... -> NH.
+N00 est Authority et les autres noeuds sont U1, U2, etc.
+Coordonnees : (i x 50, 0).
+Espacement : 50 m.
+Portee LEPTON : 60 m.
+Voisins directs : uniquement les noeuds adjacents.
+Mobilite : false.
+
+Parametres LEPTON generes par le script :
+
+jitter=0
+time_margin=0
+nodes_deferred=0
+accel=1
+range=60
+period=1.0
+duration=-1
+make_edges=false
+edge_default_status=DISCONNECTED
+node_default_status=NONE
+
+La campagne est une chaine statique controlee. Le script ne configure pas de coupures ou de
+reconnexions temporelles ; il ne s'agit pas d'un scenario intermittent store-carry-forward.
+
+Version LEPTON : 1.0.
+Version DoDWAN identifiable : dodwan-4.1.jar.
+Plugins : dodwan-napi,dodwan-napi-ws.
+
+Workflows : CT_SHARE, ARL_UPDATE et KEY_REQUEST_RESPONSE.
+Warmups : 5 par groupe.
+Mesures : 30 par groupe.
+
+Pour CT_SHARE et ARL_UPDATE, la latence est la difference entre le timestamp SystemTime de
+l'emission et le timestamp de reception apres traitement reussi de la trame.
+
+Pour KEY_REQUEST_RESPONSE, le chronometrage utilise Instant depuis l'emission de la demande
+jusqu'au traitement reussi de USER_KEYGEN par le demandeur.
+
+Un succes correspond a :
+
+- CT_SHARE recu et traite par le destinataire ;
+- ARL_UPDATE recu, deserialize et applique sans erreur ;
+- KEY_REQUEST ayant produit une reponse USER_KEYGEN correspondante.
+
+Le taux de livraison est : 100 x n_success / n_total.
+Les statistiques de latence utilisent uniquement les succes.
+
+Les resultats actuellement presents indiquent 30 succes sur 30 pour chaque groupe 1-5 et
+10 sauts, soit 100 % de livraison.
+
+
+7. ENVIRONNEMENT OBSERVE
+------------------------
+
+Distribution          : Ubuntu 22.04.5 LTS
+Environnement         : WSL2
+Noyau                 : Linux 6.18.40.1-microsoft-standard-WSL2
+Architecture          : x86_64
+CPU                   : Intel Core i7-1355U
+Coeurs physiques      : 6
+Processeurs logiques  : 12
+RAM visible           : 7,6 GiB
+rustc                 : 1.91.1
+cargo                 : 1.91.1
+Python                : 3.10.12
+Java                  : OpenJDK 17.0.20.1
+javac                 : 17.0.20
+Maven                 : 3.6.3
+LEPTON                : 1.0
+DoDWAN                : 4.1 selon dodwan-4.1.jar
+
+Ces valeurs decrivent l'environnement observe et ne sont pas toutes fixees par le depot.
+
+
+8. FICHIERS IMPORTANTS
+-----------------------
+
+Cargo.toml                                      Dependances et edition Rust
+Cargo.lock                                      Versions resolues
+src/crypto/cpabe.rs                             CP-ABE
+src/crypto/abs.rs                               ABS
+src/crypto/mod.rs                               ARL, stockage et fonctions haut niveau
+src/bin/cpabe_timings.rs                        Benchmark CP-ABE
+src/bin/abs_timings.rs                          Benchmark ABS
+src/bin/network_sizes.rs                        Messages, ARL et CT_SHARE
+src/bin/tm_storage_sizes.rs                     Stockage TM
+src/network/packets.rs                          Format des trames D3CS
+src/network/main.rs                             Workflows et instrumentation reseau
+src/network/lepton.rs                           Voisinage LEPTON
+src/network/dodwan.rs                           Integration DoDWAN
+scripts/multihop_latency.py                     Orchestration multi-sauts
+scripts/merge_multihop_results.py               Fusion des resultats multi-sauts
+src/config/attributes.json                      Attributs et classifications
+src/config/blpbiba.toml                         Parametres BLP/Biba
+src/network/tools/lepton/VERSION                Version LEPTON
+src/network/tools/dodwan/libs/dodwan-4.1.jar    Bibliotheque DoDWAN
+src/network/tools/dodwan-adapter/bin/multihop_adapter.sh
+                                                Adaptateur LEPTON/DoDWAN
+
+Sorties :
+
+results/cpabe_timings.csv
+results/cpabe_timings_summary.csv
+results/cpabe_sizes.csv
+results/abs_timings.csv
+results/abs_timings_summary.csv
+results/abs_sizes.csv
+results/abs_ciphertext_timings.csv
+results/abs_ciphertext_timings_summary.csv
+results/abs_ciphertext_sizes.csv
+results/network_message_sizes.csv
+results/arl_scalability.csv
+results/ct_share_scalability.csv
+results/tm_storage_components.csv
+results/tm_storage_scalability.csv
+results/tm_storage_summary.csv
+benchmark_results/multihop/multihop_latency_raw.csv
+benchmark_results/multihop/multihop_latency_summary.csv
+benchmark_results/multihop/multihop_topology.csv
+
+
+9. COMMANDES DE REPRODUCTION
+-----------------------------
+
+Prerequis de compilation :
+
+cargo build --release --bins
+
+CP-ABE :
+
+cargo run --release --bin cpabe_timings
+
+ABS :
+
+cargo run --release --bin abs_timings
+
+Messages reseau, ARL et CT_SHARE :
+
+cargo run --release --bin network_sizes
+
+Stockage du TM :
+
+cargo run --release --bin tm_storage_sizes
+
+Multi-sauts 1 a 5 :
+
+PYTHONIOENCODING=utf-8 python3 -u scripts/multihop_latency.py --warmups 5 --measurements 30 --hops 1,2,3,4,5 --output benchmark_results/multihop
+
+Multi-sauts 10 :
+
+PYTHONIOENCODING=utf-8 python3 -u scripts/multihop_latency.py --warmups 5 --measurements 30 --hops 10 --output benchmark_results/multihop_final_10
+
+Fusion des resultats 1-5 et 10 :
+
+python3 scripts/merge_multihop_results.py --existing benchmark_results/multihop --additional benchmark_results/multihop_final_10 --output benchmark_results/multihop
+
+
+PARTIE C - INCERTITUDES ET INFORMATIONS NON VERIFIABLES
+========================================================
+
+- Le nombre de coeurs physiques et la RAM sont observes dans l'environnement WSL courant.
+- La version exacte de WSL2 n'est pas fixee par un fichier du projet.
+- La version LEPTON est explicitement indiquee comme 1.0.
+- La version DoDWAN est deduite de dodwan-4.1.jar.
+- Le depot ne fixe pas une version Python dans un fichier d'environnement.
+- Le script multi-sauts genere les configurations LEPTON au moment de l'execution.
+- Les pertes, delais artificiels, debits et MTU ne sont pas explicitement configures.
+- La campagne multi-sauts est statique et ne simule pas explicitement des partitions ou de la
+  mobilite store-carry-forward.
+- L'URL GitLab verifiable est : git@gitlab.inria.fr:elemonni/d3cs-prototype.git
+- Une URL HTTPS n'est pas enregistree explicitement dans le depot local.
+- La mesure de stockage du TM est une mesure logique serialisee, et non une mesure de RAM ou
+  d'espace disque physique.

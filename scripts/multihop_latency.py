@@ -148,7 +148,7 @@ def dodwan_port(node):
     return wait_for(probe, 45, f"DoDWAN {node}")
 
 
-def make_config(run, base, hops):
+def make_config(run, base, hops, edge_events=None):
     lepton = run / "lepton"
     lepton.mkdir(parents=True, exist_ok=True)
     node_count = hops + 1
@@ -176,6 +176,24 @@ def make_config(run, base, hops):
         dgs.append(f"ae N{i:02d}-N{i+1:02d} N{i:02d} N{i+1:02d}")
     for i in range(hops):
         dgs.append(f"ce N{i:02d}-N{i+1:02d} status=\"CONNECTED\"")
+    for step, status in edge_events or []:
+        # DGSGraph.nextStep() returns when it reads an ``st`` command and
+        # applies the commands preceding that marker.  Put the edge change
+        # immediately before the requested marker so OppNetGraphDGS applies
+        # it at the requested simulation time.
+        event_step = int(step)
+        if event_step <= 0:
+            raise ValueError("scheduled edge events must use a positive step")
+        dgs.append(f"st {event_step - 1}")
+        if status == "DISCONNECTED":
+            dgs.append("de N00-N01")
+        elif status == "CONNECTED":
+            dgs.append('ae N00-N01 N00 N01 status="CONNECTED"')
+        else:
+            raise ValueError(f"unsupported scheduled edge status: {status}")
+        dgs.append(f"st {event_step}")
+    if edge_events:
+        dgs.append(f"st {int(edge_events[-1][0]) + 60000}")
     chain_dgs.write_text("\n".join(dgs) + "\n", encoding="utf-8")
 
     node_hist = run / "nodes.hist"
@@ -222,10 +240,10 @@ def spawn_app(base, node, port, net_node, ws, run):
     return child, events
 
 
-def start(base, hops, run):
+def start(base, hops, run, edge_events=None):
     run.mkdir(parents=True, exist_ok=True)
     lepton_home, dodwan = base/"src/network/tools/lepton", base/"src/network/tools/dodwan"
-    config, lepton_log_dir, node_count = make_config(run, base, hops)
+    config, lepton_log_dir, node_count = make_config(run, base, hops, edge_events)
     adapter = base/"src/network/tools/dodwan-adapter/bin/multihop_adapter.sh"
     env = os.environ.copy()
     env.update({"DODWAN_HOME": str(dodwan),

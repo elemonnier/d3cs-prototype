@@ -1,0 +1,21 @@
+2026-10-29 12:34:38.579 Authority: {"tkn":"t1","name":"pong"}
+
+2026-10-29 12:34:39.095 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:34:39.601 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:34:40.118 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:34:40.628 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:34:47.260 Authority: {"name":"recv_desc","mid":"N01_29","desc":{"_st":"1793273687207","_date":"1793273687157","_nbfrags":"1","src":"TM1","_docid":"N01_29","_weight":"106","topic":"TM","_rcv":"N00","dest":"TM","_sdr":"N01"}}
+
+2026-10-29 12:34:47.265 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|reconnection_u1|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|reconnection_u1|TM1)","tkn":"payload-N01_29","name":"recv_payload","mid":"N01_29","topic":"TM","dest":"TM"}
+
+2026-10-29 12:34:47.801 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-29 12:34:48.313 Authority: {"tkn":"t3","name":"ok"}
+
+ssion\":\"M1\"}|reconnection_u1|TM1)","tkn":"payload-N01_29","name":"recv_payload","mid":"N01_29","topic":"TM","dest":"TM"}
+2026-10-29 12:34:47.801 Authority: {"tkn":"t3","name":"ok"}
+2026-10-29 12:34:48.313 Authority: {"tkn":"t3","name":"ok"}

@@ -1,0 +1,2 @@
+iteration,message_id,status,error
+1,reconnection-001-1,timeout,aucune reception valide dans 10.000 s

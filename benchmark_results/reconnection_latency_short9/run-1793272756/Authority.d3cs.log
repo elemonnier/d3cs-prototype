@@ -1,0 +1,19 @@
+2026-10-29 12:19:17.202 Authority: {"tkn":"t1","name":"pong"}
+
+2026-10-29 12:19:17.717 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:19:18.229 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:19:18.738 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:19:19.249 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-29 12:19:25.872 Authority: {"data":"TLS(D3CS|TM1|TM|KEY_REQUEST|reconnection_u1|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|reconnection_u1|TM1)","mid":"N01_29","name":"recv_payload","tkn":"payload-N01_29","topic":"TM","dest":"TM"}
+
+2026-10-29 12:19:26.904 Authority: {"tkn":"t3","name":"ok"}
+
+2026-10-29 12:19:27.409 Authority: {"tkn":"t3","name":"ok"}
+
+ssion\":\"M1\"}|reconnection_u1|TM1)","mid":"N01_29","name":"recv_payload","tkn":"payload-N01_29","topic":"TM","dest":"TM"}
+2026-10-29 12:19:26.904 Authority: {"tkn":"t3","name":"ok"}
+2026-10-29 12:19:27.409 Authority: {"tkn":"t3","name":"ok"}

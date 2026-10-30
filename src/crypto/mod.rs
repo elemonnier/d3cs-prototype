@@ -295,7 +295,8 @@ fn key_material_matches(
     };
     let probe = "__d3cs_key_probe__";
 
-    let result = cpabe::encrypt(pp, &label, probe)
+    let result = cpabe::validate_key_material(pp, pska, psks)
+        .and_then(|_| cpabe::encrypt(pp, &label, probe))
         .and_then(|ct| cpabe::tm_decrypt(pp, &ct, pska))
         .and_then(|cti| cpabe::decrypt(pp, &cti, psks));
 
@@ -662,20 +663,28 @@ pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
     let params_path = format!("{}/params.bin", state.tm_dir);
     let abs_sk_path = format!("{}/sk.bin", state.authority_dir);
 
-    if !cpabe_setup_material_valid(&pp_path, &msk_path) {
-        let (pp, msk) = cpabe::setup()?;
-        let pp_s = serde_json::to_string(&pp)?;
-        let msk_s = serde_json::to_string(&msk)?;
-        write_atomic(&pp_path, pp_s.as_bytes())?;
-        write_atomic(&msk_path, msk_s.as_bytes())?;
-    }
+    // In a separated network run, only Authority owns the CP-ABE master
+    // secret and is allowed to initialize the system. Other nodes wait for
+    // USER_KEYGEN/TM_KEY; generating a local PP here would create a silent
+    // second CP-ABE system.
+    let local_authority = state.mode != RunMode::Network
+        || current_node_id().eq_ignore_ascii_case("Authority");
+    if local_authority {
+        if !cpabe_setup_material_valid(&pp_path, &msk_path) {
+            let (pp, msk) = cpabe::setup()?;
+            let pp_s = serde_json::to_string(&pp)?;
+            let msk_s = serde_json::to_string(&msk)?;
+            write_atomic(&pp_path, pp_s.as_bytes())?;
+            write_atomic(&msk_path, msk_s.as_bytes())?;
+        }
 
-    if !abs_setup_material_valid(&params_path, &abs_sk_path) {
-        let (params, sk) = abs::setup()?;
-        let params_s = serde_json::to_string(&params)?;
-        let sk_s = serde_json::to_string(&sk)?;
-        write_atomic(&params_path, params_s.as_bytes())?;
-        write_atomic(&abs_sk_path, sk_s.as_bytes())?;
+        if !abs_setup_material_valid(&params_path, &abs_sk_path) {
+            let (params, sk) = abs::setup()?;
+            let params_s = serde_json::to_string(&params)?;
+            let sk_s = serde_json::to_string(&sk)?;
+            write_atomic(&params_path, params_s.as_bytes())?;
+            write_atomic(&abs_sk_path, sk_s.as_bytes())?;
+        }
     }
 
     Ok(())
@@ -705,7 +714,9 @@ pub fn ensure_user_keys(
 
     let pp_path = format!("{}/pp.bin", state.tm_dir);
 
-    let mut need = !file_has_non_empty_content(&psks_path)
+    let user_pp_path = format!("{}/pp.bin", user_dir);
+    let mut need = !file_has_non_empty_content(&user_pp_path)
+        || !file_has_non_empty_content(&psks_path)
         || !file_has_non_empty_content(&skw_path)
         || !file_has_non_empty_content(pska_path.to_string_lossy().as_ref());
     if !need {
@@ -745,6 +756,7 @@ pub fn ensure_user_keys(
     let (pska, psks) = cpabe::keygen(&pp, &msk, &attrs)?;
     let pska_s = serde_json::to_string(&pska)?;
     let psks_s = serde_json::to_string(&psks)?;
+    write_atomic(&user_pp_path, serde_json::to_string(&pp)?.as_bytes())?;
     write_pska_for_login(state, login, &pska_s)?;
     write_atomic(&psks_path, psks_s.as_bytes())?;
 
@@ -849,6 +861,9 @@ pub fn list_documents(
             Ok(v) => v,
             Err(_) => continue,
         };
+        if cpabe::validate_ciphertext(&ct).is_err() {
+            continue;
+        }
         if serde_json::from_str::<abs::AbsSignatureV1>(&document.signature).is_err() {
             continue;
         }
@@ -902,9 +917,13 @@ pub fn encrypt_document(
         return Err(anyhow!("Write not allowed by presets (BLP/Biba)"));
     }
 
-    let pp_path = format!("{}/pp.bin", state.tm_dir);
-    let params_path = format!("{}/params.bin", state.tm_dir);
     let user_dir = format!("{}/{}", state.users_dir, login);
+    let pp_path = if state.mode == RunMode::Network {
+        format!("{}/pp.bin", user_dir)
+    } else {
+        format!("{}/pp.bin", state.tm_dir)
+    };
+    let params_path = format!("{}/params.bin", state.tm_dir);
     let skw_path = format!("{}/skw{}.bin", user_dir, login);
 
     let pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(&pp_path)?)?;
@@ -948,6 +967,7 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
     let sig_s = document.signature;
 
     let ct: cpabe::CiphertextV1 = serde_json::from_str(&ct_s)?;
+    cpabe::validate_ciphertext(&ct)?;
     let sig: abs::AbsSignatureV1 = serde_json::from_str(&sig_s)?;
 
     let cfg = read_blpbiba(state)?;
@@ -969,10 +989,23 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
         return Err(anyhow!("ABS signature invalid for this ciphertext"));
     }
 
-    let pp_path = format!("{}/pp.bin", state.tm_dir);
-    let pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(&pp_path)?)?;
-
     let user_dir = format!("{}/{}", state.users_dir, login);
+    let user_pp_path = format!("{}/pp.bin", user_dir);
+    let user_pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(&user_pp_path)?)?;
+    let tm_pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(format!(
+        "{}/pp.bin",
+        state.tm_dir
+    ))?)?;
+    let user_pp_id = cpabe::public_params_id(&user_pp)?;
+    let tm_pp_id = cpabe::public_params_id(&tm_pp)?;
+    if user_pp_id != tm_pp_id {
+        return Err(anyhow!(
+            "CP-ABE public parameters mismatch between user and TM: user {}, TM {}",
+            user_pp_id,
+            tm_pp_id
+        ));
+    }
+    let pp = tm_pp;
     let psks_path = format!("{}/psks{}.bin", user_dir, login);
     let pska_s =
         read_pska_for_login(state, login).map_err(|_| anyhow!("Missing PSKA file (tm/nodes)"))?;
@@ -980,6 +1013,8 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
         fs::read_to_string(&psks_path).map_err(|_| anyhow!("Missing PSKS file (users)"))?;
     let pska: cpabe::PskaV1 = serde_json::from_str(&pska_s)?;
     let psks: cpabe::PsksV1 = serde_json::from_str(&psks_s)?;
+    cpabe::validate_key_material(&pp, &pska, &psks)?;
+    cpabe::validate_ciphertext_for_pp(&pp, &ct)?;
 
     let cti = cpabe::tm_decrypt(&pp, &ct, &pska)?;
     let storage = current_document_storage(state);
@@ -1053,8 +1088,20 @@ mod tests {
         let (pska_a, psks_a) = cpabe::keygen(&pp, &msk, &attrs)?;
         let (pska_b, _) = cpabe::keygen(&pp, &msk, &attrs)?;
 
+        assert_eq!(pp.version, 2);
+        assert_eq!(pska_a.version, 2);
+        assert_eq!(psks_a.version, 2);
         assert!(key_material_matches(&pp, &pska_a, &psks_a, &clearance));
         assert!(!key_material_matches(&pp, &pska_b, &psks_a, &clearance));
+
+        let mut legacy_pska = pska_a.clone();
+        legacy_pska.version = 1;
+        assert!(!key_material_matches(
+            &pp,
+            &legacy_pska,
+            &psks_a,
+            &clearance
+        ));
 
         Ok(())
     }
@@ -1077,8 +1124,6 @@ mod tests {
         fs::create_dir_all(&authority_dir)?;
         fs::create_dir_all(&config_dir)?;
         fs::create_dir_all(&ihm_dir)?;
-
-        std::env::set_var("D3CS_NODE_ID", "U7");
 
         let u7_clearance = Clearance {
             classification: "FR-DR".to_string(),
@@ -1122,7 +1167,9 @@ mod tests {
             network_runtime: Mutex::new(None),
         });
 
+        std::env::set_var("D3CS_NODE_ID", "Authority");
         setup_if_needed(&state)?;
+        std::env::set_var("D3CS_NODE_ID", "U7");
         ensure_user_keys(&state, "u8", &u8_clearance, false)?;
 
         let pp: cpabe::PublicParamsV1 =
@@ -1132,6 +1179,9 @@ mod tests {
             state.users_dir
         ))?)?;
         let pska_u8: cpabe::PskaV1 = serde_json::from_str(&read_pska_for_login(&state, "u8")?)?;
+        assert_eq!(pp.version, 2);
+        assert_eq!(psks_u8.version, 2);
+        assert_eq!(pska_u8.version, 2);
         let delegated_attrs = user_attribute_set(&u7_clearance);
         let (psks_u7, tk) = cpabe::delegate(&pp, &psks_u8, &delegated_attrs)?;
         let pska_u7 = cpabe::tm_delegate(&pska_u8, &tk)?;
@@ -1167,6 +1217,14 @@ mod tests {
 
         assert_eq!(plaintext, "hello from u8");
         assert!(!skw_u7_path.exists());
+
+        let revoked = revoke_missions(&state, std::slice::from_ref(&u7_clearance.mission))?;
+        assert!(revoked
+            .items
+            .iter()
+            .any(|entry| entry.attribute_type == "mission"
+                && entry.attribute_value == u7_clearance.mission));
+        assert!(decrypt_document(&state, "u7", id).is_err());
 
         fs::remove_dir_all(base).ok();
         Ok(())

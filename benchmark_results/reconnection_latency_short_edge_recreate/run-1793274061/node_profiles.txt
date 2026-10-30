@@ -1,0 +1,11 @@
+[n00]
+prefix=Authority
+mobile=false
+coord=car:0,0
+seed=200001
+
+[n01]
+prefix=U1
+mobile=false
+coord=car:50,0
+seed=200002

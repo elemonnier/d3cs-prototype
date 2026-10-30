@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+<rect width="100%" height="100%" fill="white"/>
+<text x="450" y="22" text-anchor="middle" font-family="sans-serif" font-size="16">CT_SHARE delivery after reconnection</text>
+<line x1="70" y1="35" x2="70" y2="445" stroke="black"/>
+<line x1="70" y1="445" x2="870" y2="445" stroke="black"/>
+<text x="18" y="240.0" transform="rotate(-90 18 240.0)" text-anchor="middle" font-family="sans-serif">delay (ms)</text>
+<text x="450.0" y="488" text-anchor="middle" font-family="sans-serif">repetition</text>
+<text x="450.0" y="250.0" text-anchor="middle" font-family="sans-serif">no successful observations</text>
+</svg>

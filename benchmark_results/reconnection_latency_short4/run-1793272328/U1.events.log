@@ -1,0 +1,3 @@
+event=send timestamp_ns=1793272337839920923 workflow=KEY_REQUEST run_id=reconnection_u1 node=U1 source=TM1 destination=TM
+event=key_latency timestamp_ns=1793272340121164828 workflow=KEY_REQUEST_RESPONSE run_id=reconnection_u1 node=U1 duration_ns=2281239832
+event=receive timestamp_ns=1793272340121179435 workflow=KEY_RESPONSE run_id=reconnection_u1 node=U1 source=Authority destination=reconnection_u1

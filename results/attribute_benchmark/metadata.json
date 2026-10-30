@@ -1,0 +1,29 @@
+{
+  "benchmark": "D3CS cryptographic attribute-count campaign",
+  "version": "0.1.0",
+  "attribute_counts": [
+    1,
+    2,
+    5,
+    10,
+    20,
+    50
+  ],
+  "warmups": 10,
+  "measurements": 100,
+  "message_size_bytes": 1024,
+  "duration_unit_raw": "nanoseconds from std::time::Instant",
+  "duration_unit_summary": "milliseconds",
+  "stddev": "sample standard deviation with denominator n-1",
+  "percentile": "nearest-rank, rank=ceil(0.95*n)",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "target_os": "linux",
+  "target_arch": "x86_64",
+  "git_revision": "bd89ae79d11c925aa97a04a47231d13c4ed702c6",
+  "limitations": [
+    "ABS is implemented with d=1 and one attribute per user key; ABS multi-attribute experiments are therefore exported as unsupported.",
+    "CP-ABE encrypt/decrypt currently implement exactly two leaves with fixed two-leaf reconstruction.",
+    "CP-ABE tm_delegate and tm_decrypt consume PSKA/TK or ciphertext/PSKA, not an attribute list; their N labels describe preparation provenance, not an N-dependent input size.",
+    "The D decrypt policy uses A1 AND A1 because the CP-ABE API cannot encode a one-leaf policy; only one distinct attribute is required."
+  ]
+}

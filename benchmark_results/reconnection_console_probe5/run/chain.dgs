@@ -1,0 +1,7 @@
+DGS004
+SIMUL 0 0
+st 0
+an N00 x=0 y=0 label="Authority"
+an N01 x=50 y=0 label="U1"
+ae N00-N01 N00 N01
+ce N00-N01 status="CONNECTED"

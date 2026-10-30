@@ -203,7 +203,7 @@ public class StreamRelay extends Thread {
 
 	    // 'Caller' is trying to connect to 'called'. Let us check
 	    // if they should be allowed to do so
-	    boolean connected = oppNet_.areNeighbors(callerId_, calledId_, connectivityType, null);
+	    boolean connected = oppNet_.areNeighbors(callerId_, calledId_, connectivityType, "CONNECTED");
 	    if (connected) {
 		calledSock_ = new Socket(calledAddr_.getAddress(),
 					   calledAddr_.getPort());
@@ -268,7 +268,7 @@ public class StreamRelay extends Thread {
     // ------------------------------------------------------------
     public synchronized boolean checkConnectivity() {
 
-	boolean connected = oppNet_.areNeighbors(callerId_, calledId_, null, null);
+	boolean connected = oppNet_.areNeighbors(callerId_, calledId_, null, "CONNECTED");
 	if (! connected)
 	    close();
 

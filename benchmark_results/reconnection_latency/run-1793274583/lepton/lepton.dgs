@@ -1,0 +1,69 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,100.0,40.0"
+st 0
+an N01 profile="n01" x=50.00 y=0.00 label="U1"
+an N00 profile="n00" x=0.00 y=0.00 label="Authority"
+ae N00-N01 N00 N01
+ce N00-N01 tag="TRANSFER"
+st 19999
+ce N00-N01 -tag
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 51999
+ae N00-N01 N00 N01
+st 56999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 88999
+ae N00-N01 N00 N01
+st 93999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 125999
+ae N00-N01 N00 N01
+st 130999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 162999
+ae N00-N01 N00 N01
+st 167999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 199999
+ae N00-N01 N00 N01
+st 204999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 236999
+ae N00-N01 N00 N01
+st 241999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 273999
+ae N00-N01 N00 N01
+st 278999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 310999
+ae N00-N01 N00 N01
+st 315999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 347999
+ae N00-N01 N00 N01
+st 352999
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+de N00-N01
+st 384999
+ae N00-N01 N00 N01

@@ -1,0 +1,2 @@
+iteration,message_id,status,error
+1,reconnection-001-1,error,timeout LEPTON scheduled reconnection / DoDWAN connectivity

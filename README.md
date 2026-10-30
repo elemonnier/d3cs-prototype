@@ -67,8 +67,30 @@ Ports: 127.0.0.1:18080 for Authority, :18081 for u1, :18082 for u2, until :18089
 Allows you to measure the execution time of CP-ABE and ABS methods.
 
 ```bash
-cargo run --bin timings --release
+cargo run --release --bin abs_timings
 ```
+
+## Attribute-count cryptographic campaign
+
+The standalone Rust benchmark named bench_attributes measures the available
+CP-ABE and ABS operations without starting the HTTP or network components.
+Its defaults are 10 warmups and 100 measured repetitions, with raw timings in
+nanoseconds and summaries in milliseconds.
+
+Commands:
+
+    cargo run --release --bin bench_attributes
+    cargo run --release --bin bench_attributes -- --quick
+    cargo run --release --bin bench_attributes -- --only cpabe-keys --warmups 10 --measurements 100
+
+Results are written to results/attribute_benchmark/:
+timings_raw.csv, timings_summary.csv, sizes.csv, errors.csv, metadata.json,
+and SVG plots when plotting is enabled. The benchmark uses the existing
+primitives as implemented. In particular, the current ABS implementation
+supports d=1 and one attribute per user key, while the current CP-ABE
+implementation encodes exactly two ciphertext leaves. Unsupported requested
+cardinalities are recorded explicitly in errors.csv; no cryptographic
+operation is simulated or reimplemented.
 
 ## Structure
 

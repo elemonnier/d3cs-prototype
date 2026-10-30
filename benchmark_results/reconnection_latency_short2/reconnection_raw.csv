@@ -1,0 +1,2 @@
+iteration,message_id,outage_requested_s,outage_effective_ms,t_disconnect_utc,t_emit_utc,t_reconnect_command_utc,t_reconnect_confirmed_utc,t_connectivity_observed_utc,t_receive_utc,disconnect_monotonic_ns,emit_monotonic_ns,reconnect_command_monotonic_ns,reconnect_confirmed_monotonic_ns,receive_monotonic_ns,delivery_ms,status,error
+1,,1.000000,,,,,,,,,,,,,,error,timeout initial LEPTON link: [Errno 111] Connection refused

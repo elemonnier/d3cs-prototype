@@ -1,0 +1,13 @@
+DGS004
+SIMUL 0 0
+cg area="car:-20.0,-20.0,100.0,40.0"
+st 0
+an N01 profile="n01" x=50.00 y=0.00 label="U1"
+an N00 profile="n00" x=0.00 y=0.00 label="Authority"
+ae N00-N01 N00 N01
+st 30000
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+ce N00-N01 tag="TRANSFER"
+ce N00-N01 -tag
+ce N00-N01 status="DISCONNECTED"

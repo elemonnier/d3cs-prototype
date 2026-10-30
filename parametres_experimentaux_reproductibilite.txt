@@ -45,7 +45,7 @@ Configuration
 
 Banc experimental
 -----------------
-- src/bin/timings.rs
+- src/bin/abs_timings.rs
   Une iteration par primitive, mesure en microsecondes.
 - docs/specs/TIMINGS.md
   Specification ayant conduit au banc de mesure.
@@ -348,7 +348,7 @@ Le banc mesure sequentiellement :
 - CP-ABE : setup, keygen, delegate, tm_delegate, encrypt, tm_decrypt, decrypt ;
 - agregat : revoke_missions.
 
-Source : src/bin/timings.rs, lignes 223-299.
+Source : src/bin/abs_timings.rs, lignes 223-299.
 
 Parametres exacts :
 
@@ -648,17 +648,17 @@ Format des cles | JSON compact et Base64 sans padding | cpabe.rs:113-126 | Certa
 PP CP-ABE | 1 273 octets | schema et runtime/tm/pp.bin | Partielle, artefact ignore
 MSK CP-ABE | 120 octets | schema et runtime/authority/msk.bin | Partielle, artefact ignore
 PSKA | 148 octets | PskaV1 et artefacts runtime | Certaine sur le format
-PSKS, 2 attributs | 606 octets | PsksV1 et timings.rs | Certaine par calcul
+PSKS, 2 attributs | 606 octets | PsksV1 et abs_timings.rs | Certaine par calcul
 TK | 148 octets, non persiste | cpabe.rs:63-67 et 376-380 | Certaine
 Parametres ABS | 1 137 octets | schema et runtime/tm/params.bin | Partielle
 MSK ABS | 63 octets | schema et runtime/authority/sk.bin | Partielle
 Signature ABS | 357 octets | AbsSignatureV1 | Certaine par format
 Politique CP-ABE | classification AND mission, 2 feuilles | cpabe.rs:439-468 | Certaine
 Univers | FR-S, FR-DR, M1, M2 | attributes.json | Certaine
-Attributs du banc | FR-DR et M1 | timings.rs:223-230 | Certaine
-Message du banc | test, 4 octets | timings.rs:224-260 | Certaine
-Repetitions | 1 | TIMINGS.md:30 et timings.rs | Certaine
-Metrique | Temps d'execution en us | timings.rs:168-176 | Certaine
+Attributs du banc | FR-DR et M1 | abs_timings.rs:223-230 | Certaine
+Message du banc | test, 4 octets | abs_timings.rs:224-260 | Certaine
+Repetitions | 1 | TIMINGS.md:30 et abs_timings.rs | Certaine
+Metrique | Temps d'execution en us | abs_timings.rs:168-176 | Certaine
 Resultats versionnes | Non identifiable dans le depot | Aucun fichier | Absente
 Noeuds reseau | Authority et U1 a U9 | main.rs:489-500 | Certaine
 TMs logiques | TM0 a TM9, integres aux processus | network/main.rs | Certaine
@@ -836,7 +836,7 @@ chronometre.
 D.6 Banc cryptographique
 ------------------------
 
-  cargo run --locked --bin timings --release
+  cargo run --locked --bin abs_timings --release
 
 Cette commande effectue exactement une mesure par operation. Pour une
 experience de these, le binaire devra etre etendu afin de gerer repetitions,

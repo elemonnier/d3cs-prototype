@@ -1,4 +1,4 @@
-J'aimerais que tu me crées un nouveau fichier dans src/bin appelé timings.rs qui permet de mesurer le temps d'exécution de certaines fonctions crypto. Le temps d'exécution sera mesuré directement dans le script. On devra pouvoir le lancer avec cargo run --bin timings --release.
+J'aimerais que tu me crées un nouveau fichier dans src/bin appelé abs_timings.rs qui permet de mesurer le temps d'exécution de certaines fonctions crypto. Le temps d'exécution sera mesuré directement dans le script. On devra pouvoir le lancer avec cargo run --release --bin abs_timings.
 L'objectif est que, lorsque je lance ce script, tu me mesure le temps d'exécution de certaines fonctions crypto d'abs.rs, cpabe.rs et mod.rs.
 Fonctions où le temps doit être mesuré :
 - abs : setup() -> pas de donnée d'entrée

@@ -185,7 +185,10 @@ public class OppNetGraphDGS extends OppNetGraph {
             }
             String status = edgeAttributes.get("status");
             if (dgsStatus != null && !Objects.equals(status, dgsStatus)) {
-                edge.setStatus(dgsStatus);
+                // Route DGS status changes through the graph API so that the
+                // usual node-status rules and hub listeners are notified.
+                setEdgeStatus(edge.getNode0().getId(), edge.getNode1().getId(),
+                        edge.getConnectivityType(), dgsStatus);
             }
         }
 

@@ -77,6 +77,12 @@ struct CtEntry {
     signature: String,
 }
 
+fn same_json_payload(left: &str, right: &str) -> bool {
+    let left = serde_json::from_str::<serde_json::Value>(left);
+    let right = serde_json::from_str::<serde_json::Value>(right);
+    matches!((left, right), (Ok(left), Ok(right)) if left == right)
+}
+
 pub struct NetworkRuntime {
     manager: NetworkManager,
     node_id: String,
@@ -328,9 +334,28 @@ impl NetworkRuntime {
             let Some(login) = login_from_pska_file(&e.name) else {
                 continue;
             };
+            let pska: cpabe::PskaV1 = serde_json::from_str(&e.data)
+                .map_err(|_| anyhow!("Rejected malformed CP-ABE PSKA synchronization payload"))?;
+            cpabe::validate_pska(&pska)
+                .map_err(|_| anyhow!("Rejected CP-ABE PSKA synchronization payload version"))?;
+            cpabe::require_system_id(&pska.system_id, "PSKA synchronization payload")?;
             if let Some(clearance) = self.get_user_clearance(state, &login) {
                 if self.check_arl(state, &clearance.mission)? {
                     continue;
+                }
+            }
+            if let Ok(existing_data) = crypto::read_pska_for_login(state, &login) {
+                if let Ok(existing_pska) = serde_json::from_str::<cpabe::PskaV1>(&existing_data) {
+                    if cpabe::validate_pska(&existing_pska).is_ok() {
+                        let incoming_data = serde_json::to_string(&pska)?;
+                        if same_json_payload(&existing_data, &incoming_data) {
+                            continue;
+                        }
+                        return Err(anyhow!(
+                            "Conflicting CP-ABE PSKA synchronization payload for {}",
+                            e.name
+                        ));
+                    }
                 }
             }
             crypto::write_pska_for_login(state, &login, &e.data)?;
@@ -544,6 +569,7 @@ impl NetworkRuntime {
         ))?)?;
         let pska_in: cpabe::PskaV1 =
             serde_json::from_str(&crypto::read_pska_for_login(state, &delegator)?)?;
+        cpabe::validate_key_material(&pp, &pska_in, &psks_in)?;
 
         let attrs = attrs_from_clearance(&clearance);
         let (psks_out, tk) = cpabe::delegate(&pp, &psks_in, &attrs)?;
@@ -585,6 +611,7 @@ impl NetworkRuntime {
             vec![
                 "TM_KEY".to_string(),
                 login,
+                serde_json::to_string(&pp)?,
                 serde_json::to_string(&params)?,
                 serde_json::to_string(&pska_out)?,
             ],
@@ -600,6 +627,23 @@ impl NetworkRuntime {
         }
         let kind = frame.args[0].as_str();
         let login = normalize_login(&frame.args[1]);
+        let trusted_source = match kind {
+            "USER_KEYGEN" | "USER_ABS_SYNC" => frame.src.eq_ignore_ascii_case("Authority"),
+            "TM_KEY" => {
+                frame.src.eq_ignore_ascii_case("Authority")
+                    || is_user_node_source(&frame.src)
+                    || is_tm_source(&frame.src)
+            }
+            "USER_DELEGATION" => is_user_node_source(&frame.src),
+            _ => true,
+        };
+        if !trusted_source {
+            return Err(anyhow!(
+                "Rejected {} key response from unexpected source {}",
+                kind,
+                frame.src
+            ));
+        }
         match kind {
             "USER_KEYGEN" => {
                 if frame.args.len() >= 5 {
@@ -627,8 +671,14 @@ impl NetworkRuntime {
                 }
             }
             "TM_KEY" => {
-                if frame.args.len() >= 4 {
-                    self.store_tm_payload(state, &login, &frame.args[2], &frame.args[3])?;
+                if frame.args.len() >= 5 {
+                    self.store_tm_payload(
+                        state,
+                        &login,
+                        &frame.args[2],
+                        &frame.args[3],
+                        &frame.args[4],
+                    )?;
                     self.mark_pending(&login, &frame.src, false, true);
                 }
             }
@@ -646,16 +696,30 @@ impl NetworkRuntime {
         if id == 0 {
             return Ok(());
         }
-        if crypto::get_document_payload(state, id)?.is_some() {
-            return Ok(());
-        }
         let ct: cpabe::CiphertextV1 = serde_json::from_str(&frame.args[1])?;
+        cpabe::validate_ciphertext(&ct)
+            .map_err(|_| anyhow!("Rejected CP-ABE ciphertext version"))?;
         let sig: abs::AbsSignatureV1 = serde_json::from_str(&frame.args[2])?;
         let params: abs::AbsParamsV1 =
             serde_json::from_str(&fs::read_to_string(format!("{}/params.bin", state.tm_dir))?)?;
+        let pp: cpabe::PublicParamsV1 =
+            serde_json::from_str(&fs::read_to_string(format!("{}/pp.bin", state.tm_dir))?)?;
+        cpabe::validate_ciphertext_for_pp(&pp, &ct)?;
+        cpabe::require_system_id(&ct.system_id, "ciphertext")?;
         let ct_ser = serde_json::to_string(&ct)?;
         if !abs::verify_any(&params, &sig, ct_ser.as_bytes())? {
             return Ok(());
+        }
+        if let Some(existing) = crypto::get_document_payload(state, id)? {
+            if same_json_payload(&existing.ciphertext, &frame.args[1])
+                && same_json_payload(&existing.signature, &frame.args[2])
+            {
+                return Ok(());
+            }
+            return Err(anyhow!(
+                "Conflicting CP-ABE ciphertext synchronization payload for id {}",
+                id
+            ));
         }
         crypto::store_document_payload(state, id, frame.args[1].clone(), frame.args[2].clone())?;
         Ok(())
@@ -830,7 +894,7 @@ impl NetworkRuntime {
             vec![
                 "USER_KEYGEN".to_string(),
                 login.to_string(),
-                k.pp,
+                k.pp.clone(),
                 k.psks,
                 k.skw,
             ],
@@ -841,7 +905,13 @@ impl NetworkRuntime {
             "Authority",
             tm_topic,
             D3csRequest::KeyResponse,
-            vec!["TM_KEY".to_string(), login.to_string(), k.params, k.pska],
+            vec![
+                "TM_KEY".to_string(),
+                login.to_string(),
+                k.pp.clone(),
+                k.params,
+                k.pska,
+            ],
             true,
         )
     }
@@ -923,25 +993,90 @@ impl NetworkRuntime {
                 if data.trim().is_empty() {
                     continue;
                 }
+                let Ok(pska) = serde_json::from_str::<cpabe::PskaV1>(&data) else {
+                    continue;
+                };
+                if cpabe::validate_pska(&pska).is_err() {
+                    continue;
+                }
+                if cpabe::require_system_id(&pska.system_id, "PSKA").is_err() {
+                    continue;
+                }
+                if let Some(previous) = out.iter().find(|entry| entry.name == name) {
+                    if !same_json_payload(&previous.data, &data) {
+                        return Err(anyhow!(
+                            "Conflicting local CP-ABE PSKA payload for {}",
+                            name
+                        ));
+                    }
+                    continue;
+                }
                 out.push(PskaEntry { name, data });
             }
         }
         out.sort_by(|a, b| a.name.cmp(&b.name));
-        out.dedup_by(|a, b| a.name == b.name);
         Ok(out)
     }
 
     // lecture de tous les chiffrés avant de faire une synchronisation
     // stockage local des chiffrés lors d'une synchronisation réseau
     fn store_ct_entries(&self, state: &Arc<AppState>, items: &[CtEntry]) -> Result<()> {
+        let params = if items.is_empty() {
+            None
+        } else {
+            Some(serde_json::from_str::<abs::AbsParamsV1>(
+                &fs::read_to_string(format!("{}/params.bin", state.tm_dir))?,
+            )?)
+        };
+        let pp = if items.is_empty() {
+            None
+        } else {
+            Some(serde_json::from_str::<cpabe::PublicParamsV1>(
+                &fs::read_to_string(format!("{}/pp.bin", state.tm_dir))?,
+            )?)
+        };
         for i in items {
             if !i.ciphertext.trim().is_empty() && !i.signature.trim().is_empty() {
                 let ct: cpabe::CiphertextV1 = match serde_json::from_str(&i.ciphertext) {
                     Ok(v) => v,
                     Err(_) => continue,
                 };
+                if cpabe::validate_ciphertext(&ct).is_err() {
+                    continue;
+                }
+                if cpabe::require_system_id(&ct.system_id, "ciphertext").is_err() {
+                    continue;
+                }
+                let Some(pp) = pp.as_ref() else {
+                    return Ok(());
+                };
+                if cpabe::validate_ciphertext_for_pp(pp, &ct).is_err() {
+                    continue;
+                }
+                let sig: abs::AbsSignatureV1 = match serde_json::from_str(&i.signature) {
+                    Ok(v) => v,
+                    Err(_) => continue,
+                };
+                let ct_ser = serde_json::to_string(&ct)?;
+                let Some(params) = params.as_ref() else {
+                    return Ok(());
+                };
+                if !abs::verify_any(params, &sig, ct_ser.as_bytes())? {
+                    continue;
+                }
                 if !self.ct_matches_local_access(state, &ct)? {
                     continue;
+                }
+                if let Some(existing) = crypto::get_document_payload(state, i.id)? {
+                    if same_json_payload(&existing.ciphertext, &i.ciphertext)
+                        && same_json_payload(&existing.signature, &i.signature)
+                    {
+                        continue;
+                    }
+                    return Err(anyhow!(
+                        "Conflicting CP-ABE ciphertext synchronization payload for id {}",
+                        i.id
+                    ));
                 }
                 crypto::store_document_payload(
                     state,
@@ -966,10 +1101,47 @@ impl NetworkRuntime {
         if pp.trim().is_empty() || psks.trim().is_empty() {
             return Err(anyhow!("Invalid empty user key payload"));
         }
+        let pp_value: cpabe::PublicParamsV1 = serde_json::from_str(pp)
+            .map_err(|_| anyhow!("Invalid CP-ABE public parameters payload"))?;
+        cpabe::validate_public_params(&pp_value)
+            .map_err(|_| anyhow!("Rejected CP-ABE public parameters version"))?;
+        cpabe::require_system_id(&pp_value.system_id, "public parameters")?;
+        let psks_value: cpabe::PsksV1 =
+            serde_json::from_str(psks).map_err(|_| anyhow!("Invalid CP-ABE PSKS payload"))?;
+        cpabe::validate_psks(&psks_value)
+            .map_err(|_| anyhow!("Rejected CP-ABE PSKS payload version"))?;
+        cpabe::validate_psks_for_pp(&pp_value, &psks_value)
+            .map_err(|_| anyhow!("CP-ABE PSKS do not belong to received public parameters"))?;
         let user_dir = format!("{}/{}", state.users_dir, login);
         fs::create_dir_all(&user_dir)?;
+        let pp_path = format!("{}/pp.bin", user_dir);
+        if let Ok(existing) = fs::read_to_string(&pp_path) {
+            let existing_pp: cpabe::PublicParamsV1 = serde_json::from_str(&existing)
+                .map_err(|_| anyhow!("Existing CP-ABE public parameters are malformed"))?;
+            if cpabe::public_params_id(&existing_pp)? != cpabe::public_params_id(&pp_value)? {
+                return Err(anyhow!(
+                    "Refusing to replace user CP-ABE public parameters with a different system"
+                ));
+            }
+        }
+        let psks_path = format!("{}/psks{}.bin", user_dir, login);
+        if let Ok(existing_data) = fs::read_to_string(&psks_path) {
+            if let Ok(existing_psks) = serde_json::from_str::<cpabe::PsksV1>(&existing_data) {
+                if cpabe::validate_psks(&existing_psks).is_ok()
+                    && cpabe::require_system_id(&existing_psks.system_id, "PSKS").is_ok()
+                {
+                    let incoming_data = serde_json::to_string(&psks_value)?;
+                    if !same_json_payload(&existing_data, &incoming_data) {
+                        return Err(anyhow!(
+                            "Conflicting CP-ABE PSKS key response for {}",
+                            login
+                        ));
+                    }
+                }
+            }
+        }
         write_atomic_text(&format!("{}/pp.bin", user_dir), pp)?;
-        write_atomic_text(&format!("{}/psks{}.bin", user_dir, login), psks)?;
+        write_atomic_text(&psks_path, psks)?;
         if let Some(v) = skw {
             if v.trim().is_empty() {
                 return Err(anyhow!("Invalid empty ABS key payload"));
@@ -995,12 +1167,51 @@ impl NetworkRuntime {
         &self,
         state: &Arc<AppState>,
         login: &str,
+        pp: &str,
         params: &str,
         pska: &str,
     ) -> Result<()> {
-        if params.trim().is_empty() || pska.trim().is_empty() {
+        if pp.trim().is_empty() || params.trim().is_empty() || pska.trim().is_empty() {
             return Err(anyhow!("Invalid empty TM key payload"));
         }
+        let pp_value: cpabe::PublicParamsV1 = serde_json::from_str(pp)
+            .map_err(|_| anyhow!("Invalid CP-ABE public parameters payload"))?;
+        cpabe::validate_public_params(&pp_value)
+            .map_err(|_| anyhow!("Rejected CP-ABE public parameters version"))?;
+        cpabe::require_system_id(&pp_value.system_id, "public parameters")?;
+        let pska_value: cpabe::PskaV1 =
+            serde_json::from_str(pska).map_err(|_| anyhow!("Invalid CP-ABE PSKA payload"))?;
+        cpabe::validate_pska(&pska_value)
+            .map_err(|_| anyhow!("Rejected CP-ABE PSKA payload version"))?;
+        cpabe::require_system_id(&pska_value.system_id, "PSKA")?;
+        cpabe::validate_pska_for_pp(&pp_value, &pska_value)
+            .map_err(|_| anyhow!("CP-ABE PSKA does not belong to received public parameters"))?;
+        let pp_path = format!("{}/pp.bin", state.tm_dir);
+        if let Ok(existing) = fs::read_to_string(&pp_path) {
+            let existing_pp: cpabe::PublicParamsV1 = serde_json::from_str(&existing)
+                .map_err(|_| anyhow!("Existing TM CP-ABE public parameters are malformed"))?;
+            if cpabe::public_params_id(&existing_pp)? != cpabe::public_params_id(&pp_value)? {
+                return Err(anyhow!(
+                    "Refusing to replace TM CP-ABE public parameters with a different system"
+                ));
+            }
+        }
+        if let Ok(existing_data) = crypto::read_pska_for_login(state, login) {
+            if let Ok(existing_pska) = serde_json::from_str::<cpabe::PskaV1>(&existing_data) {
+                if cpabe::validate_pska(&existing_pska).is_ok()
+                    && cpabe::require_system_id(&existing_pska.system_id, "PSKA").is_ok()
+                {
+                    let incoming_data = serde_json::to_string(&pska_value)?;
+                    if !same_json_payload(&existing_data, &incoming_data) {
+                        return Err(anyhow!(
+                            "Conflicting CP-ABE PSKA TM key payload for {}",
+                            login
+                        ));
+                    }
+                }
+            }
+        }
+        write_atomic_text(&pp_path, pp)?;
         write_atomic_text(&format!("{}/params.bin", state.tm_dir), params)?;
         crypto::write_pska_for_login(state, login, pska)?;
         Ok(())
@@ -1246,6 +1457,20 @@ fn normalize_node(node: &str) -> String {
     } else {
         node.to_ascii_uppercase()
     }
+}
+
+fn is_user_node_source(source: &str) -> bool {
+    let Some(suffix) = source.strip_prefix('U').or_else(|| source.strip_prefix('u')) else {
+        return false;
+    };
+    !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_digit())
+}
+
+fn is_tm_source(source: &str) -> bool {
+    let Some(suffix) = source.strip_prefix("TM").or_else(|| source.strip_prefix("tm")) else {
+        return false;
+    };
+    !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_digit())
 }
 
 // met les login en format standard (minuscules)
@@ -1518,4 +1743,267 @@ fn benchmark_log_frame(event: &str, timestamp_ns: u128, node: &str, frame: &D3cs
         frame.src,
         frame.dst
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::same_json_payload;
+    use super::{NetworkManager, NetworkRuntime, PskaEntry};
+    use crate::crypto::{self, abs, cpabe};
+    use crate::{AppState, Clearance, RunMode, UserDb, UserRecord};
+    use std::collections::HashMap;
+    use std::sync::{Arc, Mutex};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn synchronization_compares_payload_content_for_same_name() {
+        let first = r#"{"version":2,"d":"AAA"}"#;
+        let same_content = r#"{ "d": "AAA", "version": 2 }"#;
+        let different_content = r#"{"version":2,"d":"BBB"}"#;
+
+        assert!(same_json_payload(first, same_content));
+        assert!(!same_json_payload(first, different_content));
+    }
+
+    #[test]
+    fn pska_sync_rejects_same_name_with_different_v2_content() -> anyhow::Result<()> {
+        let root = std::env::temp_dir().join(format!(
+            "d3cs-network-sync-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+        ));
+        let users_dir = root.join("users");
+        let tm_dir = root.join("tm");
+        let authority_dir = root.join("authority");
+        let config_dir = root.join("config");
+        let ihm_dir = root.join("ihm");
+
+        for directory in [&users_dir, &tm_dir, &authority_dir, &config_dir, &ihm_dir] {
+            std::fs::create_dir_all(directory)?;
+        }
+
+        let mut users = HashMap::new();
+        users.insert(
+            "u1".to_string(),
+            UserRecord {
+                password: "test".to_string(),
+                clearance: Clearance {
+                    classification: "FR-DR".to_string(),
+                    mission: "M1".to_string(),
+                },
+                is_authority_user: false,
+            },
+        );
+        let state = Arc::new(AppState {
+            host: "127.0.0.1".to_string(),
+            port: 0,
+            config_dir: config_dir.to_string_lossy().to_string(),
+            users_dir: users_dir.to_string_lossy().to_string(),
+            tm_dir: tm_dir.to_string_lossy().to_string(),
+            authority_dir: authority_dir.to_string_lossy().to_string(),
+            ihm_dir: ihm_dir.to_string_lossy().to_string(),
+            mode: RunMode::Network,
+            user_db: Mutex::new(UserDb { users }),
+            sessions: Mutex::new(HashMap::new()),
+            pending_revocations: Mutex::new(Vec::new()),
+            network_runtime: Mutex::new(None),
+        });
+
+        let manager = NetworkManager::new("U1", "")?;
+        let runtime = NetworkRuntime {
+            manager,
+            node_id: "U1".to_string(),
+            tm_id: "TM1".to_string(),
+            is_authority: false,
+            pending: Mutex::new(HashMap::new()),
+            notifications: Mutex::new(Vec::new()),
+            authority_seen: Mutex::new(None),
+        };
+        let (pp, msk) = cpabe::setup()?;
+        let attrs = vec!["FR-DR".to_string(), "M1".to_string()];
+        let (original, _) = cpabe::keygen(&pp, &msk, &attrs)?;
+        let (conflicting, _) = cpabe::keygen(&pp, &msk, &attrs)?;
+        let original_data = serde_json::to_string(&original)?;
+        crypto::write_pska_for_login(&state, "u1", &original_data)?;
+
+        let error = runtime
+            .update_pska(
+                &state,
+                &[PskaEntry {
+                    name: "pskau1.bin".to_string(),
+                    data: serde_json::to_string(&conflicting)?,
+                }],
+            )
+            .expect_err("same-name V2 PSKA conflict must not be silently overwritten");
+        assert!(error
+            .to_string()
+            .contains("Conflicting CP-ABE PSKA synchronization payload"));
+        assert_eq!(crypto::read_pska_for_login(&state, "u1")?, original_data);
+
+        let pp_data = serde_json::to_string(&pp)?;
+        let psks_data = serde_json::to_string(&cpabe::keygen(&pp, &msk, &attrs)?.1)?;
+        runtime.store_user_payload(&state, "u1", &pp_data, &psks_data, None)?;
+        let (other_pp, other_msk) = cpabe::setup()?;
+        let other_psks = cpabe::keygen(&other_pp, &other_msk, &attrs)?.1;
+        let replacement_error = runtime
+            .store_user_payload(
+                &state,
+                "u1",
+                &serde_json::to_string(&other_pp)?,
+                &serde_json::to_string(&other_psks)?,
+                None,
+            )
+            .expect_err("a received PP from another system must not replace the local PP");
+        assert!(replacement_error
+            .to_string()
+            .contains("Refusing to replace user CP-ABE public parameters"));
+        assert_eq!(
+            serde_json::from_str::<cpabe::PublicParamsV1>(
+                &std::fs::read_to_string(users_dir.join("u1/pp.bin"))?
+            )?
+            .system_id,
+            pp.system_id
+        );
+
+        runtime.store_tm_payload(
+            &state,
+            "u1",
+            &pp_data,
+            "{}",
+            &original_data,
+        )?;
+        let tm_replacement = cpabe::keygen(&pp, &msk, &attrs)?.0;
+        let replacement_error = runtime
+            .store_tm_payload(
+                &state,
+                "u1",
+                &pp_data,
+                "{}",
+                &serde_json::to_string(&tm_replacement)?,
+            )
+            .expect_err("TM_KEY must not silently overwrite a same-name PSKA");
+        assert!(replacement_error
+            .to_string()
+            .contains("Conflicting CP-ABE PSKA TM key payload"));
+        assert_eq!(crypto::read_pska_for_login(&state, "u1")?, original_data);
+
+        let different_psks = cpabe::keygen(&pp, &msk, &attrs)?.1;
+        let psks_error = runtime
+            .store_user_payload(
+                &state,
+                "u1",
+                &pp_data,
+                &serde_json::to_string(&different_psks)?,
+                None,
+            )
+            .expect_err("USER_DELEGATION must not silently overwrite same-name PSKS");
+        assert!(psks_error
+            .to_string()
+            .contains("Conflicting CP-ABE PSKS key response"));
+
+        std::fs::remove_dir_all(root).ok();
+        Ok(())
+    }
+
+    #[test]
+    fn ciphertext_sync_rejects_same_id_with_different_signed_v2_content() -> anyhow::Result<()> {
+        let root = std::env::temp_dir().join(format!(
+            "d3cs-network-ct-sync-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+        ));
+        let users_dir = root.join("users");
+        let tm_dir = root.join("tm");
+        let authority_dir = root.join("authority");
+        let config_dir = root.join("config");
+        let ihm_dir = root.join("ihm");
+
+        for directory in [&users_dir, &tm_dir, &authority_dir, &config_dir, &ihm_dir] {
+            std::fs::create_dir_all(directory)?;
+        }
+
+        let mut users = HashMap::new();
+        users.insert(
+            "authority".to_string(),
+            UserRecord {
+                password: "authority".to_string(),
+                clearance: Clearance {
+                    classification: "FR-S".to_string(),
+                    mission: "M1".to_string(),
+                },
+                is_authority_user: true,
+            },
+        );
+        let state = Arc::new(AppState {
+            host: "127.0.0.1".to_string(),
+            port: 0,
+            config_dir: config_dir.to_string_lossy().to_string(),
+            users_dir: users_dir.to_string_lossy().to_string(),
+            tm_dir: tm_dir.to_string_lossy().to_string(),
+            authority_dir: authority_dir.to_string_lossy().to_string(),
+            ihm_dir: ihm_dir.to_string_lossy().to_string(),
+            mode: RunMode::Network,
+            user_db: Mutex::new(UserDb { users }),
+            sessions: Mutex::new(HashMap::new()),
+            pending_revocations: Mutex::new(Vec::new()),
+            network_runtime: Mutex::new(None),
+        });
+
+        crypto::setup_if_needed(&state)?;
+        let (pp, _msk) = cpabe::setup()?;
+        let (params, abs_msk) = abs::setup()?;
+        std::fs::write(tm_dir.join("pp.bin"), serde_json::to_string(&pp)?)?;
+        std::fs::write(tm_dir.join("params.bin"), serde_json::to_string(&params)?)?;
+        std::fs::write(
+            authority_dir.join("sk.bin"),
+            serde_json::to_string(&abs_msk)?,
+        )?;
+        let abs_skw = abs::extract(&params, &abs_msk, "FR-S")?;
+        let label = crypto::DocumentLabel {
+            classification: "FR-DR".to_string(),
+            mission: "M1".to_string(),
+        };
+        let first_ct = cpabe::encrypt(&pp, &label, "first")?;
+        let second_ct = cpabe::encrypt(&pp, &label, "second")?;
+        let first_ct_data = serde_json::to_string(&first_ct)?;
+        let second_ct_data = serde_json::to_string(&second_ct)?;
+        let first_sig = abs::sign(&params, &abs_skw, first_ct_data.as_bytes())?;
+        let second_sig = abs::sign(&params, &abs_skw, second_ct_data.as_bytes())?;
+
+        let runtime = NetworkRuntime {
+            manager: NetworkManager::new("Authority", "")?,
+            node_id: "Authority".to_string(),
+            tm_id: "TM0".to_string(),
+            is_authority: true,
+            pending: Mutex::new(HashMap::new()),
+            notifications: Mutex::new(Vec::new()),
+            authority_seen: Mutex::new(None),
+        };
+        runtime.store_ct_entries(
+            &state,
+            &[super::CtEntry {
+                id: 7,
+                ciphertext: first_ct_data.clone(),
+                signature: serde_json::to_string(&first_sig)?,
+            }],
+        )?;
+        let error = runtime
+            .store_ct_entries(
+                &state,
+                &[super::CtEntry {
+                    id: 7,
+                    ciphertext: second_ct_data,
+                    signature: serde_json::to_string(&second_sig)?,
+                }],
+            )
+            .expect_err("same-ID V2 ciphertext conflict must not be silently ignored");
+        assert!(error
+            .to_string()
+            .contains("Conflicting CP-ABE ciphertext synchronization payload"));
+        let stored = crypto::get_document_payload(&state, 7)?.expect("initial ciphertext stored");
+        assert_eq!(stored.ciphertext, first_ct_data);
+
+        std::fs::remove_dir_all(root).ok();
+        Ok(())
+    }
 }

@@ -39,8 +39,11 @@ import java.util.Enumeration;
 
 import casa.util.Logger;
 import casa.util.Processor;
+import casa.lepton.OppEdge;
 import casa.lepton.OppNet;
 import static casa.lepton.OppNet.EDGE_ADDED;
+import static casa.lepton.OppNet.EDGE_CHANGED;
+import static casa.lepton.OppNet.EDGE_REMOVED;
 import casa.lepton.conf.OppNetProperties;
 
 public class Hub
@@ -190,8 +193,27 @@ public class Hub
 
     // ------------------------------------------------------------
     public void notifyEdgeListeners(OppEdge edge, String command) {
+        Logger.log("hub", "edge event " + command + " " + edge.getId()
+                + " status=" + edge.getStatus());
         if (command.equals(EDGE_ADDED)) {
             sessionStatus_.edgeAdded(edge);
+        } else if (command.equals(EDGE_REMOVED)
+                || (command.equals(EDGE_CHANGED)
+                && "DISCONNECTED".equals(edge.getStatus()))) {
+            // A topology change must also close an already established TCP
+            // relay. Otherwise the graph says DISCONNECTED while DoDWAN keeps
+            // using the old stream until its normal failure timeout.
+            closeTcpProxy(edge.getNode0().getId());
+            closeTcpProxy(edge.getNode1().getId());
+        }
+    }
+
+    private void closeTcpProxy(String nodeId) {
+        Node node = nodes_.get(nodeId);
+        if (node != null) {
+            // setProxy(null) closes the former relay and removes the stale
+            // proxy, allowing the next beacon to create a fresh TCP proxy.
+            node.setProxy(Beacon.GossipingType.TCP, null);
         }
     }
     // ============================================================
@@ -221,6 +243,17 @@ public class Hub
         //   now that of the local proxy
         // Let us consider each known gossiping type
         for (Beacon.GossipingType gtype : Beacon.GossipingType.values()) {
+
+            // A beacon alone must not recreate a relay while the graph says
+            // that all contacts of this node are disconnected.  The previous
+            // behavior reopened the proxy on the next beacon after a DGS
+            // DISCONNECTED event, effectively shortening the outage.
+            if (oppNet_.nbNeighbors(node.id(), null, "CONNECTED") == 0) {
+                Logger.log("hub", "suppressing proxy for " + node.id()
+                        + " because no CONNECTED neighbor is visible");
+                node.setProxy(gtype, null);
+                continue;
+            }
 
             // (a) If a gossiping address is specified in the beacon
             // for that gossiping type, let us try to create a proxy
@@ -349,7 +382,7 @@ public class Hub
                 if (rcv != null) {
                     // (5.1) Forwarding to one receiver only (as requested
                     // by the sender)
-                    if (oppNet_.areNeighbors(sdr, rcv, null, null)) {
+                    if (oppNet_.areNeighbors(sdr, rcv, null, "CONNECTED")) {
                         Logger.log("hub", "  > sdr=" + sdr
                                 + ",rcv=" + rcv);
                         send(packet, rcv);
@@ -357,7 +390,7 @@ public class Hub
                 } else {
                     // (5.2) Forwarding to all peers (i.e., neighbors)
                     // of the sender
-                    Collection<String> peers = oppNet_.getNeighbors(sdr, null, null);
+                    Collection<String> peers = oppNet_.getNeighbors(sdr, null, "CONNECTED");
                     Set<String> targets = new HashSet<String>();
                     for (String id : peers) {
                         targets.add(id);

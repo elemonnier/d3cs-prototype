@@ -4,16 +4,20 @@ use anyhow::{anyhow, Result};
 use base64::Engine;
 use rand_core::RngCore;
 use serde::{Deserialize, Serialize};
-use sha2::Digest;
+use sha2::{Digest, Sha256};
 
 use aes_gcm::aead::{Aead, KeyInit};
 use aes_gcm::{Aes256Gcm, Key, Nonce};
 
 use ark_bls12_381::{Bls12_381, Fq12, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
+use ark_ec::hashing::curve_maps::wb::WBMap;
+use ark_ec::hashing::map_to_curve_hasher::MapToCurveBasedHasher;
+use ark_ec::hashing::HashToCurve;
 use ark_ec::pairing::Pairing;
 use ark_ec::AffineRepr;
 use ark_ec::CurveGroup;
 use ark_ec::Group;
+use ark_ff::field_hashers::DefaultFieldHasher;
 use ark_ff::BigInteger;
 use ark_ff::Field;
 use ark_ff::PrimeField;
@@ -23,9 +27,136 @@ use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 
 use super::DocumentLabel;
 
+const CPABE_CRYPTO_VERSION: u8 = 2;
+const CPABE_ATTR_HASH_DST: &[u8] = b"D3CS-CPABE-V2-ATTR-G2";
+const CPABE_SYSTEM_ID_DOMAIN: &[u8] = b"D3CS-CPABE-V2-SYSTEM-ID";
+
+fn ensure_version(version: u8, object: &str) -> Result<()> {
+    if version != CPABE_CRYPTO_VERSION {
+        return Err(anyhow!(
+            "Unsupported {} cryptographic version {}; expected version {}",
+            object,
+            version,
+            CPABE_CRYPTO_VERSION
+        ));
+    }
+    Ok(())
+}
+
+#[allow(dead_code)]
+pub fn validate_public_params(pp: &PublicParamsV1) -> Result<()> {
+    ensure_version(pp.version, "public parameters")?;
+    if !pp.system_id.is_empty() && pp.system_id != public_params_id(pp)? {
+        return Err(anyhow!("CP-ABE public parameters system identity mismatch"));
+    }
+    Ok(())
+}
+
+#[allow(dead_code)]
+pub fn validate_pska(pska: &PskaV1) -> Result<()> {
+    ensure_version(pska.version, "PSKA")
+}
+
+pub fn require_system_id(system_id: &str, object: &str) -> Result<()> {
+    if system_id.is_empty() {
+        return Err(anyhow!("Missing CP-ABE system identity in {object}"));
+    }
+    Ok(())
+}
+
+fn check_system_id(expected: &str, actual: &str, object: &str) -> Result<()> {
+    if !actual.is_empty() && actual != expected {
+        return Err(anyhow!(
+            "CP-ABE system identity mismatch for {object}: expected {expected}, got {actual}"
+        ));
+    }
+    Ok(())
+}
+
+fn add_identity_field(hasher: &mut Sha256, name: &[u8], value: &[u8]) {
+    hasher.update((name.len() as u64).to_be_bytes());
+    hasher.update(name);
+    hasher.update((value.len() as u64).to_be_bytes());
+    hasher.update(value);
+}
+
+/// Stable identity for one CP-ABE V2 public-parameter set.
+/// The identity is a digest of the canonical field sequence, not of the JSON
+/// representation, so formatting and map ordering cannot change it.
+pub fn public_params_id(pp: &PublicParamsV1) -> Result<String> {
+    ensure_version(pp.version, "public parameters")?;
+    let mut hasher = Sha256::new();
+    hasher.update(CPABE_SYSTEM_ID_DOMAIN);
+    for (name, value) in [
+        (b"version".as_slice(), pp.version.to_string().as_bytes()),
+        (b"g".as_slice(), pp.g.as_bytes()),
+        (b"g2".as_slice(), pp.g2.as_bytes()),
+        (b"h".as_slice(), pp.h.as_bytes()),
+        (b"f".as_slice(), pp.f.as_bytes()),
+        (b"f2".as_slice(), pp.f2.as_bytes()),
+        (b"y".as_slice(), pp.y.as_bytes()),
+    ] {
+        add_identity_field(&mut hasher, name, value);
+    }
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect())
+}
+
+pub fn validate_key_material(
+    pp: &PublicParamsV1,
+    pska: &PskaV1,
+    psks: &PsksV1,
+) -> Result<()> {
+    validate_public_params(pp)?;
+    validate_pska(pska)?;
+    validate_psks(psks)?;
+    let id = public_params_id(pp)?;
+    check_system_id(&id, &pska.system_id, "PSKA")?;
+    check_system_id(&id, &psks.system_id, "PSKS")?;
+    Ok(())
+}
+
+pub fn validate_pska_for_pp(pp: &PublicParamsV1, pska: &PskaV1) -> Result<()> {
+    validate_public_params(pp)?;
+    validate_pska(pska)?;
+    let id = public_params_id(pp)?;
+    check_system_id(&id, &pska.system_id, "PSKA")
+}
+
+pub fn validate_psks_for_pp(pp: &PublicParamsV1, psks: &PsksV1) -> Result<()> {
+    validate_public_params(pp)?;
+    validate_psks(psks)?;
+    let id = public_params_id(pp)?;
+    check_system_id(&id, &psks.system_id, "PSKS")
+}
+
+pub fn validate_ciphertext_for_pp(pp: &PublicParamsV1, ct: &CiphertextV1) -> Result<()> {
+    validate_public_params(pp)?;
+    validate_ciphertext(ct)?;
+    let id = public_params_id(pp)?;
+    check_system_id(&id, &ct.system_id, "ciphertext")
+}
+
+#[allow(dead_code)]
+pub fn validate_psks(psks: &PsksV1) -> Result<()> {
+    ensure_version(psks.version, "PSKS")
+}
+
+#[allow(dead_code)]
+pub fn validate_ciphertext(ct: &CiphertextV1) -> Result<()> {
+    ensure_version(ct.version, "ciphertext")
+}
+
+// The V1 suffix is a historical Rust API name. All objects emitted and
+// accepted by this module carry CPABE_CRYPTO_VERSION == 2.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PublicParamsV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub g: String,
     pub g2: String,
     pub h: String,
@@ -37,6 +168,8 @@ pub struct PublicParamsV1 {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MasterKeyV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub alpha: String,
     pub beta: String,
 }
@@ -44,6 +177,8 @@ pub struct MasterKeyV1 {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PskaV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub d: String,
 }
 
@@ -57,12 +192,16 @@ pub struct PsksAttrV1 {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PsksV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub attrs: Vec<PsksAttrV1>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct TkV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub t: String,
 }
 
@@ -90,6 +229,8 @@ pub struct SymCiphertextV1 {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CiphertextV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub label: DocumentLabel,
     pub abe: AbeCiphertextV1,
     pub sym: SymCiphertextV1,
@@ -105,6 +246,8 @@ pub struct AbeIntermediateV1 {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct IntermediateCiphertextV1 {
     pub version: u8,
+    #[serde(default)]
+    pub system_id: String,
     pub label: DocumentLabel,
     pub abe: AbeIntermediateV1,
     pub sym: SymCiphertextV1,
@@ -158,6 +301,9 @@ fn ser_g1(p: &G1Projective) -> Result<Vec<u8>> {
 
 fn de_g1(data: &[u8]) -> Result<G1Projective> {
     let p = G1Affine::deserialize_compressed(data).map_err(|_| anyhow!("Deserialize error"))?;
+    if !p.is_on_curve() || !p.is_in_correct_subgroup_assuming_on_curve() {
+        return Err(anyhow!("Point is not a valid G1 subgroup element"));
+    }
     Ok(p.into_group())
 }
 
@@ -171,6 +317,9 @@ fn ser_g2(p: &G2Projective) -> Result<Vec<u8>> {
 
 fn de_g2(data: &[u8]) -> Result<G2Projective> {
     let p = G2Affine::deserialize_compressed(data).map_err(|_| anyhow!("Deserialize error"))?;
+    if !p.is_on_curve() || !p.is_in_correct_subgroup_assuming_on_curve() {
+        return Err(anyhow!("Point is not a valid G2 subgroup element"));
+    }
     Ok(p.into_group())
 }
 
@@ -186,25 +335,31 @@ fn de_gt(data: &[u8]) -> Result<Fq12> {
     Ok(x)
 }
 
-// hash_attr_scalar permet de prendre un attribut, le hacher et le transformer en opérateur crypto
-
-fn hash_attr_scalar(attr: &str) -> Fr {
-    let digest = sha2::Sha256::digest(attr.as_bytes());
-    Fr::from_be_bytes_mod_order(&digest)
+fn encode_attribute(attr: &str) -> Vec<u8> {
+    let bytes = attr.as_bytes();
+    let mut encoded = Vec::with_capacity(8 + bytes.len());
+    encoded.extend_from_slice(&(bytes.len() as u64).to_be_bytes());
+    encoded.extend_from_slice(bytes);
+    encoded
 }
 
-// h_g1 = g ^ s avec s attribut haché
+fn hash_attr_g2(attr: &str) -> Result<G2Projective> {
+    type Curve = ark_bls12_381::g2::Config;
+    type Hasher =
+        MapToCurveBasedHasher<G2Projective, DefaultFieldHasher<Sha256, 128>, WBMap<Curve>>;
 
-fn h_g1(g: &G1Projective, attr: &str) -> G1Projective {
-    let s = hash_attr_scalar(attr);
-    g.mul_bigint(s.into_bigint())
+    let hasher = Hasher::new(CPABE_ATTR_HASH_DST)
+        .map_err(|_| anyhow!("CP-ABE attribute hasher initialization failed"))?;
+    let point = hasher
+        .hash(&encode_attribute(attr))
+        .map_err(|_| anyhow!("CP-ABE attribute hash-to-curve failed"))?;
+    if !point.is_on_curve() || !point.is_in_correct_subgroup_assuming_on_curve() {
+        return Err(anyhow!(
+            "CP-ABE attribute hash did not produce a valid G2 subgroup element"
+        ));
+    }
+    Ok(point.into_group())
 }
-
-fn h_g2(g2: &G2Projective, attr: &str) -> G2Projective {
-    let s = hash_attr_scalar(attr);
-    g2.mul_bigint(s.into_bigint())
-}
-
 // pairing : e(a,b)
 
 fn pairing_gt(a: G1Affine, b: G2Affine) -> Fq12 {
@@ -250,8 +405,9 @@ pub fn setup() -> Result<(PublicParamsV1, MasterKeyV1)> {
     let base_gt = pairing_gt(g.into_affine(), g2.into_affine());
     let y = gt_pow(&base_gt, &alpha);
 
-    let pp = PublicParamsV1 {
-        version: 1,
+    let mut pp = PublicParamsV1 {
+        version: CPABE_CRYPTO_VERSION,
+        system_id: String::new(),
         g: b64_encode(&ser_g1(&g)?),
         g2: b64_encode(&ser_g2(&g2)?),
         h: b64_encode(&ser_g1(&h)?),
@@ -261,9 +417,11 @@ pub fn setup() -> Result<(PublicParamsV1, MasterKeyV1)> {
         y: b64_encode(&ser_gt(&y)?),
         // on n'utilise pas h1...hn car ils sont de toute manière dérivés dans keygen/delegate/encrypt
     };
+    pp.system_id = public_params_id(&pp)?;
 
     let msk = MasterKeyV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pp.system_id.clone(),
         // on encode alpha et non g^alpha pour garder de la flexibilité pour keygen/delegate
         alpha: b64_encode(&scalar_to_bytes_be(&alpha)),
         beta: b64_encode(&scalar_to_bytes_be(&beta)),
@@ -280,8 +438,14 @@ pub fn keygen(
     msk: &MasterKeyV1,
     attrs: &[String],
 ) -> Result<(PskaV1, PsksV1)> {
+    ensure_version(pp.version, "public parameters")?;
+    ensure_version(msk.version, "master key")?;
+    let pp_id = public_params_id(pp)?;
+    check_system_id(&pp_id, &msk.system_id, "master key")?;
+
     // génération de D (PSKA), D' et D'' (PSKS) : ces trois paramètres sont constitutifs de SK dans BSW07
     let mut rng = rand_core::OsRng;
+    let g1 = de_g1(&b64_decode(&pp.g)?)?;
     let g2 = de_g2(&b64_decode(&pp.g2)?)?;
 
     let alpha = bytes_be_to_scalar(&b64_decode(&msk.alpha)?);
@@ -300,16 +464,16 @@ pub fn keygen(
 
     for attr in attrs.iter() {
         let r_i = Fr::rand(&mut rng);
-        let h = h_g2(&g2, attr);
+        let h = hash_attr_g2(attr)?;
         let h_ri = h.mul_bigint(r_i.into_bigint());
         // une multiplication d'éléments du groupe (dans PM23) correspond à une somme
         let d_i = g2_r + h_ri;
-        let d_i_prime = g2.mul_bigint(r_i.into_bigint());
+        let d_i_prime = g1.mul_bigint(r_i.into_bigint());
 
         entries.push(PsksAttrV1 {
             attr: attr.clone(),
             d: b64_encode(&ser_g2(&d_i)?),
-            d_prime: b64_encode(&ser_g2(&d_i_prime)?),
+            d_prime: b64_encode(&ser_g1(&d_i_prime)?),
         });
     }
 
@@ -317,12 +481,14 @@ pub fn keygen(
     entries.sort_by(|a, b| a.attr.cmp(&b.attr));
 
     let pska = PskaV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pp_id.clone(),
         d: b64_encode(&ser_g2(&d)?),
     };
 
     let psks = PsksV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pp_id,
         attrs: entries,
     };
 
@@ -334,7 +500,13 @@ pub fn delegate(
     psks_in: &PsksV1,
     delegated_attrs: &[String],
 ) -> Result<(PsksV1, TkV1)> {
+    ensure_version(pp.version, "public parameters")?;
+    ensure_version(psks_in.version, "PSKS")?;
+    let pp_id = public_params_id(pp)?;
+    check_system_id(&pp_id, &psks_in.system_id, "PSKS")?;
+
     let mut rng = rand_core::OsRng;
+    let g1 = de_g1(&b64_decode(&pp.g)?)?;
     let g2 = de_g2(&b64_decode(&pp.g2)?)?;
     let f2 = de_g2(&b64_decode(&pp.f2)?)?;
 
@@ -351,15 +523,15 @@ pub fn delegate(
             .find(|e| e.attr == *a)
             .ok_or_else(|| anyhow!("Attribute not found in PSKS"))?;
         let d = de_g2(&b64_decode(&entry.d)?)?;
-        let d_prime = de_g2(&b64_decode(&entry.d_prime)?)?;
+        let d_prime = de_g1(&b64_decode(&entry.d_prime)?)?;
 
         let hat_r_i = Fr::rand(&mut rng);
-        let h = h_g2(&g2, &entry.attr);
+        let h = hash_attr_g2(&entry.attr)?;
         let h_hat_r_i = h.mul_bigint(hat_r_i.into_bigint());
-        let g2_hat_r_i = g2.mul_bigint(hat_r_i.into_bigint());
+        let g1_hat_r_i = g1.mul_bigint(hat_r_i.into_bigint());
 
         let new_d = d + g2_hat_r + h_hat_r_i;
-        let new_d_prime = d_prime + g2_hat_r_i;
+        let new_d_prime = d_prime + g1_hat_r_i;
 
         out_entries.push(PsksAttrV1 {
             attr: entry.attr.clone(),
@@ -367,7 +539,7 @@ pub fn delegate(
             // oubli dans le schéma de PM23 : D seconde doit être intégré dans PSKS pour pouvoir déchiffrer
             // BSW07 intègre Dj_seconde_hat de la sorte : Dj_seconde . g^rj_hat
             // ce qui est intégré ici :
-            d_prime: b64_encode(&ser_g2(&new_d_prime)?),
+            d_prime: b64_encode(&ser_g1(&new_d_prime)?),
         });
     }
 
@@ -375,13 +547,15 @@ pub fn delegate(
 
     let tk_point = f2.mul_bigint(hat_r.into_bigint());
     let tk = TkV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pp_id.clone(),
         t: b64_encode(&ser_g2(&tk_point)?),
     };
 
     Ok((
         PsksV1 {
-            version: 1,
+            version: CPABE_CRYPTO_VERSION,
+            system_id: pp_id,
             attrs: out_entries,
         },
         tk,
@@ -389,6 +563,10 @@ pub fn delegate(
 }
 
 pub fn tm_delegate(pska_in: &PskaV1, tk: &TkV1) -> Result<PskaV1> {
+    ensure_version(pska_in.version, "PSKA")?;
+    ensure_version(tk.version, "transformation key")?;
+    check_system_id(&pska_in.system_id, &tk.system_id, "transformation key")?;
+
     let d = de_g2(&b64_decode(&pska_in.d)?)?;
 
     // analytiquement, on a : g^((alpha+r)/beta)*f_2^r_hat=g^((alpha+r)/beta)*g^r_hat/beta=g^((alpha+r+r_hat)/beta)
@@ -397,12 +575,16 @@ pub fn tm_delegate(pska_in: &PskaV1, tk: &TkV1) -> Result<PskaV1> {
     let new_d = d + t;
 
     Ok(PskaV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pska_in.system_id.clone(),
         d: b64_encode(&ser_g2(&new_d)?),
     })
 }
 
 pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Result<CiphertextV1> {
+    ensure_version(pp.version, "public parameters")?;
+    let pp_id = public_params_id(pp)?;
+
     let mut rng = rand_core::OsRng;
 
     let g = de_g1(&b64_decode(&pp.g)?)?;
@@ -440,11 +622,11 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
     let leaf2_attr = label.mission.clone();
 
     let c1 = g.mul_bigint(share1.into_bigint());
-    let h1 = h_g1(&g, &leaf1_attr);
+    let h1 = hash_attr_g2(&leaf1_attr)?;
     let c1p = h1.mul_bigint(share1.into_bigint());
 
     let c2 = g.mul_bigint(share2.into_bigint());
-    let h2 = h_g1(&g, &leaf2_attr);
+    let h2 = hash_attr_g2(&leaf2_attr)?;
     let c2p = h2.mul_bigint(share2.into_bigint());
 
     // ici, on a la structure d'accès "Classification AND Mission" : 2 feuilles
@@ -457,13 +639,13 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
             index: 1,
             attr: leaf1_attr,
             c_i: b64_encode(&ser_g1(&c1)?),
-            c_i_prime: b64_encode(&ser_g1(&c1p)?),
+            c_i_prime: b64_encode(&ser_g2(&c1p)?),
         },
         AbeLeafV1 {
             index: 2,
             attr: leaf2_attr,
             c_i: b64_encode(&ser_g1(&c2)?),
-            c_i_prime: b64_encode(&ser_g1(&c2p)?),
+            c_i_prime: b64_encode(&ser_g2(&c2p)?),
         },
     ];
 
@@ -472,7 +654,8 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
     // pas d'instanciation de C(x,y)childj car on ne fonctionne qu'avec 2 feuilles
     // sur un AND+OR on en aurait besoin (car noeuds intermédiaires)
     Ok(CiphertextV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pp_id,
         label: label.clone(),
         abe: AbeCiphertextV1 {
             c_tilde: b64_encode(&ser_gt(&c_tilde)?),
@@ -487,10 +670,17 @@ pub fn encrypt(pp: &PublicParamsV1, label: &DocumentLabel, message: &str) -> Res
 }
 
 pub fn tm_decrypt(
-    _pp: &PublicParamsV1,
+    pp: &PublicParamsV1,
     ct: &CiphertextV1,
     pska: &PskaV1,
 ) -> Result<IntermediateCiphertextV1> {
+    ensure_version(pp.version, "public parameters")?;
+    ensure_version(ct.version, "ciphertext")?;
+    ensure_version(pska.version, "PSKA")?;
+    let pp_id = public_params_id(pp)?;
+    check_system_id(&pp_id, &ct.system_id, "ciphertext")?;
+    check_system_id(&pp_id, &pska.system_id, "PSKA")?;
+
     let c = de_g1(&b64_decode(&ct.abe.c)?)?;
     let d = de_g2(&b64_decode(&pska.d)?)?;
 
@@ -498,7 +688,8 @@ pub fn tm_decrypt(
 
     // TM_Decrypt : reprise de tous les éléments de CT sauf f (qui remplace c, qui a été pairé avec PSKA)
     Ok(IntermediateCiphertextV1 {
-        version: 1,
+        version: CPABE_CRYPTO_VERSION,
+        system_id: pp_id,
         label: ct.label.clone(),
         abe: AbeIntermediateV1 {
             c_tilde: ct.abe.c_tilde.clone(),
@@ -510,10 +701,17 @@ pub fn tm_decrypt(
 }
 
 pub fn decrypt(
-    _pp: &PublicParamsV1,
+    pp: &PublicParamsV1,
     cti: &IntermediateCiphertextV1,
     psks: &PsksV1,
 ) -> Result<String> {
+    ensure_version(pp.version, "public parameters")?;
+    ensure_version(cti.version, "intermediate ciphertext")?;
+    ensure_version(psks.version, "PSKS")?;
+    let pp_id = public_params_id(pp)?;
+    check_system_id(&pp_id, &cti.system_id, "intermediate ciphertext")?;
+    check_system_id(&pp_id, &psks.system_id, "PSKS")?;
+
     let c_tilde = de_gt(&b64_decode(&cti.abe.c_tilde)?)?;
     let f = de_gt(&b64_decode(&cti.abe.f)?)?;
 
@@ -528,12 +726,12 @@ pub fn decrypt(
             .ok_or_else(|| anyhow!("Missing attribute in PSKS"))?;
 
         let c_i = de_g1(&b64_decode(&leaf.c_i)?)?;
-        let c_i_prime = de_g1(&b64_decode(&leaf.c_i_prime)?)?;
+        let c_i_prime = de_g2(&b64_decode(&leaf.c_i_prime)?)?;
         let d_i = de_g2(&b64_decode(&sk.d)?)?;
-        let d_i_prime = de_g2(&b64_decode(&sk.d_prime)?)?;
+        let d_i_prime = de_g1(&b64_decode(&sk.d_prime)?)?;
 
         let num = pairing_gt(c_i.into_affine(), d_i.into_affine());
-        let den = pairing_gt(c_i_prime.into_affine(), d_i_prime.into_affine());
+        let den = pairing_gt(d_i_prime.into_affine(), c_i_prime.into_affine());
         let den_inv = den
             .inverse()
             .ok_or_else(|| anyhow!("Invalid pairing result"))?;
@@ -545,12 +743,12 @@ pub fn decrypt(
     let r1 = res_map
         .iter()
         .find(|(i, _)| *i == 1)
-        .map(|(_, r)| r.clone())
+        .map(|(_, r)| *r)
         .ok_or_else(|| anyhow!("Missing leaf index 1"))?;
     let r2 = res_map
         .iter()
         .find(|(i, _)| *i == 2)
-        .map(|(_, r)| r.clone())
+        .map(|(_, r)| *r)
         .ok_or_else(|| anyhow!("Missing leaf index 2"))?;
 
     // calcul de F_root à l'aide de la formule de Lagrange avec delta(0)=(0-k)/(j-k)
@@ -611,6 +809,226 @@ mod tests {
         let msg = decrypt(&pp, &cti, &psks)?;
 
         assert_eq!(msg, "hello d3cs");
+        let mut tampered_cti = cti;
+        let mut tampered_payload = b64_decode(&tampered_cti.sym.ciphertext)?;
+        tampered_payload[0] ^= 1;
+        tampered_cti.sym.ciphertext = b64_encode(&tampered_payload);
+        assert!(decrypt(&pp, &tampered_cti, &psks).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn cpabe_attribute_component_forgery_breaks_unsatisfied_policy() -> Result<()> {
+        let (pp, msk) = setup()?;
+        let classification = "FR-DR";
+        let mission = "MISSION-TEST";
+        let attrs = vec![classification.to_string()];
+        let (pska, initial_psks) = keygen(&pp, &msk, &attrs)?;
+        let label = DocumentLabel {
+            classification: classification.to_string(),
+            mission: mission.to_string(),
+        };
+        let message = "CP-ABE attribute forgery regression";
+
+        let ct = encrypt(&pp, &label, message)?;
+        let cti = tm_decrypt(&pp, &ct, &pska)?;
+
+        let initial_error = decrypt(&pp, &cti, &initial_psks)
+            .expect_err("a PSKS containing only FR-DR must not satisfy FR-DR AND MISSION-TEST")
+            .to_string();
+        assert_eq!(initial_error, "Missing attribute in PSKS");
+
+        let source = initial_psks
+            .attrs
+            .iter()
+            .find(|entry| entry.attr == classification)
+            .ok_or_else(|| anyhow!("missing source attribute in generated PSKS"))?;
+        let g1 = de_g1(&b64_decode(&pp.g)?)?;
+        let source_d = source.d.clone();
+
+        // The former exploit required D'_i to be a G2 element and H(i) to be
+        // a publicly known scalar multiple of g2. In version 2 D'_i is G1,
+        // while H_attr(i) is an independently hashed G2 point.
+        assert!(de_g2(&b64_decode(&source.d_prime)?).is_err());
+
+        // Adding only the missing name must not make the key satisfy the
+        // policy, even when the existing component is copied verbatim.
+        let mut name_only_attrs = initial_psks.attrs.clone();
+        name_only_attrs.push(PsksAttrV1 {
+            attr: mission.to_string(),
+            d: source_d.clone(),
+            d_prime: source.d_prime.clone(),
+        });
+        name_only_attrs.sort_by(|left, right| left.attr.cmp(&right.attr));
+        let name_only_psks = PsksV1 {
+            version: initial_psks.version,
+            system_id: initial_psks.system_id.clone(),
+            attrs: name_only_attrs,
+        };
+        assert!(decrypt(&pp, &cti, &name_only_psks).is_err());
+
+        // Also try a syntactically valid pair of points unrelated to the
+        // missing attribute. This exercises the cryptographic equation rather
+        // than an application-level attribute-name filter.
+        let mut valid_point_attrs = initial_psks.attrs.clone();
+        valid_point_attrs.push(PsksAttrV1 {
+            attr: mission.to_string(),
+            d: source_d,
+            d_prime: b64_encode(&ser_g1(&g1)?),
+        });
+        valid_point_attrs.sort_by(|left, right| left.attr.cmp(&right.attr));
+        let valid_point_psks = PsksV1 {
+            version: initial_psks.version,
+            system_id: initial_psks.system_id.clone(),
+            attrs: valid_point_attrs,
+        };
+        assert!(decrypt(&pp, &cti, &valid_point_psks).is_err());
+
+        let both_attrs = vec![classification.to_string(), mission.to_string()];
+        let (both_pska, both_psks) = keygen(&pp, &msk, &both_attrs)?;
+        let both_cti = tm_decrypt(&pp, &ct, &both_pska)?;
+        assert_eq!(decrypt(&pp, &both_cti, &both_psks)?, message);
+
+        Ok(())
+    }
+
+    #[test]
+    fn cpabe_hash_to_curve_g2_is_deterministic_and_subgroup_valid() -> Result<()> {
+        let first = hash_attr_g2("MISSION-TEST")?;
+        let second = hash_attr_g2("MISSION-TEST")?;
+        let other = hash_attr_g2("MISSION-OTHER")?;
+
+        assert_eq!(first, second);
+        assert_ne!(first, other);
+        let affine = first.into_affine();
+        assert!(affine.is_on_curve());
+        assert!(affine.is_in_correct_subgroup_assuming_on_curve());
+        Ok(())
+    }
+
+    #[test]
+    fn cpabe_delegation_supports_restriction_and_successive_delegation() -> Result<()> {
+        let (pp, msk) = setup()?;
+        let classification = "FR-DR".to_string();
+        let mission = "MISSION-TEST".to_string();
+        let extra = "UNUSED".to_string();
+        let attrs = vec![classification.clone(), mission.clone(), extra];
+        let (pska, psks) = keygen(&pp, &msk, &attrs)?;
+        let label = DocumentLabel {
+            classification: classification.clone(),
+            mission: mission.clone(),
+        };
+        let message = "delegated CP-ABE message";
+        let ct = encrypt(&pp, &label, message)?;
+        let delegated_attrs = vec![classification.clone(), mission.clone()];
+
+        let (delegated_psks, tk) = delegate(&pp, &psks, &delegated_attrs)?;
+        let delegated_pska = tm_delegate(&pska, &tk)?;
+        let delegated_cti = tm_decrypt(&pp, &ct, &delegated_pska)?;
+        assert_eq!(decrypt(&pp, &delegated_cti, &delegated_psks)?, message);
+
+        let (successive_psks, successive_tk) = delegate(&pp, &delegated_psks, &delegated_attrs)?;
+        let successive_pska = tm_delegate(&delegated_pska, &successive_tk)?;
+        let successive_cti = tm_decrypt(&pp, &ct, &successive_pska)?;
+        assert_eq!(decrypt(&pp, &successive_cti, &successive_psks)?, message);
+
+        let restricted_attrs = vec![mission.clone()];
+        let (restricted_psks, restricted_tk) = delegate(&pp, &psks, &restricted_attrs)?;
+        let restricted_pska = tm_delegate(&pska, &restricted_tk)?;
+        let restricted_cti = tm_decrypt(&pp, &ct, &restricted_pska)?;
+        assert!(decrypt(&pp, &restricted_cti, &restricted_psks).is_err());
+        assert!(delegate(&pp, &psks, &["ABSENT".to_string()]).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn cpabe_rejects_legacy_versions_and_tampered_points() -> Result<()> {
+        let (pp, msk) = setup()?;
+        let attrs = vec!["FR-DR".to_string(), "MISSION-TEST".to_string()];
+        let (pska, psks) = keygen(&pp, &msk, &attrs)?;
+        let label = DocumentLabel {
+            classification: attrs[0].clone(),
+            mission: attrs[1].clone(),
+        };
+        let ct = encrypt(&pp, &label, "versioned message")?;
+        let cti = tm_decrypt(&pp, &ct, &pska)?;
+
+        let mut old_pp = pp.clone();
+        old_pp.version = 1;
+        assert!(keygen(&old_pp, &msk, &attrs).is_err());
+
+        let mut old_msk = msk.clone();
+        old_msk.version = 1;
+        assert!(keygen(&pp, &old_msk, &attrs).is_err());
+
+        let mut old_ct = ct.clone();
+        old_ct.version = 1;
+        assert!(tm_decrypt(&pp, &old_ct, &pska).is_err());
+
+        let mut old_pska = pska.clone();
+        old_pska.version = 1;
+        assert!(tm_decrypt(&pp, &ct, &old_pska).is_err());
+
+        let mut old_cti = cti.clone();
+        old_cti.version = 1;
+        assert!(decrypt(&pp, &old_cti, &psks).is_err());
+
+        let mut old_psks = psks.clone();
+        old_psks.version = 1;
+        assert!(decrypt(&pp, &cti, &old_psks).is_err());
+
+        let mut malformed = cti;
+        malformed.abe.leafs[0].c_i_prime = b64_encode(&[0u8; 8]);
+        assert!(decrypt(&pp, &malformed, &psks).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn cpabe_system_identity_detects_independent_parameter_sets() -> Result<()> {
+        let (pp_a, msk_a) = setup()?;
+        let (pp_b, _msk_b) = setup()?;
+        assert_ne!(public_params_id(&pp_a)?, public_params_id(&pp_b)?);
+
+        let attrs = vec!["FR-DR".to_string(), "MISSION-TEST".to_string()];
+        let (pska, psks) = keygen(&pp_a, &msk_a, &attrs)?;
+        let label = DocumentLabel {
+            classification: attrs[0].clone(),
+            mission: attrs[1].clone(),
+        };
+        let ct = encrypt(&pp_a, &label, "system identity")?;
+        let cti = tm_decrypt(&pp_a, &ct, &pska)?;
+        assert_eq!(decrypt(&pp_a, &cti, &psks)?, "system identity");
+        assert!(tm_decrypt(&pp_b, &ct, &pska).is_err());
+        assert!(decrypt(&pp_b, &cti, &psks).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn cpabe_system_identity_rejects_tampered_association() -> Result<()> {
+        let (pp, msk) = setup()?;
+        let attrs = vec!["FR-DR".to_string(), "MISSION-TEST".to_string()];
+        let (mut pska, mut psks) = keygen(&pp, &msk, &attrs)?;
+        let mut ct = encrypt(
+            &pp,
+            &DocumentLabel {
+                classification: attrs[0].clone(),
+                mission: attrs[1].clone(),
+            },
+            "system identity",
+        )?;
+        let pp_id = public_params_id(&pp)?;
+        let other_id = public_params_id(&setup()?.0)?;
+        assert_ne!(pp_id, other_id);
+
+        pska.system_id = other_id.clone();
+        assert!(tm_decrypt(&pp, &ct, &pska).is_err());
+        pska.system_id = pp_id.clone();
+        psks.system_id = other_id.clone();
+        let cti = tm_decrypt(&pp, &ct, &pska)?;
+        assert!(decrypt(&pp, &cti, &psks).is_err());
+        psks.system_id = pp_id.clone();
+        ct.system_id = other_id;
+        assert!(tm_decrypt(&pp, &ct, &pska).is_err());
         Ok(())
     }
 }

@@ -18,6 +18,7 @@ use rand_core::RngCore;
 mod api;
 mod authority;
 mod crypto;
+mod levywalk;
 #[path = "network/main.rs"]
 mod network;
 
@@ -592,9 +593,17 @@ fn reset_startup_state(state: &Arc<AppState>) -> Result<()> {
 // dossiers/crypto/users, lance le serveur HTTP
 
 fn main() -> Result<()> {
+    let base_dir = detect_base_dir()?;
+    if std::env::args()
+        .nth(1)
+        .map(|arg| arg.eq_ignore_ascii_case("levywalk"))
+        .unwrap_or(false)
+    {
+        return levywalk::run(&base_dir);
+    }
+
     let shell_has_port = std::env::var_os("D3CS_PORT").is_some();
     dotenvy::dotenv().ok();
-    let base_dir = detect_base_dir()?;
     std::env::set_var("D3CS_BASE_DIR", base_dir.to_string_lossy().to_string());
     init_console_log(&base_dir).context("log init failed")?;
 
@@ -679,7 +688,7 @@ fn main() -> Result<()> {
         reset_startup_state(&state).context("startup reset failed")?;
     }
 
-    {
+    if mode != RunMode::Network || node_id.eq_ignore_ascii_case("Authority") {
         let db = state.user_db.lock().unwrap();
         for (login, record) in db.users.iter() {
             crypto::ensure_user_keys(&state, login, &record.clearance, record.is_authority_user)
