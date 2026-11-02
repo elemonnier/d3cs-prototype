@@ -14,7 +14,10 @@ pub fn run(base_dir: &Path) -> Result<()> {
         anyhow::bail!("LEPTON launcher not found: {}", script.display());
     }
     if !config.is_file() {
-        anyhow::bail!("LEPTON Levy Walk configuration not found: {}", config.display());
+        anyhow::bail!(
+            "LEPTON Levy Walk configuration not found: {}",
+            config.display()
+        );
     }
 
     println!("Launching native LEPTON with its Levy Walk configuration...");

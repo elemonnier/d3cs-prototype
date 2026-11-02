@@ -1,0 +1,51 @@
+{
+  "benchmark": "D3CS PM23/LK10 versus standalone BSW07 local cryptographic comparison",
+  "timestamp_unix_seconds": 1793360893,
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree_state": "modified",
+  "git_status_porcelain": "M docs/attribute_benchmark.md\n M scripts/multihop_latency.py\n M src/bin/abs_timings.rs\n M src/bin/bench_attributes.rs\n M src/bin/cpabe_timings.rs\n M src/bin/network_sizes.rs\n M src/bin/tm_storage_sizes.rs\n M src/crypto/cpabe.rs\n M src/crypto/mod.rs\n M src/levywalk.rs\n M src/network/main.rs\n?? benchmark_results/multihop_v2/\n?? docs/cpabe_v2_benchmarks.md\n?? results/bsw07_comparison/\n?? results/cpabe_v2/\n?? src/bin/bsw07_comparison.rs\n?? src/crypto/bsw07.rs",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "dependencies": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0",
+  "operating_system": "linux",
+  "architecture": "x86_64",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "build_mode": "release",
+  "warmups": 100,
+  "measurements": 500,
+  "duration_unit": "nanoseconds from std::time::Instant",
+  "policy": "classification AND mission",
+  "policy_leaves": 2,
+  "user_attributes": [
+    "FR-DR",
+    "M1",
+    "EXTRA"
+  ],
+  "delegated_attributes": [
+    "FR-DR",
+    "M1"
+  ],
+  "message_sizes_bytes": [
+    4,
+    1048576
+  ],
+  "hybrid_cipher": "AES-256-GCM; no network time included",
+  "d3cs_cpabe_version": "CP-ABE",
+  "d3cs_hash_to_curve": "G2 MapToCurveBasedHasher / WBMap / SHA-256",
+  "d3cs_hash_domain": "D3CS-CPABE-V2-ATTR-G2",
+  "bsw07_format_version": "BSW07 format v1 with mandatory BSW07 scheme tag",
+  "bsw07_hash_to_curve": "G2 MapToCurveBasedHasher / WBMap / SHA-256",
+  "bsw07_hash_domain": "D3CS-BSW07-CPABE-ATTR-G2-v1",
+  "abs_hash_domains": [
+    "D3CS-ABS-H1",
+    "D3CS-ABS-H2"
+  ],
+  "d3cs_system_ids": {
+    "1048576": "f20772c338ed584812424096893f41793d8329451f01c5d40f1749f3c1e1477c",
+    "4": "2ae9266c457a366b477915f611d192e3879287ae9f561e0894c5c25d8894ac49"
+  },
+  "bsw07_system_ids": {
+    "1048576": "d9b0704923eb5159f6164c7336ba710008ac15fa58dbd95bca56bb13532878f1",
+    "4": "c2bd9bb82fb41d6e8439fc2c73b654c0ed21fa8ba6a133538a92ba5c56e75b80"
+  },
+  "note": "D3CS and BSW07 are not claimed to provide identical security or functionality; cumulative medians are measured sequences, not sums of medians."
+}

@@ -1,0 +1,22 @@
+{
+  "benchmark": "CP-ABE primitive timings",
+  "cryptographic_version": "2",
+  "curve": "BLS12-381",
+  "hash_to_curve": "G2, deterministic hash-to-curve",
+  "build_mode": "release",
+  "warmups": 100,
+  "measurements": 500,
+  "message_size_bytes": 4,
+  "duration_unit_raw": "nanoseconds from std::time::Instant",
+  "duration_unit_summary": "microseconds",
+  "stddev": "sample standard deviation with denominator n-1",
+  "percentile": "nearest-rank, rank=ceil(0.95*n)",
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree": "modified",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "dependencies": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0",
+  "operating_system": "linux",
+  "architecture": "x86_64",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "system_id": "47909c77651a21605bc145384f945ae818b17d6c6613919b8fa51e5bda3e9e01"
+}

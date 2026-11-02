@@ -1,0 +1,8 @@
+object,serialized_json_bytes,decoded_crypto_payload_bytes,serialization
+public_parameters,1352,912,serde_json UTF-8 with Base64 fields
+master_secret_key,199,64,serde_json UTF-8 with Base64 fields
+pska,227,96,serde_json UTF-8 with Base64 fields
+psks,557,288,serde_json UTF-8 with Base64 fields
+tk,227,96,serde_json UTF-8 with Base64 fields
+ciphertext,1573,944,serde_json UTF-8 with Base64 fields
+intermediate_ciphertext,2277,1472,serde_json UTF-8 with Base64 fields

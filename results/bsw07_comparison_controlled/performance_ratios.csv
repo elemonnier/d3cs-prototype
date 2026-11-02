@@ -1,0 +1,8 @@
+bsw07_operation,d3cs_operation,message_size_bytes,campaign_count,median_of_campaign_ratios,ci95_low,ci95_high,ci_method,ratios_by_campaign
+Setup,Setup,NA,5,1.399401,1.397327,1.403663,bootstrap over paired campaign ratios; 10000 resamples,1:1.397327;2:1.399401;3:1.398605;4:1.401200;5:1.403663
+KeyGen,KeyGen,NA,5,1.599727,1.588163,1.619368,bootstrap over paired campaign ratios; 10000 resamples,1:1.599727;2:1.593876;3:1.619368;4:1.604610;5:1.588163
+Encrypt,Encrypt,1048576,5,1.221952,1.213327,1.227739,bootstrap over paired campaign ratios; 10000 resamples,1:1.227739;2:1.220501;3:1.221952;4:1.222772;5:1.213327
+Encrypt,Encrypt,4,5,1.250407,1.238469,1.262962,bootstrap over paired campaign ratios; 10000 resamples,1:1.250407;2:1.262962;3:1.258655;4:1.238469;5:1.243021
+Decrypt,TM_Decrypt+Decrypt,1048576,5,1.321411,1.316746,1.329497,bootstrap over paired campaign ratios; 10000 resamples,1:1.329497;2:1.321411;3:1.316746;4:1.326411;5:1.318482
+Decrypt,TM_Decrypt+Decrypt,4,5,1.314104,1.312193,1.323946,bootstrap over paired campaign ratios; 10000 resamples,1:1.312962;2:1.312193;3:1.323946;4:1.319255;5:1.314104
+Delegate,Delegate+TM_Delegate,NA,5,1.494789,1.490021,1.499868,bootstrap over paired campaign ratios; 10000 resamples,1:1.498715;2:1.490021;3:1.499868;4:1.494789;5:1.494049

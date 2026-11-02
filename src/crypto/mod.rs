@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::{AppState, Clearance, RunMode};
 
 pub mod abs;
+pub mod bsw07;
 pub mod cpabe;
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -667,8 +668,8 @@ pub fn setup_if_needed(state: &Arc<AppState>) -> Result<()> {
     // secret and is allowed to initialize the system. Other nodes wait for
     // USER_KEYGEN/TM_KEY; generating a local PP here would create a silent
     // second CP-ABE system.
-    let local_authority = state.mode != RunMode::Network
-        || current_node_id().eq_ignore_ascii_case("Authority");
+    let local_authority =
+        state.mode != RunMode::Network || current_node_id().eq_ignore_ascii_case("Authority");
     if local_authority {
         if !cpabe_setup_material_valid(&pp_path, &msk_path) {
             let (pp, msk) = cpabe::setup()?;
@@ -992,10 +993,8 @@ pub fn decrypt_document(state: &Arc<AppState>, login: &str, id: u64) -> Result<S
     let user_dir = format!("{}/{}", state.users_dir, login);
     let user_pp_path = format!("{}/pp.bin", user_dir);
     let user_pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(&user_pp_path)?)?;
-    let tm_pp: cpabe::PublicParamsV1 = serde_json::from_str(&fs::read_to_string(format!(
-        "{}/pp.bin",
-        state.tm_dir
-    ))?)?;
+    let tm_pp: cpabe::PublicParamsV1 =
+        serde_json::from_str(&fs::read_to_string(format!("{}/pp.bin", state.tm_dir))?)?;
     let user_pp_id = cpabe::public_params_id(&user_pp)?;
     let tm_pp_id = cpabe::public_params_id(&tm_pp)?;
     if user_pp_id != tm_pp_id {

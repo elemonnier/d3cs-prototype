@@ -1253,11 +1253,11 @@ impl NetworkRuntime {
         let Some(path) = std::env::var_os("D3CS_BENCHMARK_EVENT_LOG") else {
             return;
         };
-        let duration_ns = self
-            .pending
-            .lock()
-            .ok()
-            .and_then(|pending| pending.get(login).map(|entry| entry.asked_at.elapsed().as_nanos()));
+        let duration_ns = self.pending.lock().ok().and_then(|pending| {
+            pending
+                .get(login)
+                .map(|entry| entry.asked_at.elapsed().as_nanos())
+        });
         let Some(duration_ns) = duration_ns else {
             return;
         };
@@ -1460,14 +1460,20 @@ fn normalize_node(node: &str) -> String {
 }
 
 fn is_user_node_source(source: &str) -> bool {
-    let Some(suffix) = source.strip_prefix('U').or_else(|| source.strip_prefix('u')) else {
+    let Some(suffix) = source
+        .strip_prefix('U')
+        .or_else(|| source.strip_prefix('u'))
+    else {
         return false;
     };
     !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_digit())
 }
 
 fn is_tm_source(source: &str) -> bool {
-    let Some(suffix) = source.strip_prefix("TM").or_else(|| source.strip_prefix("tm")) else {
+    let Some(suffix) = source
+        .strip_prefix("TM")
+        .or_else(|| source.strip_prefix("tm"))
+    else {
         return false;
     };
     !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_digit())
@@ -1735,13 +1741,7 @@ fn benchmark_log_frame(event: &str, timestamp_ns: u128, node: &str, frame: &D3cs
     let _ = writeln!(
         file,
         "event={} timestamp_ns={} workflow={} run_id={} node={} source={} destination={}",
-        event,
-        timestamp_ns,
-        workflow,
-        run_id,
-        node,
-        frame.src,
-        frame.dst
+        event, timestamp_ns, workflow, run_id, node, frame.src, frame.dst
     );
 }
 
@@ -1858,20 +1858,14 @@ mod tests {
             .to_string()
             .contains("Refusing to replace user CP-ABE public parameters"));
         assert_eq!(
-            serde_json::from_str::<cpabe::PublicParamsV1>(
-                &std::fs::read_to_string(users_dir.join("u1/pp.bin"))?
-            )?
+            serde_json::from_str::<cpabe::PublicParamsV1>(&std::fs::read_to_string(
+                users_dir.join("u1/pp.bin")
+            )?)?
             .system_id,
             pp.system_id
         );
 
-        runtime.store_tm_payload(
-            &state,
-            "u1",
-            &pp_data,
-            "{}",
-            &original_data,
-        )?;
+        runtime.store_tm_payload(&state, "u1", &pp_data, "{}", &original_data)?;
         let tm_replacement = cpabe::keygen(&pp, &msk, &attrs)?.0;
         let replacement_error = runtime
             .store_tm_payload(

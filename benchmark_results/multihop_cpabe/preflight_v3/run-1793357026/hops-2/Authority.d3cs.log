@@ -1,0 +1,12 @@
+2026-10-30 11:43:46.558 Authority: {"tkn":"t1","name":"pong"}
+
+2026-10-30 11:43:47.087 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:47.595 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:48.107 Authority: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:48.626 Authority: {"tkn":"t2","name":"ok"}
+
+Error: Address already in use (os error 98)
+2","name":"ok"}

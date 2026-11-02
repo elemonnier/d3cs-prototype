@@ -1,0 +1,4 @@
+hops,node_id,x_m,expected_neighbors,observed_neighbors,validated
+2,N00,0,N01,N01,true
+2,N01,50,N00;N02,N00;N02,true
+2,N02,100,N01,N01,true

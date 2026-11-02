@@ -1,0 +1,6 @@
+plaintext_size_bytes,ciphertext_size_bytes,ct_share_serialized_size_bytes
+4,1573,1954
+1024,2933,3314
+10240,15221,15602
+102400,138101,138482
+1048576,1399669,1400050

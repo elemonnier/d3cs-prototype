@@ -1,0 +1,48 @@
+{
+  "benchmark": "D3CS multihop latency CP-ABE",
+  "cryptographic_version": 2,
+  "curve": "BLS12-381",
+  "hash_to_curve": "G2, deterministic hash-to-curve",
+  "document_message": "test",
+  "document_size_bytes": 4,
+  "topology": "static chain N00..NH, 50 m spacing, LEPTON range 60 m",
+  "hops": [
+    2
+  ],
+  "warmups_per_workflow": 1,
+  "measurements_per_workflow": 2,
+  "workflows": [
+    "CT_SHARE",
+    "ARL_UPDATE",
+    "KEY_REQUEST_RESPONSE"
+  ],
+  "latency_definition": {
+    "CT_SHARE": "successful send timestamp to successful receive timestamp",
+    "ARL_UPDATE": "successful send timestamp to successful receive timestamp",
+    "KEY_REQUEST_RESPONSE": "KEY_REQUEST pending start to USER_KEYGEN processing at subject"
+  },
+  "percentile": "nearest-rank, rank=ceil(0.95*n)",
+  "statistics": [
+    "mean",
+    "sample_stddev",
+    "median",
+    "p95",
+    "min",
+    "max"
+  ],
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree": "modified",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "python": "3.10.12",
+  "operating_system": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "architecture": "x86_64",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "lepton_version": "1.0",
+  "dodwan_artifact": "dodwan-4.1.jar",
+  "system_id_by_hops": {
+    "2": "9cd18ba40763b2d6ad5deec8775707b2eb32d0b05ab36cffc9540acbbd7d3757"
+  },
+  "n_raw_rows": 6,
+  "n_failed_rows": 0,
+  "one_megabyte_note": "Historical multihop script uses message=test (4 bytes); 1 MiB belongs to CT_SHARE scalability, not this latency protocol."
+}

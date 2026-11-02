@@ -1,0 +1,8 @@
+operation,n,mean_us,stddev_us,median_us,p95_us,min_us,max_us,stddev_convention,percentile_convention
+Setup,500,3785.914,864.913,3588.425,4837.357,2948.666,17509.913,sample (n-1),nearest-rank ceil(0.95*n)
+KeyGen,500,4913.785,693.082,4718.292,6198.614,3909.490,8212.611,sample (n-1),nearest-rank ceil(0.95*n)
+Delegate,500,8363.641,4834.762,6976.043,19863.703,4841.299,44284.848,sample (n-1),nearest-rank ceil(0.95*n)
+TM_Delegate,500,528.690,164.140,475.861,808.535,386.828,1642.617,sample (n-1),nearest-rank ceil(0.95*n)
+Encrypt,500,7833.776,916.482,7592.560,9700.185,6530.387,12567.407,sample (n-1),nearest-rank ceil(0.95*n)
+TM_Decrypt,500,1747.080,766.041,1592.991,2841.687,1141.405,12917.420,sample (n-1),nearest-rank ceil(0.95*n)
+Decrypt,500,7384.485,2934.799,6531.789,12523.689,5002.483,31351.793,sample (n-1),nearest-rank ceil(0.95*n)

@@ -90,6 +90,9 @@ struct SizeRow {
 struct Metadata {
     benchmark: &'static str,
     version: &'static str,
+    cryptographic_version: &'static str,
+    curve: &'static str,
+    hash_to_curve: &'static str,
     attribute_counts: Vec<usize>,
     warmups: usize,
     measurements: usize,
@@ -101,7 +104,13 @@ struct Metadata {
     rustc: String,
     target_os: &'static str,
     target_arch: &'static str,
+    processor: String,
+    build_mode: &'static str,
     git_revision: String,
+    git_worktree: String,
+    dependencies: String,
+    system_id: String,
+    policy_leaves: usize,
     limitations: Vec<&'static str>,
 }
 
@@ -133,7 +142,7 @@ fn parse_args() -> Result<Config> {
     let mut config = Config {
         warmups: DEFAULT_WARMUPS,
         measurements: DEFAULT_MEASUREMENTS,
-        output_dir: PathBuf::from("results/attribute_benchmark"),
+        output_dir: PathBuf::from("results/cpabe/attribute_benchmark"),
         only: None,
         plots: true,
     };
@@ -760,26 +769,40 @@ fn write_csv(
     sizes: &[SizeRow],
     errors: &[ErrorRow],
 ) -> Result<()> {
-    let mut raw_csv = String::from("experiment,operation,attributes,iteration,duration_ns\n");
+    let mut raw_csv = String::from(
+        "experiment,operation,attributes,user_attributes,delegated_attributes,policy_leaves,iteration,duration_ns\n",
+    );
     for row in raw {
+        let (user_attributes, delegated_attributes, policy_leaves) =
+            scenario_dimensions(&row.experiment, &row.operation, row.attributes);
         raw_csv.push_str(&format!(
-            "{},{},{},{},{}\n",
+            "{},{},{},{},{},{},{},{}\n",
             csv_escape(&row.experiment),
             csv_escape(&row.operation),
             row.attributes,
+            user_attributes,
+            delegated_attributes,
+            policy_leaves,
             row.iteration,
             row.duration_ns
         ));
     }
     fs::write(output_dir.join("timings_raw.csv"), raw_csv)?;
 
-    let mut summary_csv = String::from("experiment,operation,attributes,valid_samples,mean_ms,median_ms,stddev_ms,min_ms,max_ms,p95_ms,stddev_convention,percentile_convention\n");
+    let mut summary_csv = String::from(
+        "experiment,operation,attributes,user_attributes,delegated_attributes,policy_leaves,valid_samples,mean_ms,median_ms,stddev_ms,min_ms,max_ms,p95_ms,stddev_convention,percentile_convention\n",
+    );
     for row in summaries {
+        let (user_attributes, delegated_attributes, policy_leaves) =
+            scenario_dimensions(&row.experiment, &row.operation, row.attributes);
         summary_csv.push_str(&format!(
-            "{},{},{},{},{:.9},{:.9},{:.9},{:.9},{:.9},{:.9},sample (n-1),nearest-rank ceil(0.95*n)\n",
+            "{},{},{},{},{},{},{},{:.9},{:.9},{:.9},{:.9},{:.9},{:.9},sample (n-1),nearest-rank ceil(0.95*n)\n",
             csv_escape(&row.experiment),
             csv_escape(&row.operation),
             row.attributes,
+            user_attributes,
+            delegated_attributes,
+            policy_leaves,
             row.valid_samples,
             row.mean_ms,
             row.median_ms,
@@ -791,14 +814,20 @@ fn write_csv(
     }
     fs::write(output_dir.join("timings_summary.csv"), summary_csv)?;
 
-    let mut sizes_csv =
-        String::from("experiment,operation,attributes,object_type,size_bytes,representation\n");
+    let mut sizes_csv = String::from(
+        "experiment,operation,attributes,user_attributes,delegated_attributes,policy_leaves,object_type,size_bytes,representation\n",
+    );
     for row in sizes {
+        let (user_attributes, delegated_attributes, policy_leaves) =
+            scenario_dimensions(&row.experiment, &row.operation, row.attributes);
         sizes_csv.push_str(&format!(
-            "{},{},{},{},{},{}\n",
+            "{},{},{},{},{},{},{},{},{}\n",
             csv_escape(&row.experiment),
             csv_escape(&row.operation),
             row.attributes,
+            user_attributes,
+            delegated_attributes,
+            policy_leaves,
             csv_escape(&row.object_type),
             row.size_bytes,
             csv_escape(&row.representation)
@@ -819,6 +848,26 @@ fn write_csv(
     }
     fs::write(output_dir.join("errors.csv"), errors_csv)?;
     Ok(())
+}
+
+fn scenario_dimensions(
+    experiment: &str,
+    operation: &str,
+    attributes: usize,
+) -> (usize, usize, usize) {
+    match experiment {
+        "C_cpabe_policy_attributes" => {
+            let user_attributes = if operation == "decrypt" { 50 } else { 0 };
+            (user_attributes, 0, 2)
+        }
+        "D_cpabe_key_attributes" => match operation {
+            "keygen" => (attributes, 0, 0),
+            "delegate" | "tm_delegate" => (50, attributes, 0),
+            "decrypt" | "tm_decrypt" => (attributes, 0, 2),
+            _ => (attributes, 0, 0),
+        },
+        _ => (attributes, 0, 0),
+    }
 }
 
 fn chart_color(index: usize) -> &'static str {
@@ -962,10 +1011,14 @@ fn command_output(command: &str, args: &[&str]) -> String {
         .unwrap_or_else(|| "unavailable".to_string())
 }
 
-fn write_metadata(output_dir: &Path, config: &Config) -> Result<()> {
+fn write_metadata(output_dir: &Path, config: &Config, system_id: &str) -> Result<()> {
+    let git_status = command_output("git", &["status", "--porcelain"]);
     let metadata = Metadata {
         benchmark: "D3CS cryptographic attribute-count campaign",
         version: env!("CARGO_PKG_VERSION"),
+        cryptographic_version: "2",
+        curve: "BLS12-381",
+        hash_to_curve: "G2, deterministic hash-to-curve",
         attribute_counts: ATTRIBUTE_COUNTS.to_vec(),
         warmups: config.warmups,
         measurements: config.measurements,
@@ -977,7 +1030,25 @@ fn write_metadata(output_dir: &Path, config: &Config) -> Result<()> {
         rustc: command_output("rustc", &["--version"]),
         target_os: std::env::consts::OS,
         target_arch: std::env::consts::ARCH,
+        processor: command_output(
+            "bash",
+            &[
+                "-lc",
+                "lscpu | sed -n '/Model name/ { s/^[^:]*:[[:space:]]*//; p; q; }'",
+            ],
+        ),
+        build_mode: "release",
         git_revision: command_output("git", &["rev-parse", "HEAD"]),
+        git_worktree: if git_status == "unavailable" {
+            git_status
+        } else if git_status.is_empty() {
+            "clean".to_string()
+        } else {
+            "modified".to_string()
+        },
+        dependencies: command_output("cargo", &["tree", "--depth", "1"]),
+        system_id: system_id.to_string(),
+        policy_leaves: 2,
         limitations: vec![
             "ABS is implemented with d=1 and one attribute per user key; ABS multi-attribute experiments are therefore exported as unsupported.",
             "CP-ABE encrypt/decrypt currently implement exactly two leaves with fixed two-leaf reconstruction.",
@@ -1049,7 +1120,7 @@ fn main() -> Result<()> {
     }
 
     write_csv(&config.output_dir, &raw, &summaries, &sizes, &errors)?;
-    write_metadata(&config.output_dir, &config)?;
+    write_metadata(&config.output_dir, &config, &cpabe_pp.system_id)?;
     if config.plots {
         write_timing_plot(&config.output_dir, &summaries)?;
         write_size_plot(&config.output_dir, &sizes)?;
@@ -1121,7 +1192,7 @@ mod tests {
         write_csv(&output, &[], &[], &[], &[])?;
         assert_eq!(
             fs::read_to_string(output.join("timings_raw.csv"))?,
-            "experiment,operation,attributes,iteration,duration_ns\n"
+            "experiment,operation,attributes,user_attributes,delegated_attributes,policy_leaves,iteration,duration_ns\n"
         );
         assert_eq!(
             fs::read_to_string(output.join("errors.csv"))?,

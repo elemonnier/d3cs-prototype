@@ -1,0 +1,38 @@
+{
+  "benchmark": "D3CS cryptographic attribute-count campaign",
+  "version": "0.1.0",
+  "cryptographic_version": "2",
+  "curve": "BLS12-381",
+  "hash_to_curve": "G2, deterministic hash-to-curve",
+  "attribute_counts": [
+    1,
+    2,
+    5,
+    10,
+    20,
+    50
+  ],
+  "warmups": 10,
+  "measurements": 100,
+  "message_size_bytes": 1024,
+  "duration_unit_raw": "nanoseconds from std::time::Instant",
+  "duration_unit_summary": "milliseconds",
+  "stddev": "sample standard deviation with denominator n-1",
+  "percentile": "nearest-rank, rank=ceil(0.95*n)",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "target_os": "linux",
+  "target_arch": "x86_64",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "build_mode": "release",
+  "git_revision": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree": "modified",
+  "dependencies": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0",
+  "system_id": "b879c81022e4defdfbda1dfab60d7b56137b3050fc2a841a01af1782f7b8a40f",
+  "policy_leaves": 2,
+  "limitations": [
+    "ABS is implemented with d=1 and one attribute per user key; ABS multi-attribute experiments are therefore exported as unsupported.",
+    "CP-ABE encrypt/decrypt currently implement exactly two leaves with fixed two-leaf reconstruction.",
+    "CP-ABE tm_delegate and tm_decrypt consume PSKA/TK or ciphertext/PSKA, not an attribute list; their N labels describe preparation provenance, not an N-dependent input size.",
+    "The D decrypt policy uses A1 AND A1 because the CP-ABE API cannot encode a one-leaf policy; only one distinct attribute is required."
+  ]
+}

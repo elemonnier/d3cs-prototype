@@ -16,7 +16,7 @@ Les valeurs par défaut sont 10 échauffements et 100 mesures. `--quick` utilise
 1 échauffement et 3 mesures pour une validation rapide. Les paramètres peuvent
 être changés avec `--warmups` et `--measurements` sans modifier le code.
 
-La sortie par défaut est `results/attribute_benchmark/` :
+La sortie CP-ABE par défaut est `results/cpabe/attribute_benchmark/` :
 
 - `timings_raw.csv` conserve chaque mesure valide en nanosecondes ;
 - `timings_summary.csv` contient moyenne, médiane, écart-type, minimum,
@@ -42,9 +42,15 @@ clé ABS restent fixes dans les configurations compatibles.
 
 - Expérience A : `extract`, `sign`, `verify` pour un ensemble utilisateur ABS.
 - Expérience B : `sign`, `verify` pour un prédicat ABS mobilisant N attributs.
-- Expérience C : `encrypt`, `decrypt` pour la politique CP-ABE.
+- Expérience C : `encrypt`, `decrypt` pour la politique CP-ABE à deux feuilles.
 - Expérience D : `keygen`, `delegate`, `tm_delegate`, `decrypt` et
   `tm_decrypt` pour les clés CP-ABE.
+
+Les CSV CP-ABE ajoutent explicitement `user_attributes`, `delegated_attributes` et
+`policy_leaves`. Dans C, la politique possède toujours deux feuilles. Dans D,
+`keygen` varie le nombre d'attributs utilisateur, `delegate` et `tm_delegate`
+varient le nombre d'attributs délégués à partir d'une clé source de 50
+attributs, et `decrypt`/`tm_decrypt` utilisent la politique `A1 AND A1`.
 
 ## Limites démontrées par les API
 
@@ -66,3 +72,15 @@ d'attributs. Dans D, N décrit donc la préparation par `keygen`/`delegate`.
 `PSKA`, `TK`, `tm_delegate` et `tm_decrypt` restent structurellement constants
 en taille et leur coût propre ne doit pas être interprété comme une dépendance
 cryptographique directe à N.
+
+Les autres exports CP-ABE sont produits par :
+
+- `cpabe_timings` : `results/cpabe/cpabe_timings/` ;
+- `tm_storage_sizes` : `results/cpabe/tm_storage/` ;
+- `network_sizes` : `results/cpabe/network_sizes/`.
+
+Les résultats historiques sous `results/` et `results/attribute_benchmark/`
+ne sont pas écrasés. Les tailles d'objets distinguent la taille JSON UTF-8
+effectivement stockée/transmise de la somme des champs cryptographiques
+Base64 décodés. Cette seconde valeur exclut les métadonnées telles que
+`system_id`, les versions et les noms d'attributs.

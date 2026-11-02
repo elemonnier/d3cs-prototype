@@ -1,0 +1,16 @@
+{
+  "architecture": "x86_64",
+  "benchmark": "D3CS serialized network message sizes",
+  "build_mode": "release",
+  "cryptographic_version": "2",
+  "curve": "BLS12-381",
+  "dependencies": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0\n",
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree": "modified",
+  "hash_to_curve": "G2, deterministic hash-to-curve",
+  "note": "serialization-only campaign; no LEPTON/DoDWAN topology experiment was executed",
+  "operating_system": "linux",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "system_id": "2f483b59575e4c01eb93e15db51019950edd2ef58cd96b6b58a9d8d7bee0a2d2"
+}

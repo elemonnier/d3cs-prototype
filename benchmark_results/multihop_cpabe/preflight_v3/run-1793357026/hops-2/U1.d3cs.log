@@ -1,0 +1,15 @@
+2026-10-30 11:43:46.499 U1: {"tkn":"t1","name":"pong"}
+
+2026-10-30 11:43:47.020 U1: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:47.533 U1: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:48.044 U1: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:48.559 U1: {"tkn":"t2","name":"ok"}
+
+2026-10-30 11:43:55.187 U1: {"name":"recv_desc","mid":"N02_29","desc":{"_st":"1793357035139","_date":"1793357035084","_nbfrags":"1","src":"TM2","_docid":"N02_29","_weight":"104","topic":"TM","_rcv":"N01","dest":"TM","_sdr":"N02"}}
+
+2026-10-30 11:43:55.189 U1: {"data":"TLS(D3CS|TM2|TM|KEY_REQUEST|bench_h2_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h2_setup|TM2)","tkn":"payload-N02_29","name":"recv_payload","mid":"N02_29","topic":"TM","dest":"TM"}
+
+2026-10-30 11:43:55.189 U1: {"data":"TLS(D3CS|TM2|TM|KEY_REQUEST|bench_h2_setup|{\"classification\":\"FR-DR\",\"mission\":\"M1\"}|bench_h2_setup|TM2)","tkn":"payload-N02_29","name":"recv_payload","mid":"N02_29","topic":"TM","dest":"TM"}

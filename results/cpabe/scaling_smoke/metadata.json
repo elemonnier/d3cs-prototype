@@ -1,0 +1,56 @@
+{
+  "benchmark": "CP-ABE scalability benchmark",
+  "format_version": "1",
+  "crypto_version": "2",
+  "curve": "BLS12-381",
+  "hash_to_curve": "CP-ABE hash-to-curve domain implemented by src/crypto/cpabe.rs",
+  "attribute_encoding": "UTF-8 strings A0001 ... A0050",
+  "cardinalities": [
+    1,
+    2,
+    5,
+    10,
+    20,
+    50
+  ],
+  "experiments": [
+    "A_user_attribute_count",
+    "B_delegated_attribute_count",
+    "C_policy_leaf_count"
+  ],
+  "warmups": 1,
+  "measurements": 1,
+  "campaigns": 1,
+  "seed": 20260510,
+  "selection_order": "cardinalities are deterministically shuffled per campaign; crypto randomness remains OsRng",
+  "raw_time_unit": "nanoseconds",
+  "summary_time_unit": "nanoseconds",
+  "plaintext_bytes": 4,
+  "build_mode": "release",
+  "generated_at_utc": "2026-10-30T16:35:40.273334007+00:00",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "operating_system": "Linux 6.18.54.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Tue Oct  6 19:13:07 UTC 2026 x86_64",
+  "architecture": "x86_64",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree": "modified",
+  "dependency_snapshot": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0",
+  "system_ids": [
+    "6acef2bda736a3419fab719489b1f0a4b2eb021537e6e481ff8a7ae3ca5d5207"
+  ],
+  "timing_scope": [
+    "KeyGen includes only cpabe::keygen; setup and validation are outside the timer.",
+    "Delegate includes only cpabe::delegate, including its current linear attribute searches and result allocations.",
+    "TM_Delegate includes only cpabe::tm_delegate; N labels the delegated subset provenance.",
+    "Encrypt_with_policy includes the current CP-ABE operation and its hybrid AES-GCM encryption.",
+    "TM_Decrypt includes the current pairing, validation, parsing, copying, and intermediate-object construction.",
+    "Decrypt includes the current parsing, pairings, GT reconstruction, AES-GCM decryption, and UTF-8 conversion.",
+    "Network, ABS, CSV writing, statistics, and preparation of inputs are outside all timers."
+  ],
+  "limitations": [
+    "A campaign is a repeated measurement batch, not a statistically independent machine run.",
+    "Pooled summaries combine observations across campaigns and must not be interpreted as independent replicates.",
+    "TM_Delegate has no explicit attribute-list parameter; its N value is a provenance label.",
+    "This tool measures existing API scopes and does not claim algorithmic equivalence beyond the documented operations."
+  ]
+}

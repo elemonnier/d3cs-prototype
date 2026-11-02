@@ -1,0 +1,10 @@
+object,serialized_json_bytes,decoded_crypto_payload_bytes,representation,storage_role
+public_parameters,1352,912,serde_json UTF-8 with Base64 fields,TM PP
+master_secret_key,199,64,serde_json UTF-8 with Base64 fields,Authority MSK
+pska,227,96,serde_json UTF-8 with Base64 fields,TM PSKA
+psks,557,288,serde_json UTF-8 with Base64 fields,User PSKS
+tk,227,96,serde_json UTF-8 with Base64 fields,Delegation TK
+delegated_pska,227,96,serde_json UTF-8 with Base64 fields,Delegated TM PSKA
+delegated_psks,557,288,serde_json UTF-8 with Base64 fields,Delegated user PSKS
+ciphertext,1584,952,serde_json UTF-8 with Base64 fields,Stored CT
+intermediate_ciphertext,2288,1480,serde_json UTF-8 with Base64 fields,Stored CTI

@@ -1,0 +1,8 @@
+arl_entries,fixed_tm_state_serialized_bytes,arl_serialized_size_bytes,total_tm_state_serialized_bytes
+0,2943,24,2967
+1,2943,75,3018
+10,2943,543,3486
+50,2943,2663,5606
+100,2943,5313,8256
+500,2943,26913,29856
+1000,2943,53913,56856

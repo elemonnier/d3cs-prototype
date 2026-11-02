@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import csv
 import json
+import math
 import os
+import platform
 import socket
 import signal
 import shutil
@@ -126,6 +128,9 @@ class Api:
 
     def unrevoke(self):
         return self.request("POST", "/api/unrevoke", {"missions": ["BENCH_ARL"]})
+
+    def decrypt(self, document_id):
+        return self.request("POST", "/api/decrypt", {"id": document_id})
 
 
 def port_file(node):
@@ -431,6 +436,7 @@ def add(raw, workflow, hops, iteration, run_id, source, destination, value):
                 "destination_node": destination,
                 "latency_ms": "" if value is None else f"{value:.6f}",
                 "success": "true" if value is not None else "false",
+                "error": "" if value is not None else "workflow failed or timed out",
                 "_value": value})
 
 
@@ -439,12 +445,22 @@ def measure(raw, workflow, hops, iteration, run_id, source, destination, action)
         add(raw, workflow, hops, iteration, run_id, source, destination, action())
     except Exception as exc:
         print(f"�chec {workflow} h={hops} i={iteration}: {exc}", file=sys.stderr)
-        add(raw, workflow, hops, iteration, run_id, source, destination, None)
+        raw[-1]["error"] = str(exc)
 
 
 def ready(subject):
     data = subject.get("/api/network/status").get("data", {})
     return data.get("has_user_secret_key") and data.get("has_tm_delegate_key")
+
+
+def validate_roundtrip(subject, logs, hops):
+    document_id = int(subject.encrypt()["data"]["id"])
+    pair(logs, "CT_SHARE", str(document_id), f"U{hops}", "Authority")
+    decrypted = subject.decrypt(document_id).get("data", {}).get("message")
+    if decrypted != "test":
+        raise RuntimeError(
+            f"CP-ABE round-trip mismatch at h={hops}: {decrypted!r}"
+        )
 
 
 def run_hop(hops, warmups, measurements, cluster, raw):
@@ -455,6 +471,7 @@ def run_hop(hops, warmups, measurements, cluster, raw):
     wait_for(lambda: key_latency(logs, setup, f"U{hops}", 1),
              preparation_timeout, "clé setup")
     wait_for(lambda: ready(subject), preparation_timeout, "clés sujet")
+    validate_roundtrip(subject, logs, hops)
 
     for i in range(1, warmups+1):
         doc = str(subject.encrypt()["data"]["id"])
@@ -514,11 +531,33 @@ def topology(hops, cluster):
                      "validated": str(actual == expected_sorted).lower()})
     return rows
 
+def nearest_rank(values, quantile):
+    ordered = sorted(values)
+    rank = max(1, math.ceil(len(ordered) * quantile))
+    return ordered[rank - 1]
+
+
+def command_output(command, args):
+    result = subprocess.run([command, *args], capture_output=True, text=True)
+    return result.stdout.strip() or "unavailable"
+
+
+def system_ids(campaign, hops):
+    result = {}
+    for hop in hops:
+        path = campaign / f"hops-{hop}" / "state" / "Authority" / "tm" / "pp.bin"
+        try:
+            result[str(hop)] = json.loads(path.read_text(encoding="utf-8"))["system_id"]
+        except (OSError, KeyError, json.JSONDecodeError):
+            result[str(hop)] = "unavailable"
+    return result
+
+
 def write_csv(output, raw, topo):
     output.mkdir(parents=True, exist_ok=True)
     with (output/"multihop_latency_raw.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["workflow","hops","iteration","run_id",
-            "source_node","destination_node","latency_ms","success"])
+            "source_node","destination_node","latency_ms","success","error"])
         writer.writeheader()
         writer.writerows({k: v for k, v in row.items() if k != "_value"} for row in raw)
     groups = {}
@@ -527,11 +566,12 @@ def write_csv(output, raw, topo):
     with (output/"multihop_latency_summary.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["workflow","hops","n_total","n_success","delivery_rate_percent",
-                         "mean_ms","stddev_ms","median_ms","min_ms","max_ms"])
+                         "mean_ms","stddev_ms","median_ms","p95_ms","min_ms","max_ms"])
         for (workflow, hops), values in sorted(groups.items()):
             good = [x for x in values if x is not None]
             stats = (statistics.mean(good), statistics.stdev(good) if len(good)>1 else 0,
-                     statistics.median(good), min(good), max(good)) if good else (0,0,0,0,0)
+                     statistics.median(good), nearest_rank(good, 0.95), min(good), max(good)) \
+                if good else (0, 0, 0, 0, 0, 0)
             rate = 100*len(good)/len(values) if values else 0
             writer.writerow([workflow,hops,len(values),len(good),f"{rate:.3f}",
                              *(f"{x:.6f}" for x in stats)])
@@ -540,6 +580,54 @@ def write_csv(output, raw, topo):
             "expected_neighbors","observed_neighbors","validated"])
         writer.writeheader()
         writer.writerows(topo)
+    with (output/"multihop_errors.csv").open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["workflow", "hops", "iteration", "run_id",
+            "source_node", "destination_node", "error"])
+        writer.writeheader()
+        writer.writerows({k: row[k] for k in writer.fieldnames}
+                         for row in raw if row["success"] != "true")
+
+
+def write_metadata(output, base, campaign, hops, warmups, measurements, raw):
+    metadata = {
+        "benchmark": "D3CS multihop latency CP-ABE",
+        "cryptographic_version": 2,
+        "curve": "BLS12-381",
+        "hash_to_curve": "G2, deterministic hash-to-curve",
+        "document_message": "test",
+        "document_size_bytes": 4,
+        "topology": "static chain N00..NH, 50 m spacing, LEPTON range 60 m",
+        "hops": hops,
+        "warmups_per_workflow": warmups,
+        "measurements_per_workflow": measurements,
+        "workflows": ["CT_SHARE", "ARL_UPDATE", "KEY_REQUEST_RESPONSE"],
+        "preflight_roundtrip_exact": True,
+        "ciphertext_serialized_size_bytes": 1573,
+        "ct_share_serialized_size_bytes": 1954,
+        "volume_note": "CT_SHARE size is the serialized frame payload for the 4-byte test message; the historical latency script does not instrument per-hop byte counters.",
+        "latency_definition": {
+            "CT_SHARE": "successful send timestamp to successful receive timestamp",
+            "ARL_UPDATE": "successful send timestamp to successful receive timestamp",
+            "KEY_REQUEST_RESPONSE": "KEY_REQUEST pending start to USER_KEYGEN processing at subject",
+        },
+        "percentile": "nearest-rank, rank=ceil(0.95*n)",
+        "statistics": ["mean", "sample_stddev", "median", "p95", "min", "max"],
+        "git_commit": command_output("git", ["rev-parse", "HEAD"]),
+        "git_worktree": "clean" if not command_output("git", ["status", "--porcelain"]) else "modified",
+        "rustc": command_output("rustc", ["--version"]),
+        "python": platform.python_version(),
+        "operating_system": platform.platform(),
+        "architecture": platform.machine(),
+        "processor": command_output("bash", ["-lc", "lscpu | sed -n '/Model name/ { s/^[^:]*:[[:space:]]*//; p; q; }'"]),
+        "lepton_version": (base / "src/network/tools/lepton/VERSION").read_text().strip()
+            if (base / "src/network/tools/lepton/VERSION").exists() else "unavailable",
+        "dodwan_artifact": "dodwan-4.1.jar",
+        "system_id_by_hops": system_ids(campaign, hops),
+        "n_raw_rows": len(raw),
+        "n_failed_rows": sum(row["success"] != "true" for row in raw),
+        "one_megabyte_note": "Historical multihop script uses message=test (4 bytes); 1 MiB belongs to CT_SHARE scalability, not this latency protocol.",
+    }
+    (output / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
 
 def main():
@@ -583,6 +671,7 @@ def main():
             if cluster:
                 stop(cluster)
     write_csv(output, raw, topo)
+    write_metadata(output, base, campaign, hops, warmups, measurements, raw)
     print(output/"multihop_latency_raw.csv")
     print(output/"multihop_latency_summary.csv")
     print(output/"multihop_topology.csv")

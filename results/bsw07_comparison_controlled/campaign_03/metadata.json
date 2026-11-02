@@ -1,0 +1,56 @@
+{
+  "benchmark": "D3CS PM23/LK10 versus standalone BSW07 local cryptographic comparison",
+  "timestamp_unix_seconds": 1793362335,
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree_state": "modified",
+  "git_status_porcelain": "M docs/attribute_benchmark.md\n M scripts/multihop_latency.py\n M src/bin/abs_timings.rs\n M src/bin/bench_attributes.rs\n M src/bin/cpabe_timings.rs\n M src/bin/network_sizes.rs\n M src/bin/tm_storage_sizes.rs\n M src/crypto/cpabe.rs\n M src/crypto/mod.rs\n M src/levywalk.rs\n M src/network/main.rs\n?? benchmark_results/multihop_v2/\n?? docs/cpabe_v2_benchmarks.md\n?? results/bsw07_comparison/\n?? results/bsw07_comparison_controlled/\n?? results/cpabe_v2/\n?? scripts/__pycache__/run_bsw07_comparison_controlled.cpython-310.pyc\n?? scripts/run_bsw07_comparison_controlled.py\n?? src/bin/bsw07_comparison.rs\n?? src/crypto/bsw07.rs",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "dependencies": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0",
+  "operating_system": "linux",
+  "architecture": "x86_64",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "build_mode": "release",
+  "execution_mode": "controlled_campaign",
+  "campaign_id": 3,
+  "order_seed": 3074457345618258604,
+  "order_block_size": 25,
+  "order_strategy": "reproducible_balanced_short_blocks",
+  "warmups": 100,
+  "measurements": 500,
+  "duration_unit": "nanoseconds from std::time::Instant",
+  "policy": "classification AND mission",
+  "policy_leaves": 2,
+  "user_attributes": [
+    "FR-DR",
+    "M1",
+    "EXTRA"
+  ],
+  "delegated_attributes": [
+    "FR-DR",
+    "M1"
+  ],
+  "message_sizes_bytes": [
+    4,
+    1048576
+  ],
+  "hybrid_cipher": "AES-256-GCM; no network time included",
+  "d3cs_cpabe_version": "CP-ABE",
+  "d3cs_hash_to_curve": "G2 MapToCurveBasedHasher / WBMap / SHA-256",
+  "d3cs_hash_domain": "D3CS-CPABE-V2-ATTR-G2",
+  "bsw07_format_version": "BSW07 format v1 with mandatory BSW07 scheme tag",
+  "bsw07_hash_to_curve": "G2 MapToCurveBasedHasher / WBMap / SHA-256",
+  "bsw07_hash_domain": "D3CS-BSW07-CPABE-ATTR-G2-v1",
+  "abs_hash_domains": [
+    "D3CS-ABS-H1",
+    "D3CS-ABS-H2"
+  ],
+  "d3cs_system_ids": {
+    "1048576": "d9ca4278ef3464b0f67fce8d7eb773821f44b360cdb062874bd8f463074b9691",
+    "4": "4780108640ef59a7c7775ceff8105e008bb11ca4482636a0ec83260044e3cc9e"
+  },
+  "bsw07_system_ids": {
+    "1048576": "cc9b9f88eaaea77d71f55c7d0f31000cd5083d27d5059d4aecfb0200de43d68d",
+    "4": "ad1b55073db70caf5b62aa75599e1859108efa5b841cd2c4f249656eb34b1693"
+  },
+  "note": "D3CS and BSW07 are not claimed to provide identical security or functionality; cumulative medians are measured sequences, not sums of medians."
+}

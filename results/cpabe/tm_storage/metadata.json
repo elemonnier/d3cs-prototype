@@ -1,0 +1,25 @@
+{
+  "architecture": "x86_64",
+  "arl_cardinalities": [
+    0,
+    1,
+    10,
+    50,
+    100,
+    500,
+    1000
+  ],
+  "benchmark": "CP-ABE TM storage and serialized object sizes",
+  "build_mode": "release",
+  "cryptographic_version": "2",
+  "curve": "BLS12-381",
+  "dependencies": "d3cs-prototype v0.1.0 (/home/etienne/d3cs-prototype)\n├── aes-gcm v0.10.3\n├── anyhow v1.0.102\n├── ark-bls12-381 v0.4.0\n├── ark-ec v0.4.2\n├── ark-ff v0.4.2\n│   [build-dependencies]\n├── ark-serialize v0.4.2\n├── ark-std v0.4.0\n├── base64 v0.21.7\n├── chrono v0.4.44\n├── dotenvy v0.15.7\n├── rand v0.8.5\n├── rand_core v0.6.4\n├── serde v1.0.228\n├── serde_json v1.0.149\n├── sha2 v0.10.9\n├── tiny_http v0.12.0\n├── toml v0.8.23\n└── tungstenite v0.21.0",
+  "git_commit": "396545f0765a3ae125a0ea52ae1d19bdcddabd60",
+  "git_worktree": "modified",
+  "hash_to_curve": "G2, deterministic hash-to-curve",
+  "operating_system": "linux",
+  "processor": "13th Gen Intel(R) Core(TM) i7-1355U",
+  "rustc": "rustc 1.91.1 (ed61e7d7e 2025-11-07)",
+  "size_note": "decoded_crypto_payload_bytes counts decoded Base64 cryptographic fields; JSON metadata and labels are excluded",
+  "system_id": "e21906910b9e97ea95f345575dec045f44e785e02571b5473cb047344a7020aa"
+}
